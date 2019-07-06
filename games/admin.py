@@ -5,20 +5,21 @@ from .models import User, Game, Card, Chug
 
 @admin.register(User)
 class UserAdminWithImage(UserAdmin):
-	model = User
+    model = User
 
-	fieldsets = UserAdmin.fieldsets + (
-		('Image', {'fields': ('image',)}),
-	)
+    fieldsets = UserAdmin.fieldsets + (("Image", {"fields": ("image",)}),)
+
 
 @admin.register(Game)
 class GameAdmin(admin.ModelAdmin):
-	pass
+    pass
+
 
 @admin.register(Card)
 class CardAdmin(admin.ModelAdmin):
-	pass
+    pass
+
 
 @admin.register(Chug)
 class ChugAdmin(admin.ModelAdmin):
-	pass
+    pass

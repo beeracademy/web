@@ -17,23 +17,30 @@ from django.contrib import admin
 from django.conf import settings
 from django.urls import path, include
 from rest_framework import routers
-from games.views import UserViewSet, GameViewSet, CardViewSet, ChugViewSet, CustomAuthToken
+from games.views import (
+    UserViewSet,
+    GameViewSet,
+    CardViewSet,
+    ChugViewSet,
+    CustomAuthToken,
+)
 
 
 router = routers.DefaultRouter()
-router.register('users', UserViewSet)
-router.register('games', GameViewSet)
-router.register('cards', CardViewSet)
-router.register('chugs', ChugViewSet)
+router.register("users", UserViewSet)
+router.register("games", GameViewSet)
+router.register("cards", CardViewSet)
+router.register("chugs", ChugViewSet)
 
 
 urlpatterns = [
-    path('api/', include(router.urls)),
-    path('admin/', admin.site.urls),
-    path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
-    path('api-token-auth/', CustomAuthToken.as_view())
+    path("api/", include(router.urls)),
+    path("admin/", admin.site.urls),
+    path("api-auth/", include("rest_framework.urls", namespace="rest_framework")),
+    path("api-token-auth/", CustomAuthToken.as_view()),
 ]
 
 if settings.DEBUG:
     from django.conf.urls.static import static
+
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

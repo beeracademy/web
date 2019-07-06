@@ -8,142 +8,134 @@ from games.models import User, Game, Card, Chug
 
 
 class Command(BaseCommand):
-	help = 'Imports games from the old academy database'
+    help = "Imports games from the old academy database"
 
+    def add_arguments(self, parser):
+        parser.add_argument("--all", action="store_true")
+        parser.add_argument("--users", action="store_true")
+        parser.add_argument("--games", action="store_true")
+        parser.add_argument("--game-player-relations", action="store_true")
+        parser.add_argument("--cards", action="store_true")
+        parser.add_argument("--chugs", action="store_true")
 
-	def add_arguments(self, parser):
-		parser.add_argument('--all', action='store_true')
-		parser.add_argument('--users', action='store_true')
-		parser.add_argument('--games', action='store_true')
-		parser.add_argument('--game-player-relations', action='store_true')
-		parser.add_argument('--cards', action='store_true')
-		parser.add_argument('--chugs', action='store_true')
+    def get_rows(self, table_name):
+        with open(f"dump/tables/{table_name}.tsv", newline="") as f:
+            reader = csv.DictReader(f, dialect="excel-tab")
+            return tqdm(list(reader))
 
+    def import_users(self):
+        print("Importing users...")
+        User.objects.all().delete()
+        for user in self.get_rows("user"):
+            user_obj = User.objects.create(
+                id=user["id"],
+                username=user["username"],
+                email="" if user["email"] == "NULL" else user["email"],
+                old_password_hash=user["password_hash"],
+                created_at=user["created_at"],
+                updated_at=user["updated_at"],
+            )
 
-	def get_rows(self, table_name):
-		with open(f'dump/tables/{table_name}.tsv', newline='') as f:
-			reader = csv.DictReader(f, dialect='excel-tab')
-			return tqdm(list(reader))
+            try:
+                image_path = f'dump/profilepictures/{user["id"]}.jpg'
+                with open(image_path, "rb") as f:
+                    df = File(f)
+                    user_obj.image.save(f'user_images/{user["id"]}.jpg', df, save=True)
+            except FileNotFoundError:
+                pass
 
+    def import_games(self):
+        print("Importing games...")
+        Game.objects.all().delete()
+        for game in self.get_rows("game"):
+            Game.objects.create(
+                id=game["id"],
+                start_datetime=datetime.datetime.fromtimestamp(
+                    int(game["starttime"]) / 1000
+                ),
+                description=game["description"],
+                sips_per_beer=game["sips"],
+                official=game["official"] == "\x01",
+            )
 
-	def import_users(self):
-		print('Importing users...')
-		User.objects.all().delete()
-		for user in self.get_rows('user'):
-			user_obj = User.objects.create(
-				id=user['id'],
-				username=user['username'],
-				email='' if user['email'] == 'NULL' else user['email'],
-				old_password_hash=user['password_hash'],
-				created_at=user['created_at'],
-				updated_at=user['updated_at'],
-			)
+    def import_game_player_relations(self):
+        print("Importing game-player relations...")
+        for relation in self.get_rows("playergamerelation"):
+            game = Game.objects.get(id=relation["gameid"])
+            user = User.objects.get(id=relation["profileid"])
+            game.players.add(user)
 
-			try:
-				image_path = f'dump/profilepictures/{user["id"]}.jpg'
-				with open(image_path, 'rb') as f:
-					df = File(f)
-					user_obj.image.save(f'user_images/{user["id"]}.jpg', df, save=True)
-			except FileNotFoundError:
-				pass
+    def get_value_and_suit(self, card_id):
+        i = int(card_id) - 1
+        value = Card.VALUES[i % len(Card.VALUES)][0]
+        suit = Card.SUITS[i // len(Card.VALUES)][0]
+        return value, suit
 
+    def create_card(self, card_id, game, drawn_datetime):
+        value, suit = self.get_value_and_suit(card_id)
+        Card.objects.create(
+            game=game, value=value, suit=suit, drawn_datetime=drawn_datetime
+        )
 
-	def import_games(self):
-		print('Importing games...')
-		Game.objects.all().delete()
-		for game in self.get_rows('game'):
-			Game.objects.create(
-				id=game['id'],
-				start_datetime=datetime.datetime.fromtimestamp(int(game['starttime']) / 1000),
-				description=game['description'],
-				sips_per_beer=game['sips'],
-				official=game['official'] == '\x01',
-			)
+    def import_cards(self):
+        print("Importing cards...")
+        Card.objects.all().delete()
 
+        player_game_relations = {
+            r["id"]: r for r in self.get_rows("playergamerelation")
+        }
 
-	def import_game_player_relations(self):
-		print('Importing game-player relations...')
-		for relation in self.get_rows('playergamerelation'):
-			game = Game.objects.get(id=relation['gameid'])
-			user = User.objects.get(id=relation['profileid'])
-			game.players.add(user)
+        for relation in self.get_rows("gamecardrelation"):
+            pg_relation = player_game_relations[relation["playergamerelation"]]
+            game = Game.objects.get(id=pg_relation["gameid"])
+            drawn_datetime = datetime.datetime.strptime(
+                relation["drawtime"], "%Y-%m-%d %H:%M:%S"
+            )
+            try:
+                self.create_card(relation["cardid"], game, drawn_datetime)
+            except IntegrityError:
+                print(f"Bad game: {game.id} (duplicate cards)")
+                game.delete()
 
+        for game in Game.objects.all():
+            player_count = game.players.count()
+            expected_cards = player_count * 13
 
-	def get_value_and_suit(self, card_id):
-		i = int(card_id) - 1
-		value = Card.VALUES[i % len(Card.VALUES)][0]
-		suit = Card.SUITS[i // len(Card.VALUES)][0]
-		return value, suit
+            if expected_cards != game.cards.count():
+                print(
+                    f"Bad game: {game.id} ({game.cards.count()} instead of {expected_cards} cards)"
+                )
+                game.delete()
 
+    def import_chugs(self):
+        print("Importing chugs...")
+        Chug.objects.all().delete()
 
-	def create_card(self, card_id, game, drawn_datetime):
-		value, suit = self.get_value_and_suit(card_id)
-		Card.objects.create(
-			game=game,
-			value=value,
-			suit=suit,
-			drawn_datetime=drawn_datetime,
-		)
+        for chug in self.get_rows("chuck"):
+            card_id = chug["cardid"]
+            value, suit = self.get_value_and_suit(card_id)
+            try:
+                game = Game.objects.get(id=chug["gameid"])
+            except Game.DoesNotExist:
+                # This can happen if the game is bad
+                # and hasn't been imported
+                continue
 
+            card = Card.objects.get(game=game, value=value, suit=suit)
+            Chug.objects.create(card=card, duration_in_milliseconds=chug["millis"])
 
-	def import_cards(self):
-		print('Importing cards...')
-		Card.objects.all().delete()
+    def handle(self, *args, **options):
+        if options["all"] or options["users"]:
+            self.import_users()
 
-		player_game_relations = {r['id']: r for r in self.get_rows('playergamerelation')}
+        if options["all"] or options["games"]:
+            self.import_games()
 
-		for relation in self.get_rows('gamecardrelation'):
-			pg_relation = player_game_relations[relation['playergamerelation']]
-			game = Game.objects.get(id=pg_relation['gameid'])
-			drawn_datetime = datetime.datetime.strptime(relation['drawtime'], '%Y-%m-%d %H:%M:%S')
-			try:
-				self.create_card(relation['cardid'], game, drawn_datetime)
-			except IntegrityError:
-				print(f'Bad game: {game.id} (duplicate cards)')
-				game.delete()
+        if options["all"] or options["game_player_relations"]:
+            self.import_game_player_relations()
 
-		for game in Game.objects.all():
-			player_count = game.players.count()
-			expected_cards = player_count * 13
+        if options["all"] or options["cards"]:
+            self.import_cards()
 
-			if expected_cards != game.cards.count():
-				print(f'Bad game: {game.id} ({game.cards.count()} instead of {expected_cards} cards)')
-				game.delete()
-
-
-	def import_chugs(self):
-		print('Importing chugs...')
-		Chug.objects.all().delete()
-
-		for chug in self.get_rows('chuck'):
-			card_id = chug['cardid']
-			value, suit = self.get_value_and_suit(card_id)
-			try:
-				game = Game.objects.get(id=chug['gameid'])
-			except Game.DoesNotExist:
-				# This can happen if the game is bad
-				# and hasn't been imported
-				continue
-
-			card = Card.objects.get(game=game, value=value, suit=suit)
-			Chug.objects.create(
-				card=card,
-				duration_in_milliseconds=chug['millis'],
-			)
-
-
-	def handle(self, *args, **options):
-		if options['all'] or options['users']:
-			self.import_users()
-
-		if options['all'] or options['games']:
-			self.import_games()
-
-		if options['all'] or options['game_player_relations']:
-			self.import_game_player_relations()
-
-		if options['all'] or options['cards']:
-			self.import_cards()
-
-		if options['all'] or options['chugs']:
-			self.import_chugs()
+        if options["all"] or options["chugs"]:
+            self.import_chugs()
