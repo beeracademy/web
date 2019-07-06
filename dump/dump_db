@@ -1,0 +1,20 @@
+#!/bin/bash
+if [[ $# != 1 ]]; then
+	echo "Usage: $0 database_password" >&2
+	exit
+fi
+
+db_password="$1"
+
+
+query() {
+	echo "$1" | mysql -B --user=academy --password="$db_password" --host=crams.eu --database=academynew
+}
+
+tables=($(query 'show tables;' | tail +2))
+
+mkdir -p tables
+for t in "${tables[@]}"; do
+	echo "Dumping $t"
+	query "select * from $t;" > tables/"$t.tsv"
+done
