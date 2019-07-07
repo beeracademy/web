@@ -53,6 +53,7 @@ class Command(BaseCommand):
                 start_datetime=datetime.datetime.fromtimestamp(
                     int(game["starttime"]) / 1000
                 ),
+                end_datetime=datetime.datetime.fromtimestamp(int(game["time"]) / 1000),
                 description=game["description"],
                 sips_per_beer=game["sips"],
                 official=game["official"] == "\x01",

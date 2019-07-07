@@ -1,0 +1,66 @@
+<!doctype html>
+<html>
+	<head>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<title>Academy</title>
+		<link rel="shortcut icon" href="https://beeracademy.nu/favicon.ico" type="image/x-icon">
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+		<style>
+			tr[data-href] {
+				cursor: pointer;
+			}
+		</style>
+	</head>
+	<body>
+		<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+			<div class="container">
+				<a class="navbar-brand" href="/">
+					<img src="https://beeracademy.nu/card_imgs/cardback.png" width="30px" class="d-inline-align-top">
+					Academy</a>
+				</a>
+				<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+					<span class="navbar-toggler-icon"></span>
+				</button>
+				<div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+					<div class="navbar-nav">
+						<a class="nav-item nav-link" href="/games/">Games</a>
+						<a class="nav-item nav-link" href="/players/">Players</a>
+						<a class="nav-item nav-link" href="/ranking/">Ranking</a>
+						<li class="nav-item dropdown">
+							<a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Ranking</a>
+							<div class="dropdown-menu">
+								<a class="dropdown-item" href="/ranking/">All time</a>
+								{% for i in seasons %}
+								<a class="dropdown-item" href="/ranking/{{i}}">Season {{i}}{% if forloop.first %}
+									(Current){% endif %}</a>
+								{% endfor %}
+							</div>
+						</li>
+						{% if user.is_authenticated %}
+							<a class="nav-item nav-link" href="/logout/">Logout ({{ user.get_username }})</a>
+						{% else %}
+							<a class="nav-item nav-link" href="/login/">Login</a>
+						{% endif %}
+
+					</div>
+				</div>
+				<a href="http://192.168.1.64:4200/" class="btn btn-danger btn-lg active" role="button" aria-pressed="true">Play!</a>
+			</div>
+		</nav>
+
+		<div class="container">
+			{% block content %}{% endblock %}
+		</div>
+
+		<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+
+		<script>
+			$('tr[data-href]').click(function() {
+				window.location.href = this.getAttribute('data-href');
+			});
+		</script>
+	</body>
+</html>

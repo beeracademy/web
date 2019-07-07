@@ -12,6 +12,7 @@ bcrypt = "*"
 djangorestframework = "*"
 django-filter = "*"
 tqdm = "*"
+"django-bootstrap4" = "*"
 
 [dev-packages]
 

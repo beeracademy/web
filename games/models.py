@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser, UserManager
+from django.utils import timezone
 import bcrypt
 import secrets
 import datetime
@@ -42,7 +43,25 @@ class User(AbstractUser):
         return super().check_password(raw_password)
 
 
+FIRST_SEASON_START = datetime.date(2013, 1, 1)
+
+
+def get_season_from_date(date):
+    season = (date.year - FIRST_SEASON_START.year) * 2 + 1
+    if date.month >= 7:
+        season += 1
+
+    return season
+
+
+def get_current_season():
+    return get_season_from_date(datetime.date.today())
+
+
 class Game(models.Model):
+    class Meta:
+        ordering = ("-end_datetime",)
+
     class State(Enum):
         WAITING_FOR_DRAW = auto()
         WAITING_FOR_CHUG = auto()
@@ -50,7 +69,7 @@ class Game(models.Model):
         ENDED = auto()
 
     players = models.ManyToManyField(User, through="GamePlayer")
-    start_datetime = models.DateTimeField(auto_now_add=True)
+    start_datetime = models.DateTimeField(default=timezone.now)
     end_datetime = models.DateTimeField(blank=True, null=True)
     sips_per_beer = models.PositiveSmallIntegerField(default=14)
     description = models.CharField(max_length=1000, blank=True)
@@ -58,6 +77,34 @@ class Game(models.Model):
 
     def __str__(self):
         return f"{self.start_datetime}: {self.players_str()}"
+
+    def get_season(self):
+        if not self.end_datetime:
+            return None
+
+        return get_season_from_date(self.end_datetime)
+
+    def season_str(self):
+        return self.get_season() or "-"
+
+    def get_duration(self):
+        if not self.end_datetime:
+            return None
+
+        return self.end_datetime - self.start_datetime
+
+    def duration_str(self):
+        duration = self.get_duration()
+        if not duration:
+            return "Live"
+
+        return datetime.timedelta(seconds=round(duration.total_seconds()))
+
+    def end_str(self):
+        if not self.end_datetime:
+            return "-"
+
+        return self.end_datetime.strftime("%B %d, %Y %H:%M")
 
     def ordered_players(self):
         return [p.user for p in self.gameplayer_set.all()]
