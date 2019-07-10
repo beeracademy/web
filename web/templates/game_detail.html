@@ -1,7 +1,75 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h1>Game {{ object.id }}</h1>
 
-Yay
+<br>
+<h3>Game</h3>
+<br>
+
+<table class="table">
+<thead>
+    <tr>
+    <th scope="col">Game id</th>
+    <th scope="col">Start Time</th>
+    <th scope="col">End Time</th>
+    <th scope="col">Duration</th>
+    </tr>
+</thead>
+<tbody>
+    <tr>
+    <td>{{ object.id }}</td>
+    <td>{{ object.start_datetime }}</td>
+    <td>{{ object.end_datetime }}</td>
+    <td>{{ object.duration_str }}</td>
+    </tr>
+</tbody>
+</table>
+
+<br>
+<h3>Players</h3>
+<br>
+
+<div class="container">
+<div class="row justify-content-md-center">
+{% for p in object.ordered_players %}
+<div class="col-md-auto">
+    <div class="card">
+        <img class="card-img-top" src="{{p.image}}" alt="Card image cap">
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item">{{p.username}}</li>
+            <li class="list-group-item">Total sips: </li>
+            <li class="list-group-item">Avg sips: </li>
+            <li class="list-group-item">Total beers: </li>
+            <li class="list-group-item">Total time: </li>
+            <li class="list-group-item">Time per round: </li>
+            <li class="list-group-item">Time per sip: </li>
+        </ul>
+    </div>
+</div>
+{% endfor %}
+</div>
+</div>
+
+<br>
+<h3>Chugs</h3>
+<br>
+
+<div class="container">
+<div class="row justify-content-md-center">
+{% for c in object.ordered_chugs %}
+<div class="col-md-auto">
+    <div class="card">
+        <div class="card-header">
+            {{ c.card.get_user }}
+        </div>
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item">{{c.duration_str}}</li>
+            <li class="list-group-item">{{c.card_str}}</li>
+        </ul>
+    </div>
+</div>
+{% endfor %}
+</div>
+</div>
+
 {% endblock %}
