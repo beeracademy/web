@@ -3,6 +3,7 @@ from django.core.files import File
 from django.db.utils import IntegrityError
 import csv
 import datetime
+import pytz
 from tqdm import tqdm
 from games.models import User, Game, Card, Chug
 
@@ -44,16 +45,18 @@ class Command(BaseCommand):
             except FileNotFoundError:
                 pass
 
+    def timestamp_to_datetime(self, timestamp):
+        d = datetime.datetime.fromtimestamp(timestamp / 1000)
+        return pytz.utc.localize(d)
+
     def import_games(self):
         print("Importing games...")
         Game.objects.all().delete()
         for game in self.get_rows("game"):
             Game.objects.create(
                 id=game["id"],
-                start_datetime=datetime.datetime.fromtimestamp(
-                    int(game["starttime"]) / 1000
-                ),
-                end_datetime=datetime.datetime.fromtimestamp(int(game["time"]) / 1000),
+                start_datetime=self.timestamp_to_datetime(int(game["starttime"])),
+                end_datetime=self.timestamp_to_datetime(int(game["time"])),
                 description=game["description"],
                 sips_per_beer=game["sips"],
                 official=game["official"] == "\x01",
@@ -95,7 +98,9 @@ class Command(BaseCommand):
             try:
                 self.create_card(relation["cardid"], game, drawn_datetime)
             except IntegrityError:
-                print(f"Bad game: {game.id} (duplicate cards)")
+                print(
+                    f"Bad game: {game.id} (duplicate cards: {self.get_value_and_suit(relation['cardid'])})"
+                )
                 game.delete()
 
         for game in Game.objects.all():
