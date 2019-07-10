@@ -224,6 +224,7 @@ class Card(models.Model):
     def suit_str(self):
         return [s for s in self.SUITS if s[0] == self.suit][0][1]
 
+
 class Chug(models.Model):
     card = models.OneToOneField("Card", on_delete=models.CASCADE, related_name="chug")
     duration_in_milliseconds = models.PositiveIntegerField()
@@ -231,7 +232,7 @@ class Chug(models.Model):
     def duration_str(self):
         td = datetime.timedelta(milliseconds=self.duration_in_milliseconds)
         return str(td)
-    
+
     def card_str(self):
         return "Ace of " + self.card.suit_str()
 
