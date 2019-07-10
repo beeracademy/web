@@ -40,8 +40,7 @@ class Command(BaseCommand):
             try:
                 image_path = f'dump/profilepictures/{user["id"]}.jpg'
                 with open(image_path, "rb") as f:
-                    df = File(f)
-                    user_obj.image.save(f'user_images/{user["id"]}.jpg', df, save=True)
+                    user_obj.image.save("a.jpg", File(f), save=True)
             except FileNotFoundError:
                 pass
 
