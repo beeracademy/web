@@ -6,6 +6,8 @@
 <h3>Game</h3>
 <br>
 
+<p>{{ object.description }}</p>
+
 <table class="table">
 <thead>
     <tr>
@@ -31,18 +33,18 @@
 
 <div class="container">
 <div class="row justify-content-md-center">
-{% for p in object.ordered_players %}
+{% for stats in object.get_player_stats %}
 <div class="col-md-auto">
     <div class="card">
-        <img class="card-img-top" src="{{p.image}}" alt="Card image cap">
+        <img class="card-img-top" src="{{ stats.player.image }}" alt="Card image cap">
         <ul class="list-group list-group-flush">
-            <li class="list-group-item">{{p.username}}</li>
-            <li class="list-group-item">Total sips: </li>
-            <li class="list-group-item">Avg sips: </li>
-            <li class="list-group-item">Total beers: </li>
-            <li class="list-group-item">Total time: </li>
-            <li class="list-group-item">Time per round: </li>
-            <li class="list-group-item">Time per sip: </li>
+            <li class="list-group-item">{{ stats.player.username }}</li>
+            <li class="list-group-item">Total sips: {{ stats.total_sips }}</li>
+            <li class="list-group-item">Sips per turn: {{ stats.sips_per_turn|floatformat:2 }}</li>
+            <li class="list-group-item">Total beers: {{ stats.full_beers }} <sup>{{ stats.extra_sips }}</sup>&frasl;<sub>{{ object.sips_per_beer }}</sub></li>
+            <li class="list-group-item">Total time: {{ stats.total_time }}</li>
+            <li class="list-group-item">Time per round: {{ stats.time_per_turn }}</li>
+            <li class="list-group-item">Time per sip: {{ stats.time_per_sip }}</li>
         </ul>
     </div>
 </div>
@@ -63,13 +65,38 @@
             {{ c.card.get_user }}
         </div>
         <ul class="list-group list-group-flush">
-            <li class="list-group-item">{{c.duration_str}}</li>
-            <li class="list-group-item">{{c.card_str}}</li>
+            <li class="list-group-item">{{ c.duration_str }}</li>
+            <li class="list-group-item">{{ c.card_str }}</li>
         </ul>
     </div>
 </div>
 {% endfor %}
 </div>
 </div>
+
+<br>
+<h3>Round overview</h3>
+<br>
+
+<table class="table table-bordered table-striped table-sm">
+    <thead>
+        <tr>
+            <th>Round</th>
+            {% for p in object.ordered_players %}
+            <th>{{ p.username }}</th>
+            {% endfor %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in object.cards_by_round %}
+        <tr>
+            <td>{{ forloop.counter }}</td>
+            {% for c in row %}
+            <td title="{{ c.card_str }}">{{c.suit_symbol}} {{ c.value }}</td>
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
 
 {% endblock %}

@@ -59,6 +59,8 @@ def get_current_season():
 
 
 class Game(models.Model):
+    TOTAL_ROUNDS = 13
+
     class Meta:
         ordering = ("-end_datetime",)
 
@@ -137,6 +139,13 @@ class Game(models.Model):
     def ordered_cards(self):
         return self.cards.all()
 
+    def cards_by_round(self):
+        n = self.players.count()
+        cards = self.ordered_cards()
+        for i in range(self.TOTAL_ROUNDS):
+            round_cards = cards[i * n : (i + 1) * n]
+            yield list(round_cards) + [None] * (n - len(round_cards))
+
     def ordered_chugs(self):
         return (c.chug for c in self.cards.filter(chug__isnull=False))
 
@@ -174,6 +183,62 @@ class Game(models.Model):
             card=newest_card, duration_in_milliseconds=duration_in_milliseconds
         )
 
+    def get_turn_durations(self):
+        prev_datetime = None
+        for c in self.ordered_cards():
+            if prev_datetime is not None:
+                yield c.drawn_datetime - prev_datetime
+
+            prev_datetime = c.drawn_datetime
+
+        if self.get_state() == self.State.ENDED:
+            yield self.end_datetime - prev_datetime
+
+    def get_player_stats(self):
+        # Note that toal_drawn and total_done,
+        # can differ for one player, if the game hasn't ended.
+        def div_or_none(a, b):
+            if b == 0:
+                return None
+            return a / b
+
+        n = self.players.count()
+        total_sips = [0] * n
+        total_drawn = [0] * n
+        last_sip = None
+        for i, c in enumerate(self.ordered_cards()):
+            total_sips[i % n] += c.value
+            total_drawn[i % n] += 1
+            last_sip = (i % n, c.value)
+
+        total_times = [datetime.timedelta(0)] * n
+        total_done = [0] * n
+        for i, dt in enumerate(self.get_turn_durations()):
+            total_times[i % n] += dt
+            total_done[i % n] += 1
+
+        for i, p in enumerate(self.ordered_players()):
+            full_beers = total_sips[i] // self.sips_per_beer
+            extra_sips = total_sips[i] % self.sips_per_beer
+
+            if last_sip[0] == i and self.get_state() != self.State.ENDED:
+                time_per_sip = div_or_none(
+                    total_times[i], (total_sips[i] - last_sip[1])
+                )
+            else:
+                time_per_sip = div_or_none(total_times[i], total_sips[i])
+
+            yield {
+                "player": p,
+                "total_sips": total_sips[i],
+                "sips_per_turn": div_or_none(total_sips[i], total_drawn[i]),
+                "full_beers": full_beers,
+                "extra_sips": extra_sips,
+                "total_time": total_times[i],
+                "time_per_turn": div_or_none(total_times[i], total_done[i]),
+                "time_per_sip": time_per_sip,
+            }
+
 
 class GamePlayer(models.Model):
     class Meta:
@@ -190,11 +255,11 @@ class Card(models.Model):
         ordering = ("id",)
 
     VALUES = [
-        *zip(range(2, 11), range(2, 11)),
-        (11, "J"),
-        (12, "Q"),
-        (13, "K"),
-        (14, "A"),
+        *zip(range(2, 11), map(str, range(2, 11))),
+        (11, "Jack"),
+        (12, "Queen"),
+        (13, "King"),
+        (14, "Ace"),
     ]
 
     SUITS = [
@@ -221,8 +286,18 @@ class Card(models.Model):
         i = self.get_index()
         return self.game.ordered_players()[i % self.game.players.count()]
 
+    def value_str(self):
+        return dict(self.VALUES)[self.value]
+
     def suit_str(self):
-        return [s for s in self.SUITS if s[0] == self.suit][0][1]
+        return dict(self.SUITS)[self.suit]
+
+    def card_str(self):
+        return f"{self.value_str()} of {self.suit_str()}"
+
+    def suit_symbol(self):
+        mapping = {"S": "♠", "C": "♣", "H": "♥", "D": "♦", "A": "☘", "I": "🟊"}
+        return mapping[self.suit]
 
 
 class Chug(models.Model):
