@@ -104,7 +104,7 @@ class Command(BaseCommand):
 
         for game in Game.objects.all():
             player_count = game.players.count()
-            expected_cards = player_count * 13
+            expected_cards = player_count * Game.TOTAL_ROUNDS
 
             if expected_cards != game.cards.count():
                 print(
