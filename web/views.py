@@ -3,12 +3,26 @@ from django.db.models import F
 from django.contrib.auth.views import LoginView, LogoutView
 from django.views.generic import DetailView, ListView
 from django.core.paginator import Paginator
-from games.models import User, Game, Season, PlayerStat, all_time_season, filter_season
+from games.models import (
+    User,
+    Game,
+    GamePlayer,
+    Season,
+    PlayerStat,
+    all_time_season,
+    filter_season,
+)
 from .utils import updated_query_url
 
 
 def index(request):
-    return render(request, "index.html")
+    BEERS_PER_PLAYER = sum(range(2, 15)) / Game.STANDARD_SIPS_PER_BEER
+    total_players = GamePlayer.objects.count()
+    context = {
+        "total_beers": total_players * BEERS_PER_PLAYER,
+        "total_games": Game.objects.all().count(),
+    }
+    return render(request, "index.html", context)
 
 
 def about(request):

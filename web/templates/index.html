@@ -2,29 +2,26 @@
 
 {% block content %}
 
-<div class="container">
-    <div class="row">
-
-        <div class="card col-md-3 m-auto">
-            <div class="card-body text-center">
-                <i class="fas fa-gamepad fa-3x"></i>
-                <p class="card-title">Games played</p>
-                <h4 class="card-text">0</h4>
-            </div>
+<div class="row">
+    <div class="card col-md-3 m-auto">
+        <div class="card-body text-center">
+            <i class="fas fa-gamepad fa-3x"></i>
+            <p class="card-title">Games played</p>
+            <h4 class="card-text">{{ total_games }}</h4>
         </div>
-        <div class="card col-md-3 m-auto">
-            <div class="card-body text-center">
-                <i class="fas fa-beer fa-3x"></i>
-                <p class="card-title">Beers consumed</p>
-                <h4 class="card-text">0</h4>
-            </div>
+    </div>
+    <div class="card col-md-3 m-auto">
+        <div class="card-body text-center">
+            <i class="fas fa-beer fa-3x"></i>
+            <p class="card-title">Beers consumed</p>
+            <h4 class="card-text">{{ total_beers|floatformat:0 }}</h4>
         </div>
-        <div class="card col-md-3 m-auto">
-            <div class="card-body text-center">
-                <i class="fas fa-calendar-alt fa-3x"></i>
-                <p class="card-title">Current season</p>
-                <h4 class="card-text">0</h4>
-            </div>
+    </div>
+    <div class="card col-md-3 m-auto">
+        <div class="card-body text-center">
+            <i class="fas fa-calendar-alt fa-3x"></i>
+            <p class="card-title">Current season</p>
+            <h4 class="card-text">{{ current_season.number }}</h4>
         </div>
     </div>
 </div>
