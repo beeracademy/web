@@ -1,4 +1,5 @@
 import os
+import pytz
 from django.db import models
 from django.contrib.auth.models import AbstractUser, UserManager
 from django.utils import timezone
@@ -26,7 +27,7 @@ def filter_season(qs, season, key=None):
         key = ""
     key += "end_datetime"
     return qs.filter(
-        **{f"{key}__gte": season.start_date, f"{key}__lte": season.end_date}
+        **{f"{key}__gte": season.start_datetime, f"{key}__lte": season.end_datetime}
     )
 
 
@@ -237,17 +238,18 @@ class Season:
         return f"Season {self.number}"
 
     @property
-    def start_date(self):
+    def start_datetime(self):
         extra_half_years = self.number - 1
         date = self.FIRST_SEASON_START
         date = date.replace(year=date.year + extra_half_years // 2)
         if extra_half_years % 2 == 1:
             date = date.replace(month=7)
-        return date
+
+        return pytz.utc.localize(datetime.datetime.combine(date, datetime.datetime.min.time()))
 
     @property
-    def end_date(self):
-        return Season(self.number + 1).start_date - datetime.timedelta(days=1)
+    def end_datetime(self):
+        return Season(self.number + 1).start_datetime - datetime.timedelta(microseconds=1)
 
     @classmethod
     def season_from_date(cls, date):
@@ -274,8 +276,8 @@ class Season:
 
 class _AllTimeSeason:
     number = 0
-    start_date = Season.FIRST_SEASON_START
-    end_date = Season.current_season().end_date
+    start_datetime = Season(1).start_datetime
+    end_datetime = Season.current_season().end_datetime
 
     def __str__(self):
         return "All time"
