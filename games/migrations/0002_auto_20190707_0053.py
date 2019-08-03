@@ -6,18 +6,17 @@ import games.models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('games', '0001_initial'),
-    ]
+    dependencies = [("games", "0001_initial")]
 
     operations = [
         migrations.AlterModelOptions(
-            name='game',
-            options={'ordering': ('-end_datetime',)},
+            name="game", options={"ordering": ("-end_datetime",)}
         ),
         migrations.AlterField(
-            model_name='user',
-            name='image',
-            field=models.ImageField(blank=True, null=True, upload_to=games.models.get_user_image_path),
+            model_name="user",
+            name="image",
+            field=models.ImageField(
+                blank=True, null=True, upload_to=games.models.get_user_image_path
+            ),
         ),
     ]

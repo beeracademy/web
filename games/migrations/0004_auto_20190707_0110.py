@@ -6,14 +6,12 @@ import django.utils.timezone
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('games', '0003_auto_20190707_0056'),
-    ]
+    dependencies = [("games", "0003_auto_20190707_0056")]
 
     operations = [
         migrations.AlterField(
-            model_name='game',
-            name='start_datetime',
+            model_name="game",
+            name="start_datetime",
             field=models.DateTimeField(default=django.utils.timezone.now),
-        ),
+        )
     ]

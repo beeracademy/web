@@ -5,13 +5,6 @@ from django.db import migrations
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('games', '0002_auto_20190707_0053'),
-    ]
+    dependencies = [("games", "0002_auto_20190707_0053")]
 
-    operations = [
-        migrations.AlterModelOptions(
-            name='game',
-            options={},
-        ),
-    ]
+    operations = [migrations.AlterModelOptions(name="game", options={})]

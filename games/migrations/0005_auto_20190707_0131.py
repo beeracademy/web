@@ -5,13 +5,10 @@ from django.db import migrations
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('games', '0004_auto_20190707_0110'),
-    ]
+    dependencies = [("games", "0004_auto_20190707_0110")]
 
     operations = [
         migrations.AlterModelOptions(
-            name='game',
-            options={'ordering': ('-end_datetime',)},
-        ),
+            name="game", options={"ordering": ("-end_datetime",)}
+        )
     ]
