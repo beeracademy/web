@@ -1,0 +1,36 @@
+{% extends "paginated_list_view.html" %}
+
+{% block title %}Ranking{% endblock %}
+
+{% block beforetable %}
+
+{% include "season_chooser.html" %}
+
+<ul class="nav nav-tabs">
+	{% for name, url in ranking_tabs %}
+	<li class="nav-item">
+		<a class="nav-link{% if name == ranking.name %} active{% endif %}" href="{{ url }}">
+			{{ name }}
+		</a>
+	</li>
+	{% endfor %}
+</ul>
+{% endblock %}
+
+{% block thead %}
+<tr>
+	<th>#</th>
+	<th>Username</th>
+	<th>{{ ranking.name }}</th>
+</tr>
+{% endblock %}
+
+{% block tbody %}
+{% for user_ranking in object_list %}
+<tr data-href="/players/{{ user_ranking.user.id }}/">
+	<td>{{ user_ranking.rank }}</td>
+	<td>{{ user_ranking.user.username }}</td>
+	<td>{{ user_ranking.value }}</td>
+</tr>
+{% endfor %}
+{% endblock %}

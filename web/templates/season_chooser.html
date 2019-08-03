@@ -1,0 +1,10 @@
+<div class="dropdown">
+	<button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+	{{ season }}
+	</button>
+	<div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+		{% for season, url in season_urls %}
+		<a class="dropdown-item" href="{{ url }}">{{ season }}</a>
+		{% endfor %}
+	</div>
+</div>

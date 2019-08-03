@@ -6,16 +6,7 @@
 
 <img src="{{ object.image }}" alt="Profile picture">
 
-<div class="dropdown">
-	<button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-	{{ season }}
-	</button>
-	<div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-		{% for season in menu_seasons %}
-		<a class="dropdown-item" href="?season={{ season.number }}">{{ season }}</a>
-		{% endfor %}
-	</div>
-</div>
+{% include "season_chooser.html" %}
 
 <div class="container">
 	<div class="row">

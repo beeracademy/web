@@ -36,14 +36,7 @@
 					<div class="navbar-nav">
 						<a class="nav-item nav-link" href="/games/">Games</a>
 						<a class="nav-item nav-link" href="/players/">Players</a>
-						<li class="nav-item dropdown">
-							<a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Ranking</a>
-							<div class="dropdown-menu">
-								{% for season in menu_seasons %}
-								<a class="dropdown-item" href="/ranking/{{ season.number }}">{{ season }}</a>
-								{% endfor %}
-							</div>
-						</li>
+						<a class="nav-item nav-link" href="/ranking/">Ranking</a>
 						{% if user.is_authenticated %}
 							<a class="nav-item nav-link" href="/logout/">Logout ({{ user.get_username }})</a>
 						{% else %}
