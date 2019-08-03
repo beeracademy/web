@@ -14,6 +14,7 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument("--all", action="store_true")
         parser.add_argument("--users", action="store_true")
+        parser.add_argument("--user-images", action="store_true")
         parser.add_argument("--games", action="store_true")
         parser.add_argument("--game-player-relations", action="store_true")
         parser.add_argument("--cards", action="store_true")
@@ -35,7 +36,7 @@ class Command(BaseCommand):
         print("Importing users...")
         User.objects.all().delete()
         for user in self.get_rows("user"):
-            user_obj = User.objects.create(
+            User.objects.create(
                 id=user["id"],
                 username=user["username"],
                 email="" if user["email"] == "NULL" else user["email"],
@@ -44,10 +45,13 @@ class Command(BaseCommand):
                 updated_at=self.timestamp_seconds_to_datetime(user["updated_at"]),
             )
 
+    def import_user_images(self):
+        print("Importing user images...")
+        for user in tqdm(User.objects.all()):
             try:
-                image_path = f'dump/profilepictures/{user["id"]}.jpg'
+                image_path = f"dump/profilepictures/thumb_{user.id}.jpg"
                 with open(image_path, "rb") as f:
-                    user_obj.image.save("a.jpg", File(f), save=True)
+                    user.image.save(None, File(f), save=True)
             except FileNotFoundError:
                 pass
 
@@ -149,6 +153,9 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         if options["all"] or options["users"]:
             self.import_users()
+
+        if options["all"] or options["user_images"]:
+            self.import_user_images()
 
         if options["all"] or options["games"]:
             self.import_games()
