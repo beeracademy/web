@@ -14,15 +14,15 @@
 			<table class="table table-bordered table-striped table-sm">
 				<tbody>
 					<tr>
-						<th>Games played</th>
+						<th scope="row">Games played</th>
 						<td>{{ stats.total_games }}</td>
 					</tr>
 					<tr>
-						<th>Total time played</th>
+						<th scope="row">Total time played</th>
 						<td>{{ stats.total_time_played }} (~ {{ stats.approx_ects|floatformat:1 }} ECTS)</td>
 					</tr>
 					<tr>
-						<th>Estimated money spent</th>
+						<th scope="row">Estimated money spent</th>
 						<td>{{ stats.approx_money_spent }}</td>
 					</tr>
 				</tbody>
@@ -35,31 +35,31 @@
 			<table class="table table-bordered table-striped table-sm">
 				<tbody>
 					<tr>
-						<th>Total sips</th>
+						<th scope="row">Total sips</th>
 						<td>{{ stats.total_sips }} ({{ stats.total_beers }} beers)</td>
 					</tr>
 					<tr>
-						<th>Best game</th>
+						<th scope="row">Best game</th>
 						<td>{% include "utils/link.html" with text=stats.best_game_sips prefix="/games" id=stats.best_game.id %}</td>
 					</tr>
 					<tr>
-						<th>Worst game</th>
+						<th scope="row">Worst game</th>
 						<td>{% include "utils/link.html" with text=stats.worst_game_sips prefix="/games" id=stats.worst_game.id %}</td>
 					</tr>
 					<tr>
-						<th>Average game</th>
+						<th scope="row">Average game</th>
 						<td>{% firstof stats.average_game_sips "-" %}</a></td>
 					</tr>
 					<tr>
-						<th>Total chugs</th>
+						<th scope="row">Total chugs</th>
 						<td>{{ stats.total_chugs }}</td>
 					</tr>
 					<tr>
-						<th>Fastest chug time</th>
+						<th scope="row">Fastest chug time</th>
 						<td>{% include "utils/link.html" with text=stats.fastest_chug.duration prefix="/games" id=stats.fastest_chug.card.game.id %}</td>
 					</tr>
 					<tr>
-						<th>Average chug time</th>
+						<th scope="row">Average chug time</th>
 						<td>{% firstof stats.average_chug_time "-" %}</td>
 					</tr>
 				</tbody>

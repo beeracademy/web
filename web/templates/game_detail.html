@@ -73,9 +73,9 @@
 <table class="table table-bordered table-striped table-hover table-sm">
     <thead>
         <tr>
-            <th>Round</th>
+            <th scope="col">Round</th>
             {% for p in object.ordered_players %}
-            <th>{{ p.username }}</th>
+            <th scope="col">{{ p.username }}</th>
             {% endfor %}
         </tr>
     </thead>
