@@ -58,7 +58,7 @@ class PlayerStat(models.Model):
         "Chug", on_delete=models.CASCADE, null=True, related_name="+"
     )
 
-    average_chug_time = models.FloatField(null=True)
+    average_chug_time_seconds = models.FloatField(null=True)
 
     @classmethod
     def update_all(cls):
@@ -134,7 +134,7 @@ class PlayerStat(models.Model):
             self.worst_game = worst_game[1]
 
         if self.total_chugs > 0:
-            self.average_chug_time = (
+            self.average_chug_time_seconds = (
                 total_chug_time / self.total_chugs
             ).total_seconds()
 
@@ -164,13 +164,19 @@ class PlayerStat(models.Model):
     def approx_money_spent(self):
         AVERAGE_BEER_PRICE_DKK = 10
         cost = self.total_beers * AVERAGE_BEER_PRICE_DKK
-        return f"{cost} DKK"
+        return f"{int(cost)} DKK"
 
     @property
     def average_game_sips(self):
         if self.total_games == 0:
             return None
-        return self.total_sips / self.total_games
+        return round(self.total_sips / self.total_games, 1)
+
+    @property
+    def average_chug_time(self):
+        if not self.average_chug_time_seconds:
+            return None
+        return datetime.timedelta(seconds=self.average_chug_time_seconds)
 
 
 class User(AbstractUser):
