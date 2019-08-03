@@ -2,6 +2,10 @@
 
 {% block title %}Games{% endblock %}
 
+{% block beforetable %}
+{% include "season_chooser.html" %}
+{% endblock %}
+
 {% block thead %}
 <tr>
 	<th>Players</th>

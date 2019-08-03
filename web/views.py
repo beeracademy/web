@@ -3,7 +3,7 @@ from django.db.models import F
 from django.contrib.auth.views import LoginView, LogoutView
 from django.views.generic import DetailView, ListView
 from django.core.paginator import Paginator
-from games.models import User, Game, Season, PlayerStat, all_time_season
+from games.models import User, Game, Season, PlayerStat, all_time_season, filter_season
 from functools import partial
 from .utils import updated_query_url
 
@@ -52,7 +52,16 @@ class GamesView(PaginatedListView):
     template_name = "game_list.html"
 
     def get_queryset(self):
-        return Game.objects.all().order_by(F("end_datetime").desc(nulls_first=True))
+        season = get_season(self.request)
+        return filter_season(Game.objects, season).order_by(
+            F("end_datetime").desc(nulls_first=True)
+        )
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        season = get_season(self.request)
+        context["season"] = season
+        return context
 
 
 class GameDetailView(DetailView):
