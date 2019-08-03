@@ -17,10 +17,10 @@
 
 {% block tbody %}
 {% for game in object_list %}
-<tr data-href="/games/{{ game.id }}/">
+<tr data-href="/games/{{ game.id }}/"{% if user in game.ordered_players %} class="table-primary"{% endif %}>
 	<td>
-		{% for user in game.ordered_players %}
-		<a href="/players/{{ user.id }}/">{{ user.username }}</a>{% if not forloop.last %},{% endif %}
+		{% for player in game.ordered_players %}
+		<a href="/players/{{ player.id }}/">{{ player.username }}</a>{% if not forloop.last %},{% endif %}
 		{% endfor %}
 	</td>
 	<td>{{ game.season_number_str }}</td>

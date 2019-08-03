@@ -27,7 +27,7 @@
 
 {% block tbody %}
 {% for user_ranking in object_list %}
-<tr data-href="/players/{{ user_ranking.user.id }}/">
+<tr data-href="/players/{{ user_ranking.user.id }}/"{% if user_ranking.user == user %} class="table-primary"{% endif %}>
 	<td>{{ user_ranking.rank }}</td>
 	<td>{{ user_ranking.user.username }}</td>
 	<td>{% include "utils/link.html" with text=user_ranking.value prefix="/games" id=user_ranking.game.id %}</td>
