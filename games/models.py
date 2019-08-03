@@ -18,6 +18,17 @@ def get_user_image_path(self, filename):
     return f"user_images/{self.id}.jpg"
 
 
+def filter_season(qs, season, key=None):
+    if key:
+        key += "__"
+    else:
+        key = ""
+    key += "end_datetime"
+    return qs.filter(
+        **{f"{key}__gte": season.start_date, f"{key}__lte": season.end_date}
+    )
+
+
 class PlayerStat(models.Model):
     user = models.ForeignKey("User", on_delete=models.CASCADE)
     season_number = models.PositiveIntegerField()
@@ -70,10 +81,7 @@ class PlayerStat(models.Model):
         return ps
 
     def update(self):
-        games = self.user.gameplayer_set.filter(
-            game__start_datetime__gte=self.season.start_date,
-            game__end_datetime__lte=self.season.end_date,
-        )
+        games = filter_season(self.user.gameplayer_set, self.season, key="game")
 
         self.total_games = games.count()
         total_time_played = datetime.timedelta()
@@ -193,10 +201,7 @@ class User(AbstractUser):
 
     def current_season_game_count(self):
         season = Season.current_season()
-        return self.gameplayer_set.filter(
-            game__start_datetime__gte=season.start_date,
-            game__end_datetime__isnull=False,
-        ).count()
+        return filter_season(self.gameplayer_set, season, key="game").count()
 
     def stats_for_season(self, season):
         return PlayerStat.get_or_create(self, season)

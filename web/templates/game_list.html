@@ -2,22 +2,26 @@
 
 {% block title %}<i class="fas fa-gamepad"></i> Games{% endblock %}
 
+{% block beforetable %}
+{% include "season_chooser.html" %}
+{% endblock %}
+
 {% block thead %}
 <br>
 <tr>
-	<th>Players</th>
-	<th>Season</th>
-	<th>End time</th>
-	<th>Duration</th>
+	<th scope="col">Players</th>
+	<th scope="col">Season</th>
+	<th scope="col">End time</th>
+	<th scope="col">Duration</th>
 </tr>
 {% endblock %}
 
 {% block tbody %}
 {% for game in object_list %}
-<tr data-href="/games/{{ game.id }}/">
+<tr data-href="/games/{{ game.id }}/"{% if user in game.ordered_players %} class="table-primary"{% endif %}>
 	<td>
-		{% for user in game.ordered_players %}
-		<a href="/players/{{ user.id }}/">{{ user.username }}</a>{% if not forloop.last %},{% endif %}
+		{% for player in game.ordered_players %}
+		<a href="/players/{{ player.id }}/">{{ player.username }}</a>{% if not forloop.last %},{% endif %}
 		{% endfor %}
 	</td>
 	<td>{{ game.season_number_str }}</td>

@@ -3,8 +3,7 @@ from django.db.models import F
 from django.contrib.auth.views import LoginView, LogoutView
 from django.views.generic import DetailView, ListView
 from django.core.paginator import Paginator
-from games.models import User, Game, Season, PlayerStat, all_time_season
-from functools import partial
+from games.models import User, Game, Season, PlayerStat, all_time_season, filter_season
 from .utils import updated_query_url
 
 
@@ -34,7 +33,7 @@ class PaginatedListView(ListView):
         object_list = paginator.get_page(page)
         context["object_list"] = object_list
 
-        page_url = partial(updated_query_url, self.request, "page")
+        page_url = lambda page: updated_query_url(self.request, {"page": page})
 
         # We want to preserve other query parameters, when changing pages
         context["paginator_first_url"] = page_url(1)
@@ -56,7 +55,16 @@ class GamesView(PaginatedListView):
     template_name = "game_list.html"
 
     def get_queryset(self):
-        return Game.objects.all().order_by(F("end_datetime").desc(nulls_first=True))
+        season = get_season(self.request)
+        return filter_season(Game.objects, season).order_by(
+            F("end_datetime").desc(nulls_first=True)
+        )
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        season = get_season(self.request)
+        context["season"] = season
+        return context
 
 
 class GameDetailView(DetailView):
@@ -154,12 +162,18 @@ class RankingView(PaginatedListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["season"] = get_season(self.request)
+        season = get_season(self.request)
+        context["season"] = season
 
         ranking_urls = []
         for ranking in self.rankings:
             ranking_urls.append(
-                (ranking.name, updated_query_url(self.request, "type", ranking.name))
+                (
+                    ranking.name,
+                    updated_query_url(
+                        self.request, {"type": ranking.name, "page": None}
+                    ),
+                )
             )
 
         context["ranking_tabs"] = ranking_urls
@@ -173,5 +187,17 @@ class RankingView(PaginatedListView):
             o.rank = start_index + i
             o.value = ranking.get_value(o)
             o.game = ranking.get_game(o)
+
+        if self.request.user.is_authenticated:
+            stats = self.request.user.stats_for_season(season)
+            try:
+                user_index = list(self.get_queryset()).index(stats)
+                context["user_rank"] = user_index + 1
+                user_page = (user_index // self.page_limit) + 1
+                context["user_rank_url"] = updated_query_url(
+                    self.request, {"page": user_page}
+                )
+            except ValueError:
+                pass
 
         return context

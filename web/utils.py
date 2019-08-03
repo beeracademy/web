@@ -1,4 +1,9 @@
-def updated_query_url(request, key, value):
+def updated_query_url(request, updates):
     query = request.GET.copy()
-    query[key] = value
+    for k, v in updates.items():
+        if v is None:
+            if k in query:
+                del query[k]
+        else:
+            query[k] = v
     return request.path + "?" + query.urlencode()

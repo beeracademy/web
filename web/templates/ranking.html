@@ -17,19 +17,30 @@
 	</li>
 	{% endfor %}
 </ul>
+
+{% if user.is_authenticated %}
+<h3>Your rank: {% spaceless %}
+	{% if user_rank %}
+	<a href="{{ user_rank_url }}">{{ user_rank }}</a>
+	{% else %}
+	-
+	{% endif %}
+{% endspaceless %}</h3>
+{% endif %}
+
 {% endblock %}
 
 {% block thead %}
 <tr>
-	<th>#</th>
-	<th>Username</th>
-	<th>{{ ranking.name }}</th>
+	<th scope="col">#</th>
+	<th scope="col">Username</th>
+	<th scope="col">{{ ranking.name }}</th>
 </tr>
 {% endblock %}
 
 {% block tbody %}
 {% for user_ranking in object_list %}
-<tr data-href="/players/{{ user_ranking.user.id }}/">
+<tr data-href="/players/{{ user_ranking.user.id }}/"{% if user_ranking.user == user %} class="table-primary"{% endif %}>
 	<td>{{ user_ranking.rank }}</td>
 	<td>{{ user_ranking.user.username }}</td>
 	<td>{% include "utils/link.html" with text=user_ranking.value prefix="/games" id=user_ranking.game.id %}</td>
