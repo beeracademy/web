@@ -19,6 +19,9 @@ def get_user_image_path(self, filename):
 class User(AbstractUser):
     objects = CaseInsensitiveUserManager()
 
+    class Meta:
+        ordering = ("username",)
+
     email = models.EmailField(blank=True)
     image = models.ImageField(upload_to=get_user_image_path, blank=True, null=True)
     old_password_hash = models.CharField(max_length=60, blank=True)
@@ -42,20 +45,141 @@ class User(AbstractUser):
 
         return super().check_password(raw_password)
 
+    def total_game_count(self):
+        return self.gameplayer_set.count()
 
-FIRST_SEASON_START = datetime.date(2013, 1, 1)
+    def current_season_game_count(self):
+        season = Season.current_season()
+        return self.gameplayer_set.filter(
+            game__start_datetime__gte=season.start_date,
+            game__end_datetime__isnull=False,
+        ).count()
+
+    def stats_for_season(self, season):
+        games = self.gameplayer_set.filter(
+            game__start_datetime__gte=season.start_date,
+            game__end_datetime__lte=season.end_date,
+        )
+
+        stats = {}
+        stats["total_games"] = games.count()
+        stats["total_time_played"] = datetime.timedelta(0)
+        stats["total_sips"] = 0
+        stats["total_chugs"] = 0
+        best_game = (-float("inf"), None)
+        worst_game = (float("inf"), None)
+        fastest_chug = None
+        total_chug_time = 0
+
+        for gameplayer in games.all():
+            game = gameplayer.game
+
+            if game.get_state() == Game.State.ENDED:
+                player_index = game.ordered_players().index(self)
+                stats["total_time_played"] += game.get_duration()
+
+                game_sips = 0
+
+                for i, c in enumerate(game.ordered_cards()):
+                    if i % game.players.count() == player_index:
+                        game_sips += c.value
+                        if c.value == 14:
+                            chug_time = c.chug.duration_in_milliseconds
+                            stats["total_chugs"] += 1
+                            total_chug_time += chug_time
+                            if (
+                                not fastest_chug
+                                or chug_time < fastest_chug.duration_in_milliseconds
+                            ):
+                                fastest_chug = c.chug
+
+                stats["total_sips"] += game_sips
+
+                combined = (game_sips, game)
+                best_game = max(best_game, combined)
+                worst_game = min(worst_game, combined)
+
+        hours_played = stats["total_time_played"].total_seconds() / (60 * 60)
+        stats["approx_ects"] = hours_played / 28
+
+        stats["best_game_sips"] = None
+        stats["best_game_id"] = None
+        stats["worst_game_sips"] = None
+        stats["worst_game_id"] = None
+        stats["average_game_sips"] = None
+        if stats["total_games"] > 0:
+            stats["best_game_sips"] = best_game[0]
+            stats["best_game_id"] = best_game[1].id
+            stats["worst_game_sips"] = worst_game[0]
+            stats["worst_game_id"] = worst_game[1].id
+            stats["average_game_sips"] = stats["total_sips"] / stats["total_games"]
+
+        stats["fastest_chug_time"] = None
+        stats["fastest_chug_game_id"] = None
+        stats["average_chug_time"] = None
+        if stats["total_chugs"] > 0:
+            stats["fastest_chug_time"] = fastest_chug.duration_in_milliseconds
+            stats["fastest_chug_game_id"] = fastest_chug.card.game.id
+            stats["average_chug_time"] = total_chug_time / stats["total_chugs"]
+
+        return stats
 
 
-def get_season_from_date(date):
-    season = (date.year - FIRST_SEASON_START.year) * 2 + 1
-    if date.month >= 7:
-        season += 1
+class Season:
+    FIRST_SEASON_START = datetime.date(2013, 1, 1)
 
-    return season
+    def __init__(self, number):
+        self.number = number
+
+    def __str__(self):
+        return f"Season {self.number}"
+
+    @property
+    def start_date(self):
+        extra_half_years = self.number - 1
+        date = self.FIRST_SEASON_START
+        date = date.replace(year=date.year + extra_half_years // 2)
+        if extra_half_years % 2 == 1:
+            date = date.replace(month=7)
+        return date
+
+    @property
+    def end_date(self):
+        return Season(self.number + 1).start_date - datetime.timedelta(days=1)
+
+    @classmethod
+    def season_from_date(cls, date):
+        year_diff = date.year - cls.FIRST_SEASON_START.year
+        season_number = year_diff * 2 + 1
+        if date.month >= 7:
+            season_number += 1
+
+        return Season(season_number)
+
+    @classmethod
+    def current_season(cls):
+        return cls.season_from_date(datetime.date.today())
+
+    @classmethod
+    def is_valid_season_number(cls, number):
+        try:
+            number = int(number)
+        except (ValueError, TypeError):
+            return False
+
+        return 1 <= number <= Season.current_season().number
 
 
-def get_current_season():
-    return get_season_from_date(datetime.date.today())
+class _AllTimeSeason:
+    number = ""
+    start_date = Season.FIRST_SEASON_START
+    end_date = Season.current_season().end_date
+
+    def __str__(self):
+        return "All time"
+
+
+all_time_season = _AllTimeSeason()
 
 
 class Game(models.Model):
@@ -84,10 +208,13 @@ class Game(models.Model):
         if not self.end_datetime:
             return None
 
-        return get_season_from_date(self.end_datetime)
+        return Season.season_from_date(self.end_datetime)
 
-    def season_str(self):
-        return self.get_season() or "-"
+    def season_number_str(self):
+        season = self.get_season()
+        if not season:
+            return "-"
+        return str(season.number)
 
     def get_duration(self):
         if not self.end_datetime:

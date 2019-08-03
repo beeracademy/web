@@ -4,7 +4,7 @@ from django.contrib.auth.views import LoginView, LogoutView
 from django.views.generic.detail import DetailView
 from django.views.generic.list import ListView
 from django.core.paginator import Paginator
-from games.models import Game
+from games.models import User, Game, Season, all_time_season
 
 
 def index(request):
@@ -39,3 +39,27 @@ class GamesView(PaginatedListView):
 class GameDetailView(DetailView):
     model = Game
     template_name = "game_detail.html"
+
+
+class PlayersView(PaginatedListView):
+    model = User
+    template_name = "player_list.html"
+
+
+class PlayerDetailView(DetailView):
+    model = User
+    template_name = "player_detail.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        season_number = self.request.GET.get("season")
+        if Season.is_valid_season_number(season_number):
+            season = Season(int(season_number))
+        else:
+            season = all_time_season
+        context["season"] = season
+
+        context["stats"] = self.object.stats_for_season(season)
+
+        return context

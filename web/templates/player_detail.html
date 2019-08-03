@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h1>{{ object.username }}</h1>
+
+<img src="{{ object.image }}" alt="Profile picture">
+
+<div class="dropdown">
+	<button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+	{{ season }}
+	</button>
+	<div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+		{% for season in menu_seasons %}
+		<a class="dropdown-item" href="?season={{ season.number }}">{{ season }}</a>
+		{% endfor %}
+	</div>
+</div>
+
+<div class="container">
+	<div class="row">
+		<div class="col">
+			<table class="table table-bordered table-striped table-sm">
+				<tbody>
+					<tr>
+						<th>Games played</th>
+						<td>{{ stats.total_games }}</td>
+					</tr>
+					<tr>
+						<th>Total time played</th>
+						<td>{{ stats.total_time_played }} (~ {{ stats.approx_ects|floatformat:1 }} ECTS)</td>
+					</tr>
+					<tr>
+						<th>Estimated money spent</th>
+						<td>{{ stats.approx_money_spent }}</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+		<div class="col"></div>
+	</div>
+	<div class="row">
+		<div class="col">
+			<table class="table table-bordered table-striped table-sm">
+				<tbody>
+					<tr>
+						<th>Total sips</th>
+						<td>{{ stats.total_sips }}</td>
+					</tr>
+					<tr>
+						<th>Best game</th>
+						<td><a href="/games/{{ stats.best_game_id }}">{{ stats.best_game_sips }}</a></td>
+					</tr>
+					<tr>
+						<th>Worst game</th>
+						<td><a href="/games/{{ stats.worst_game_id }}">{{ stats.worst_game_sips }}</a></td>
+					</tr>
+					<tr>
+						<th>Average game</th>
+						<td>{{ stats.average_game_sips }}</a></td>
+					</tr>
+					<tr>
+						<th>Total chugs</th>
+						<td>{{ stats.total_chugs }}</td>
+					</tr>
+					<tr>
+						<th>Fastest chug time</th>
+						<td><a href="/games/{{ stats.fastest_chug_game_id }}">{{ stats.fastest_chug_time }}</a></td>
+					</tr>
+					<tr>
+						<th>Average chug time</th>
+						<td>{{ stats.average_chug_time }}</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+		<div class="col">
+			Same but for ranking...
+		</div>
+	</div>
+</div>
+
+{% endblock %}

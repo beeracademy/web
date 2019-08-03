@@ -39,10 +39,8 @@
 						<li class="nav-item dropdown">
 							<a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Ranking</a>
 							<div class="dropdown-menu">
-								<a class="dropdown-item" href="/ranking/">All time</a>
-								{% for i in seasons %}
-								<a class="dropdown-item" href="/ranking/{{i}}">Season {{i}}{% if forloop.first %}
-									(Current){% endif %}</a>
+								{% for season in menu_seasons %}
+								<a class="dropdown-item" href="/ranking/{{ season.number }}">{{ season }}</a>
 								{% endfor %}
 							</div>
 						</li>
