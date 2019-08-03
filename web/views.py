@@ -121,6 +121,11 @@ def django_getattr(obj, key):
     return obj
 
 
+class PlayerSettingsView(DetailView):
+    model = User
+    template_name = "player_settings.html"
+
+
 class Ranking:
     def __init__(self, name, ordering, game_key=None):
         self.name = name
