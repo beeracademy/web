@@ -40,11 +40,11 @@
 					</tr>
 					<tr>
 						<th>Best game</th>
-						<td>{% include "utils/link.html" with text=stats.best_game_sips prefix="/games" id=stats.best_game_id %}</td>
+						<td>{% include "utils/link.html" with text=stats.best_game_sips prefix="/games" id=stats.best_game.id %}</td>
 					</tr>
 					<tr>
 						<th>Worst game</th>
-						<td>{% include "utils/link.html" with text=stats.worst_game_sips prefix="/games" id=stats.worst_game_id %}</td>
+						<td>{% include "utils/link.html" with text=stats.worst_game_sips prefix="/games" id=stats.worst_game.id %}</td>
 					</tr>
 					<tr>
 						<th>Average game</th>
@@ -56,7 +56,7 @@
 					</tr>
 					<tr>
 						<th>Fastest chug time</th>
-						<td>{% include "utils/link.html" with text=stats.fastest_chug prefix="/games" id=stats.fastest_chug.card.game.id %}</td>
+						<td>{% include "utils/link.html" with text=stats.fastest_chug.duration prefix="/games" id=stats.fastest_chug.card.game.id %}</td>
 					</tr>
 					<tr>
 						<th>Average chug time</th>
