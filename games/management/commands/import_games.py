@@ -126,8 +126,20 @@ class Command(BaseCommand):
                 # and hasn't been imported
                 continue
 
+            if value != Chug.VALUE:
+                print(f"Bad game: {game.id} (chug on card {(value, suit)})")
+                game.delete()
+                continue
+
             card = Card.objects.get(game=game, value=value, suit=suit)
             Chug.objects.create(card=card, duration_in_milliseconds=chug["millis"])
+
+        for game in Game.objects.all():
+            chugs = len(list(game.ordered_chugs()))
+            players = game.players.count()
+            if chugs != players:
+                print(f"Bad game: {game.id} ({chugs} instead of {players} chugs)")
+                game.delete()
 
     def handle(self, *args, **options):
         if options["all"] or options["users"]:
