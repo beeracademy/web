@@ -50,7 +50,7 @@ class PaginatedListView(ListView):
         return context
 
 
-class GamesView(PaginatedListView):
+class GameListView(PaginatedListView):
     model = Game
     template_name = "game_list.html"
 
@@ -72,7 +72,7 @@ class GameDetailView(DetailView):
     template_name = "game_detail.html"
 
 
-class PlayersView(PaginatedListView):
+class PlayerListView(PaginatedListView):
     model = User
     template_name = "player_list.html"
 

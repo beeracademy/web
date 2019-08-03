@@ -1,5 +1,8 @@
+import os
+import pytz
 from django.db import models
 from django.contrib.auth.models import AbstractUser, UserManager
+from django.contrib.staticfiles.templatetags.staticfiles import static
 from django.utils import timezone
 import bcrypt
 import secrets
@@ -14,8 +17,8 @@ class CaseInsensitiveUserManager(UserManager):
         return self.get(**{f"{self.model.USERNAME_FIELD}__iexact": username})
 
 
-def get_user_image_path(self, filename):
-    return f"user_images/{self.id}.jpg"
+def get_user_image_name(user, filename=None):
+    return f"user_images/{user.id}.jpg"
 
 
 def filter_season(qs, season, key=None):
@@ -25,7 +28,7 @@ def filter_season(qs, season, key=None):
         key = ""
     key += "end_datetime"
     return qs.filter(
-        **{f"{key}__gte": season.start_date, f"{key}__lte": season.end_date}
+        **{f"{key}__gte": season.start_datetime, f"{key}__lte": season.end_datetime}
     )
 
 
@@ -174,10 +177,29 @@ class User(AbstractUser):
         ordering = ("username",)
 
     email = models.EmailField(blank=True)
-    image = models.ImageField(upload_to=get_user_image_path, blank=True, null=True)
+    image = models.ImageField(upload_to=get_user_image_name, blank=True, null=True)
     old_password_hash = models.CharField(max_length=60, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
+
+    def save(self, *args, **kwargs):
+        super().save()
+
+        # Ensure that the image file is always saved
+        # at the location governed by get_user_image_name
+        # and deleted when the image is removed.
+        expected_image_name = get_user_image_name(self)
+        expected_image_path = self.image.storage.path(expected_image_name)
+        if self.image:
+            if self.image.path != expected_image_path:
+                os.rename(self.image.path, expected_image_path)
+                self.image.name = expected_image_name
+                super().save()
+        else:
+            try:
+                os.remove(expected_image_path)
+            except FileNotFoundError:
+                pass
 
     def set_password(self, raw_password):
         self.old_password_hash = ""
@@ -206,6 +228,12 @@ class User(AbstractUser):
     def stats_for_season(self, season):
         return PlayerStat.get_or_create(self, season)
 
+    def image_url(self):
+        if self.image:
+            return self.image.url
+        else:
+            return static("user.png")
+
 
 class Season:
     FIRST_SEASON_START = datetime.date(2013, 1, 1)
@@ -217,17 +245,20 @@ class Season:
         return f"Season {self.number}"
 
     @property
-    def start_date(self):
+    def start_datetime(self):
         extra_half_years = self.number - 1
         date = self.FIRST_SEASON_START
         date = date.replace(year=date.year + extra_half_years // 2)
         if extra_half_years % 2 == 1:
             date = date.replace(month=7)
-        return date
+
+        return pytz.utc.localize(datetime.datetime(date.year, date.month, date.day))
 
     @property
-    def end_date(self):
-        return Season(self.number + 1).start_date - datetime.timedelta(days=1)
+    def end_datetime(self):
+        return Season(self.number + 1).start_datetime - datetime.timedelta(
+            microseconds=1
+        )
 
     @classmethod
     def season_from_date(cls, date):
@@ -254,8 +285,8 @@ class Season:
 
 class _AllTimeSeason:
     number = 0
-    start_date = Season.FIRST_SEASON_START
-    end_date = Season.current_season().end_date
+    start_datetime = Season(1).start_datetime
+    end_datetime = Season.current_season().end_datetime
 
     def __str__(self):
         return "All time"

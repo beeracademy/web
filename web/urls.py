@@ -5,9 +5,9 @@ import web.views as views
 urlpatterns = [
     path("", views.index),
     path("about/", views.about),
-    path("games/", views.GamesView.as_view()),
+    path("games/", views.GameListView.as_view()),
     path("games/<int:pk>/", views.GameDetailView.as_view()),
-    path("players/", views.PlayersView.as_view()),
+    path("players/", views.PlayerListView.as_view()),
     path("players/<int:pk>/", views.PlayerDetailView.as_view()),
     path("ranking/", views.RankingView.as_view()),
     path("login/", views.MyLoginView.as_view()),

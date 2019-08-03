@@ -24,6 +24,13 @@ class Command(BaseCommand):
             reader = csv.DictReader(f, dialect="excel-tab")
             return tqdm(list(reader))
 
+    def timestamp_seconds_to_datetime(self, timestamp):
+        d = datetime.datetime.fromtimestamp(int(timestamp))
+        return pytz.utc.localize(d)
+
+    def timestamp_milliseconds_to_datetime(self, timestamp):
+        return self.timestamp_seconds_to_datetime(int(timestamp) / 1000)
+
     def import_users(self):
         print("Importing users...")
         User.objects.all().delete()
@@ -33,8 +40,8 @@ class Command(BaseCommand):
                 username=user["username"],
                 email="" if user["email"] == "NULL" else user["email"],
                 old_password_hash=user["password_hash"],
-                created_at=user["created_at"],
-                updated_at=user["updated_at"],
+                created_at=self.timestamp_seconds_to_datetime(user["created_at"]),
+                updated_at=self.timestamp_seconds_to_datetime(user["updated_at"]),
             )
 
             try:
@@ -44,18 +51,16 @@ class Command(BaseCommand):
             except FileNotFoundError:
                 pass
 
-    def timestamp_to_datetime(self, timestamp):
-        d = datetime.datetime.fromtimestamp(timestamp / 1000)
-        return pytz.utc.localize(d)
-
     def import_games(self):
         print("Importing games...")
         Game.objects.all().delete()
         for game in self.get_rows("game"):
             Game.objects.create(
                 id=game["id"],
-                start_datetime=self.timestamp_to_datetime(int(game["starttime"])),
-                end_datetime=self.timestamp_to_datetime(int(game["time"])),
+                start_datetime=self.timestamp_milliseconds_to_datetime(
+                    game["starttime"]
+                ),
+                end_datetime=self.timestamp_milliseconds_to_datetime(game["time"]),
                 description=game["description"],
                 sips_per_beer=game["sips"],
                 official=game["official"] == "\x01",
