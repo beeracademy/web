@@ -76,6 +76,9 @@ def get_season(request):
 class PlayerDetailView(DetailView):
     model = User
     template_name = "player_detail.html"
+    # Without this, django will set context["user"] to the viewed user,
+    # overriding the current user
+    context_object_name = "_unused"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
