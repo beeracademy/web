@@ -57,7 +57,9 @@ class Command(BaseCommand):
         for game in self.get_rows("game"):
             Game.objects.create(
                 id=game["id"],
-                start_datetime=self.timestamp_milliseconds_to_datetime(game["starttime"]),
+                start_datetime=self.timestamp_milliseconds_to_datetime(
+                    game["starttime"]
+                ),
                 end_datetime=self.timestamp_milliseconds_to_datetime(game["time"]),
                 description=game["description"],
                 sips_per_beer=game["sips"],
