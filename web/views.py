@@ -169,7 +169,5 @@ class RankingView(PaginatedListView):
             o.rank = start_index + i
             o.value = ranking.get_value(o)
             o.game = ranking.get_game(o)
-            print(ranking.game_key)
-            print(o.best_game, o.game)
 
         return context
