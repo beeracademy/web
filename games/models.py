@@ -245,11 +245,13 @@ class Season:
         if extra_half_years % 2 == 1:
             date = date.replace(month=7)
 
-        return pytz.utc.localize(datetime.datetime.combine(date, datetime.datetime.min.time()))
+        return pytz.utc.localize(datetime.datetime(date.year, date.month, date.day))
 
     @property
     def end_datetime(self):
-        return Season(self.number + 1).start_datetime - datetime.timedelta(microseconds=1)
+        return Season(self.number + 1).start_datetime - datetime.timedelta(
+            microseconds=1
+        )
 
     @classmethod
     def season_from_date(cls, date):
