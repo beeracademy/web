@@ -13,7 +13,6 @@ djangorestframework = "*"
 django-filter = "*"
 tqdm = "*"
 "django-bootstrap4" = "*"
-pre-commit = "*"
 
 [dev-packages]
 
