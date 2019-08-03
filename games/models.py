@@ -1,6 +1,5 @@
 import os
 from django.db import models
-from django.core.files.storage import FileSystemStorage
 from django.contrib.auth.models import AbstractUser, UserManager
 from django.utils import timezone
 import bcrypt
@@ -16,17 +15,8 @@ class CaseInsensitiveUserManager(UserManager):
         return self.get(**{f"{self.model.USERNAME_FIELD}__iexact": username})
 
 
-def get_user_image_path(self, filename):
-    return f"user_images/{self.id}.jpg"
-
-
-class DeterministicFileSystemStorage(FileSystemStorage):
-    def save(self, name, content, max_length=None):
-        new_name = super().save(name, content, max_length)
-        if new_name != name:
-            os.rename(self.path(new_name), self.path(name))
-
-        return name
+def get_user_image_name(user, filename=None):
+    return f"user_images/{user.id}.jpg"
 
 
 def filter_season(qs, season, key=None):
@@ -185,15 +175,29 @@ class User(AbstractUser):
         ordering = ("username",)
 
     email = models.EmailField(blank=True)
-    image = models.ImageField(
-        upload_to=get_user_image_path,
-        storage=DeterministicFileSystemStorage(),
-        blank=True,
-        null=True,
-    )
+    image = models.ImageField(upload_to=get_user_image_name, blank=True, null=True)
     old_password_hash = models.CharField(max_length=60, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
+
+    def save(self, *args, **kwargs):
+        super().save()
+
+        # Ensure that the image file is always saved
+        # at the location governed by get_user_image_name
+        # and deleted when the image is removed.
+        expected_image_name = get_user_image_name(self)
+        expected_image_path = self.image.storage.path(expected_image_name)
+        if self.image:
+            if self.image.path != expected_image_path:
+                os.rename(self.image.path, expected_image_path)
+                self.image.name = expected_image_name
+                super().save()
+        else:
+            try:
+                os.remove(expected_image_path)
+            except FileNotFoundError:
+                pass
 
     def set_password(self, raw_password):
         self.old_password_hash = ""
