@@ -15,6 +15,17 @@
 	</li>
 	{% endfor %}
 </ul>
+
+{% if user.is_authenticated %}
+<h3>Your rank: {% spaceless %}
+	{% if user_rank %}
+	<a href="{{ user_rank_url }}">{{ user_rank }}</a>
+	{% else %}
+	-
+	{% endif %}
+{% endspaceless %}</h3>
+{% endif %}
+
 {% endblock %}
 
 {% block thead %}

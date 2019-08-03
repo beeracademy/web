@@ -184,4 +184,16 @@ class RankingView(PaginatedListView):
             o.value = ranking.get_value(o)
             o.game = ranking.get_game(o)
 
+        if self.request.user.is_authenticated:
+            stats = self.request.user.stats_for_season(season)
+            try:
+                user_index = list(self.get_queryset()).index(stats)
+                context["user_rank"] = user_index + 1
+                user_page = (user_index // self.page_limit) + 1
+                context["user_rank_url"] = updated_query_url(
+                    self.request, {"page": user_page}
+                )
+            except ValueError:
+                pass
+
         return context
