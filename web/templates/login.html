@@ -3,18 +3,20 @@
 {% load bootstrap4 %}
 
 {% block content %}
-<div class="row">
-	<div class="mx-auto card col-md-6">
-		<div class="card-body">
-			<h3 class="card-title">Login</h3>
-			<form action="/login/" method="post" class="form">
-				{% csrf_token %}
-				{% bootstrap_form form %}
-				{% buttons %}
-				<br>
-				<button type="submit" class="btn btn-primary col-12 text-big" style="font-size: 24px;">Login</button>
-				{% endbuttons %}
-			</form>
+<div class="container">
+	<div class="row">
+		<div class="mx-auto card col-md-6">
+			<div class="card-body">
+				<h3 class="card-title">Login</h3>
+				<form action="/login/" method="post" class="form">
+					{% csrf_token %}
+					{% bootstrap_form form %}
+					{% buttons %}
+					<br>
+					<button type="submit" class="btn btn-primary col-12 text-big" style="font-size: 24px;">Login</button>
+					{% endbuttons %}
+				</form>
+			</div>
 		</div>
 	</div>
 </div>

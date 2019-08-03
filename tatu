@@ -1,0 +1,191 @@
+[1mdiff --git a/static/css/styles.css b/static/css/styles.css[m
+[1mindex 1225f3f..e302971 100644[m
+[1m--- a/static/css/styles.css[m
+[1m+++ b/static/css/styles.css[m
+[36m@@ -21,4 +21,4 @@[m [ma {[m
+ [m
+ a:hover {[m
+     color: #9b0615;[m
+[31m-}[m
+\ No newline at end of file[m
+[32m+[m[32m}[m
+[1mdiff --git a/web/templates/base.html b/web/templates/base.html[m
+[1mindex da16b67..fff4eb6 100644[m
+[1m--- a/web/templates/base.html[m
+[1m+++ b/web/templates/base.html[m
+[36m@@ -23,20 +23,21 @@[m
+ 				</button>[m
+ 				<div class="collapse navbar-collapse" id="navbarNavAltMarkup">[m
+ 					<div class="navbar-nav">[m
+[31m-						<a class="nav-item nav-link" href="/games/">Games</a>[m
+[31m-						<a class="nav-item nav-link" href="/players/">Players</a>[m
+[31m-						<a class="nav-item nav-link" href="/ranking/">Ranking</a>[m
+[31m-						<a class="nav-item nav-link" href="/about/">About</a>[m
+[32m+[m						[32m<a class="nav-item nav-link" href="/games/">Games<i class="fas fa-gamepad float-right d-lg-none"></i></a>[m
+[32m+[m						[32m<a class="nav-item nav-link" href="/players/">Players<i class="fas fa-users float-right d-lg-none"></i></a>[m
+[32m+[m						[32m<a class="nav-item nav-link" href="/ranking/">Ranking<i class="fas fa-trophy float-right d-lg-none"></i></a>[m
+[32m+[m						[32m<a class="nav-item nav-link" href="/about/">About<i class="fas fa-info float-right d-lg-none"></i></a>[m
+ 						{% if user.is_authenticated %}[m
+[31m-							<a class="nav-item nav-link" href="/players/{{ user.id }}/">My Profile</a>[m
+[31m-							<a class="nav-item nav-link" href="/logout/">Logout ({{ user.get_username }})</a>[m
+[32m+[m							[32m<a class="nav-item nav-link" href="/players/{{ user.id }}/">My Profile<i class="fas fa-user float-right d-lg-none"></i></a>[m
+[32m+[m							[32m<a class="nav-item nav-link" href="/logout/">Logout ({{ user.get_username }})<i class="fas fa-sign-out-alt float-right d-lg-none"></i></a>[m
+ 						{% else %}[m
+[31m-							<a class="nav-item nav-link" href="/login/">Login</a>[m
+[32m+[m							[32m<a class="nav-item nav-link" href="/login/">Login<i class="fas fa-sign-in-alt float-right d-lg-none"></i></a>[m
+ 						{% endif %}[m
+ [m
+[32m+[m						[32m<a class="nav-item nav-link d-lg-none" href="http://localhost:4200/">Play!<i class="fas fa-play float-right"></i></a>[m
+ 					</div>[m
+ 				</div>[m
+[31m-				<a href="http://192.168.1.64:4200/" class="btn btn-danger btn-lg active d-none d-lg-block" role="button" aria-pressed="true">Play!</a>[m
+[32m+[m				[32m<a href="http://localhost:4200/" class="btn btn-danger btn-lg active d-none d-lg-block" role="button" aria-pressed="true">Play!</a>[m
+ 			</div>[m
+ 		</nav>[m
+ [m
+[1mdiff --git a/web/templates/index.html b/web/templates/index.html[m
+[1mindex 77ea9f0..69ec08c 100644[m
+[1m--- a/web/templates/index.html[m
+[1m+++ b/web/templates/index.html[m
+[36m@@ -2,26 +2,29 @@[m
+ [m
+ {% block content %}[m
+ [m
+[31m-<div class="row">[m
+[31m-    <div class="card col-md-3 m-auto">[m
+[31m-        <div class="card-body text-center">[m
+[31m-            <i class="fas fa-gamepad fa-3x"></i>[m
+[31m-            <p class="card-title">Games played</p>[m
+[31m-            <h4 class="card-text">0</h4>[m
+[32m+[m[32m<div class="container">[m
+[32m+[m[32m    <div class="row">[m
+[32m+[m
+[32m+[m[32m        <div class="card col-md-3 m-auto">[m
+[32m+[m[32m            <div class="card-body text-center">[m
+[32m+[m[32m                <i class="fas fa-gamepad fa-3x"></i>[m
+[32m+[m[32m                <p class="card-title">Games played</p>[m
+[32m+[m[32m                <h4 class="card-text">0</h4>[m
+[32m+[m[32m            </div>[m
+         </div>[m
+[31m-    </div>[m
+[31m-    <div class="card col-md-3 m-auto">[m
+[31m-        <div class="card-body text-center">[m
+[31m-            <i class="fas fa-beer fa-3x"></i>[m
+[31m-            <p class="card-title">Beers consumed</p>[m
+[31m-            <h4 class="card-text">0</h4>[m
+[32m+[m[32m        <div class="card col-md-3 m-auto">[m
+[32m+[m[32m            <div class="card-body text-center">[m
+[32m+[m[32m                <i class="fas fa-beer fa-3x"></i>[m
+[32m+[m[32m                <p class="card-title">Beers consumed</p>[m
+[32m+[m[32m                <h4 class="card-text">0</h4>[m
+[32m+[m[32m            </div>[m
+         </div>[m
+[31m-    </div>[m
+[31m-    <div class="card col-md-3 m-auto">[m
+[31m-        <div class="card-body text-center">[m
+[31m-            <i class="fas fa-calendar-alt fa-3x"></i>[m
+[31m-            <p class="card-title">Current season</p>[m
+[31m-            <h4 class="card-text">0</h4>[m
+[32m+[m[32m        <div class="card col-md-3 m-auto">[m
+[32m+[m[32m            <div class="card-body text-center">[m
+[32m+[m[32m                <i class="fas fa-calendar-alt fa-3x"></i>[m
+[32m+[m[32m                <p class="card-title">Current season</p>[m
+[32m+[m[32m                <h4 class="card-text">0</h4>[m
+[32m+[m[32m            </div>[m
+         </div>[m
+     </div>[m
+ </div>[m
+[1mdiff --git a/web/templates/login.html b/web/templates/login.html[m
+[1mindex 2849838..20084d3 100644[m
+[1m--- a/web/templates/login.html[m
+[1m+++ b/web/templates/login.html[m
+[36m@@ -3,18 +3,20 @@[m
+ {% load bootstrap4 %}[m
+ [m
+ {% block content %}[m
+[31m-<div class="row">[m
+[31m-	<div class="mx-auto card col-md-6">[m
+[31m-		<div class="card-body">[m
+[31m-			<h3 class="card-title">Login</h3>[m
+[31m-			<form action="/login/" method="post" class="form">[m
+[31m-				{% csrf_token %}[m
+[31m-				{% bootstrap_form form %}[m
+[31m-				{% buttons %}[m
+[31m-				<br>[m
+[31m-				<button type="submit" class="btn btn-primary col-12 text-big" style="font-size: 24px;">Login</button>[m
+[31m-				{% endbuttons %}[m
+[31m-			</form>[m
+[32m+[m[32m<div class="container">[m
+[32m+[m	[32m<div class="row">[m
+[32m+[m		[32m<div class="mx-auto card col-md-6">[m
+[32m+[m			[32m<div class="card-body">[m
+[32m+[m				[32m<h3 class="card-title">Login</h3>[m
+[32m+[m				[32m<form action="/login/" method="post" class="form">[m
+[32m+[m					[32m{% csrf_token %}[m
+[32m+[m					[32m{% bootstrap_form form %}[m
+[32m+[m					[32m{% buttons %}[m
+[32m+[m					[32m<br>[m
+[32m+[m					[32m<button type="submit" class="btn btn-primary col-12 text-big" style="font-size: 24px;">Login</button>[m
+[32m+[m					[32m{% endbuttons %}[m
+[32m+[m				[32m</form>[m
+[32m+[m			[32m</div>[m
+ 		</div>[m
+ 	</div>[m
+ </div>[m
+[1mdiff --git a/web/templates/player_detail.html b/web/templates/player_detail.html[m
+[1mindex f308b54..ecab3b3 100644[m
+[1m--- a/web/templates/player_detail.html[m
+[1m+++ b/web/templates/player_detail.html[m
+[36m@@ -2,7 +2,7 @@[m
+ [m
+ {% block content %}[m
+ [m
+[31m-<h4><i class="fas fa-cogs"></i> Settings</h4>[m
+[32m+[m[32m<h2><i class="fas fa-cogs"></i> Settings</h2>[m
+ [m
+ <hr>[m
+ [m
+[36m@@ -29,7 +29,7 @@[m
+ 	</div>[m
+ </div>[m
+ [m
+[31m-<h4><i class="fas fa-chart-pie"></i> Stats</h4>[m
+[32m+[m[32m<h2><i class="fas fa-chart-pie"></i> Stats</h2>[m
+ <hr>[m
+ [m
+ {% include "season_chooser.html" %}[m
+[1mdiff --git a/web/templates/player_list.html b/web/templates/player_list.html[m
+[1mindex 6141a14..fd77ce3 100644[m
+[1m--- a/web/templates/player_list.html[m
+[1m+++ b/web/templates/player_list.html[m
+[36m@@ -1,6 +1,6 @@[m
+ {% extends "paginated_list_view.html" %}[m
+ [m
+[31m-{% block title %}<i class="fas fa-user"></i> Players{% endblock %}[m
+[32m+[m[32m{% block title %}<i class="fas fa-users"></i> Players{% endblock %}[m
+ [m
+ {% block thead %}[m
+ <br>[m
+[1mdiff --git a/web/templates/ranking.html b/web/templates/ranking.html[m
+[1mindex 99f3cfd..489ae9c 100644[m
+[1m--- a/web/templates/ranking.html[m
+[1m+++ b/web/templates/ranking.html[m
+[36m@@ -18,6 +18,7 @@[m
+ 	{% endfor %}[m
+ </ul>[m
+ [m
+[32m+[m[32m<br>[m
+ {% if user.is_authenticated %}[m
+ <h3>Your rank: {% spaceless %}[m
+ 	{% if user_rank %}[m
+[1mdiff --git a/web/templates/season_chooser.html b/web/templates/season_chooser.html[m
+[1mindex d4ce577..8df7171 100644[m
+[1m--- a/web/templates/season_chooser.html[m
+[1m+++ b/web/templates/season_chooser.html[m
+[36m@@ -1,5 +1,5 @@[m
+ <div class="dropdown">[m
+[31m-	<button class="btn btn-danger dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">[m
+[32m+[m	[32m<button class="btn btn-danger dropdown-toggle col-md-auto" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">[m
+ 	{{ season }}[m
+ 	</button>[m
+ 	<div class="dropdown-menu" aria-labelledby="dropdownMenuButton">[m
