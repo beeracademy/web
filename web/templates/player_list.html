@@ -1,8 +1,9 @@
 {% extends "paginated_list_view.html" %}
 
-{% block title %}Players{% endblock %}
+{% block title %}<i class="fas fa-user"></i> Players{% endblock %}
 
 {% block thead %}
+<br>
 <tr>
 	<th scope="col">Username</th>
 	<th scope="col">Games Played in {{ current_season }}</th>

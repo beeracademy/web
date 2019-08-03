@@ -2,72 +2,95 @@
 
 {% block content %}
 
-<h1>{{ object.username }}</h1>
+<h4><i class="fas fa-cogs"></i> Settings</h4>
 
-<img src="{{ object.image }}" alt="Profile picture">
+<hr>
+
+<div class="row">
+	<div class="col-md-6">
+		<img src="{{ object.image }}" alt="Profile picture"><br>
+		<button class="btn btn-primary">Upload image</button>
+		<button class="btn btn-danger">Delete</button>
+		<br><br>
+	</div>
+	<div class="col-md-6">
+		<form>
+			<div class="form-group">
+				<label for="username">Username</label>
+				<input type="text" class="form-control" id="username" value="{{ object.username }}">
+			</div>
+			<div class="form-group">
+				<label for="password">New password</label>
+				<input type="password" class="form-control" id="password" placeholder="New password">
+			</div>
+			<button type="submit" class="btn btn-primary">Save</button>
+		</form>
+		<br>
+	</div>
+</div>
+
+<h4><i class="fas fa-chart-pie"></i> Stats</h4>
+<hr>
 
 {% include "season_chooser.html" %}
 
-<div class="container">
-	<div class="row">
-		<div class="col">
-			<table class="table table-bordered table-striped table-sm">
-				<tbody>
-					<tr>
-						<th scope="row">Games played</th>
-						<td>{{ stats.total_games }}</td>
-					</tr>
-					<tr>
-						<th scope="row">Total time played</th>
-						<td>{{ stats.total_time_played }} (~ {{ stats.approx_ects|floatformat:1 }} ECTS)</td>
-					</tr>
-					<tr>
-						<th scope="row">Estimated money spent</th>
-						<td>{{ stats.approx_money_spent }}</td>
-					</tr>
-				</tbody>
-			</table>
-		</div>
-		<div class="col"></div>
+<br>
+
+<div class="row">
+	<div class="col-md-6">
+		<table class="table table-bordered table-striped table-sm">
+			<tbody>
+				<tr>
+					<th>Games played</th>
+					<td>{{ stats.total_games }}</td>
+				</tr>
+				<tr>
+					<th>Total time played</th>
+					<td>{{ stats.total_time_played }} (~ {{ stats.approx_ects|floatformat:1 }} ECTS)</td>
+				</tr>
+				<tr>
+					<th>Estimated money spent</th>
+					<td>{{ stats.approx_money_spent }}</td>
+				</tr>
+			</tbody>
+		</table>
 	</div>
-	<div class="row">
-		<div class="col">
-			<table class="table table-bordered table-striped table-sm">
-				<tbody>
-					<tr>
-						<th scope="row">Total sips</th>
-						<td>{{ stats.total_sips }} ({{ stats.total_beers }} beers)</td>
-					</tr>
-					<tr>
-						<th scope="row">Best game</th>
-						<td>{% include "utils/link.html" with text=stats.best_game_sips prefix="/games" id=stats.best_game.id %}</td>
-					</tr>
-					<tr>
-						<th scope="row">Worst game</th>
-						<td>{% include "utils/link.html" with text=stats.worst_game_sips prefix="/games" id=stats.worst_game.id %}</td>
-					</tr>
-					<tr>
-						<th scope="row">Average game</th>
-						<td>{% firstof stats.average_game_sips "-" %}</a></td>
-					</tr>
-					<tr>
-						<th scope="row">Total chugs</th>
-						<td>{{ stats.total_chugs }}</td>
-					</tr>
-					<tr>
-						<th scope="row">Fastest chug time</th>
-						<td>{% include "utils/link.html" with text=stats.fastest_chug.duration prefix="/games" id=stats.fastest_chug.card.game.id %}</td>
-					</tr>
-					<tr>
-						<th scope="row">Average chug time</th>
-						<td>{% firstof stats.average_chug_time "-" %}</td>
-					</tr>
-				</tbody>
-			</table>
-		</div>
-		<div class="col">
-			Same but for ranking...
-		</div>
+	<div class="col-md-6">
+		<table class="table table-bordered table-striped table-sm">
+			<tbody>
+				<tr>
+					<th>Total sips</th>
+					<td>{{ stats.total_sips }} ({{ stats.total_beers }} beers)</td>
+				</tr>
+				<tr>
+					<th>Best game</th>
+					<td>{% include "utils/link.html" with text=stats.best_game_sips prefix="/games" id=stats.best_game.id %}
+					</td>
+				</tr>
+				<tr>
+					<th>Worst game</th>
+					<td>{% include "utils/link.html" with text=stats.worst_game_sips prefix="/games" id=stats.worst_game.id %}
+					</td>
+				</tr>
+				<tr>
+					<th>Average game</th>
+					<td>{% firstof stats.average_game_sips "-" %}</a></td>
+				</tr>
+				<tr>
+					<th>Total chugs</th>
+					<td>{{ stats.total_chugs }}</td>
+				</tr>
+				<tr>
+					<th>Fastest chug time</th>
+					<td>{% include "utils/link.html" with text=stats.fastest_chug.duration prefix="/games" id=stats.fastest_chug.card.game.id %}
+					</td>
+				</tr>
+				<tr>
+					<th>Average chug time</th>
+					<td>{% firstof stats.average_chug_time "-" %}</td>
+				</tr>
+			</tbody>
+		</table>
 	</div>
 </div>
 

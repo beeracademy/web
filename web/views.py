@@ -11,6 +11,10 @@ def index(request):
     return render(request, "index.html")
 
 
+def about(request):
+    return render(request, "about.html")
+
+
 class MyLoginView(LoginView):
     template_name = "login.html"
 
@@ -131,7 +135,7 @@ class RankingView(PaginatedListView):
         Ranking("Worst game", "worst_game_sips", "worst_game"),
         Ranking("Total chugs", "-total_chugs"),
         Ranking(
-            "Fastest chug time",
+            "Fastest chug",
             "fastest_chug__duration_in_milliseconds",
             "fastest_chug__card__game",
         ),

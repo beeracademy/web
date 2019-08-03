@@ -1,10 +1,12 @@
 {% extends "paginated_list_view.html" %}
 
-{% block title %}Ranking{% endblock %}
+{% block title %}<i class="fas fa-trophy"></i> Ranking{% endblock %}
 
 {% block beforetable %}
 
 {% include "season_chooser.html" %}
+
+<br>
 
 <ul class="nav nav-tabs">
 	{% for name, url in ranking_tabs %}
