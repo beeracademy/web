@@ -5,6 +5,7 @@ import bcrypt
 import secrets
 import datetime
 from enum import Enum, auto
+from operator import itemgetter
 
 
 class CaseInsensitiveUserManager(UserManager):
@@ -63,13 +64,13 @@ class User(AbstractUser):
 
         stats = {}
         stats["total_games"] = games.count()
-        stats["total_time_played"] = datetime.timedelta(0)
+        stats["total_time_played"] = datetime.timedelta()
         stats["total_sips"] = 0
         stats["total_chugs"] = 0
         best_game = (-float("inf"), None)
         worst_game = (float("inf"), None)
         fastest_chug = None
-        total_chug_time = 0
+        total_chug_time = datetime.timedelta()
 
         for gameplayer in games.all():
             game = gameplayer.game
@@ -84,20 +85,17 @@ class User(AbstractUser):
                     if i % game.players.count() == player_index:
                         game_sips += c.value
                         if c.value == 14:
-                            chug_time = c.chug.duration_in_milliseconds
+                            chug_time = c.chug.duration
                             stats["total_chugs"] += 1
                             total_chug_time += chug_time
-                            if (
-                                not fastest_chug
-                                or chug_time < fastest_chug.duration_in_milliseconds
-                            ):
+                            if not fastest_chug or chug_time < fastest_chug.duration:
                                 fastest_chug = c.chug
 
                 stats["total_sips"] += game_sips
 
                 combined = (game_sips, game)
-                best_game = max(best_game, combined)
-                worst_game = min(worst_game, combined)
+                best_game = max(best_game, combined, key=itemgetter(0))
+                worst_game = min(worst_game, combined, key=itemgetter(0))
 
         hours_played = stats["total_time_played"].total_seconds() / (60 * 60)
         stats["approx_ects"] = hours_played / 28
@@ -118,7 +116,7 @@ class User(AbstractUser):
         stats["fastest_chug_game_id"] = None
         stats["average_chug_time"] = None
         if stats["total_chugs"] > 0:
-            stats["fastest_chug_time"] = fastest_chug.duration_in_milliseconds
+            stats["fastest_chug_time"] = fastest_chug.duration
             stats["fastest_chug_game_id"] = fastest_chug.card.game.id
             stats["average_chug_time"] = total_chug_time / stats["total_chugs"]
 
@@ -338,7 +336,7 @@ class Game(models.Model):
             total_drawn[i % n] += 1
             last_sip = (i % n, c.value)
 
-        total_times = [datetime.timedelta(0)] * n
+        total_times = [datetime.timedelta()] * n
         total_done = [0] * n
         for i, dt in enumerate(self.get_turn_durations()):
             total_times[i % n] += dt
@@ -431,9 +429,12 @@ class Chug(models.Model):
     card = models.OneToOneField("Card", on_delete=models.CASCADE, related_name="chug")
     duration_in_milliseconds = models.PositiveIntegerField()
 
+    @property
+    def duration(self):
+        return datetime.timedelta(milliseconds=self.duration_in_milliseconds)
+
     def duration_str(self):
-        td = datetime.timedelta(milliseconds=self.duration_in_milliseconds)
-        return str(td)
+        return str(self.duration)
 
     def card_str(self):
         return "Ace of " + self.card.suit_str()
