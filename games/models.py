@@ -1,6 +1,7 @@
 import os
 import pytz
 from django.db import models
+from django.conf import settings
 from django.contrib.auth.models import AbstractUser, UserManager
 from django.contrib.staticfiles.templatetags.staticfiles import static
 from django.utils import timezone
@@ -10,6 +11,7 @@ import datetime
 from enum import Enum, auto
 from operator import itemgetter
 from tqdm import tqdm
+from PIL import Image
 
 
 class CaseInsensitiveUserManager(UserManager):
@@ -18,7 +20,7 @@ class CaseInsensitiveUserManager(UserManager):
 
 
 def get_user_image_name(user, filename=None):
-    return f"user_images/{user.id}.jpg"
+    return f"user_images/{user.id}.png"
 
 
 def filter_season(qs, season, key=None):
@@ -171,6 +173,8 @@ class PlayerStat(models.Model):
 
 
 class User(AbstractUser):
+    IMAGE_SIZE = (156, 262)
+
     objects = CaseInsensitiveUserManager()
 
     class Meta:
@@ -195,6 +199,10 @@ class User(AbstractUser):
                 os.rename(self.image.path, expected_image_path)
                 self.image.name = expected_image_name
                 super().save()
+
+            image = Image.open(expected_image_path)
+            thumb = image.resize(self.IMAGE_SIZE)
+            thumb.save(expected_image_path)
         else:
             try:
                 os.remove(expected_image_path)
