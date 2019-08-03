@@ -2,6 +2,7 @@
 
 {% block content %}
 
+{% if object == user %}
 <h4><i class="fas fa-cogs"></i> Settings</h4>
 
 <hr>
@@ -28,6 +29,7 @@
 		<br>
 	</div>
 </div>
+{% endif %}
 
 <h4><i class="fas fa-chart-pie"></i> Stats</h4>
 <hr>
