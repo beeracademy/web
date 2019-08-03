@@ -1,5 +1,66 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h1>Hello</h1>
+
+<div class="row">
+    <div class="card col-md-3 m-auto">
+        <div class="card-body text-center">
+            <i class="fas fa-gamepad fa-3x"></i>
+            <p class="card-title">Games played</p>
+            <h4 class="card-text">0</h4>
+        </div>
+    </div>
+    <div class="card col-md-3 m-auto">
+        <div class="card-body text-center">
+            <i class="fas fa-beer fa-3x"></i>
+            <p class="card-title">Beers consumed</p>
+            <h4 class="card-text">0</h4>
+        </div>
+    </div>
+    <div class="card col-md-3 m-auto">
+        <div class="card-body text-center">
+            <i class="fas fa-calendar-alt fa-3x"></i>
+            <p class="card-title">Current season</p>
+            <h4 class="card-text">0</h4>
+        </div>
+    </div>
+</div>
+
+<hr>
+
+<h5>Recently Active Players <i class="fas fa-heart"></i></h5>
+
+<div class="row">
+    <div class="col-3">
+        <img src="static/user.png" class="img-fluid mx-auto d-block" alt="img1">
+    </div>
+    <div class="col-3">
+        <img src="static/user.png" class="img-fluid mx-auto d-block" alt="img2">
+    </div>
+    <div class="col-3">
+        <img src="static/user.png" class="img-fluid mx-auto d-block" alt="img3">
+    </div>
+    <div class="col-3">
+        <img src="static/user.png" class="img-fluid mx-auto d-block" alt="img4">
+    </div>
+</div>
+
+<br>
+
+<h5>Wall Of Shame <i class="fas fa-thumbs-down"></i></h5>
+
+<div class="row">
+    <div class="col-3">
+        <img src="static/user.png" class="img-fluid mx-auto d-block" alt="img1">
+    </div>
+    <div class="col-3">
+        <img src="static/user.png" class="img-fluid mx-auto d-block" alt="img2">
+    </div>
+    <div class="col-3">
+        <img src="static/user.png" class="img-fluid mx-auto d-block" alt="img3">
+    </div>
+    <div class="col-3">
+        <img src="static/user.png" class="img-fluid mx-auto d-block" alt="img4">
+    </div>
+</div>
 {% endblock %}

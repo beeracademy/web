@@ -5,14 +5,12 @@ from django.db import migrations
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('games', '0008_remove_playerstat_fastest_chug_game'),
-    ]
+    dependencies = [("games", "0008_remove_playerstat_fastest_chug_game")]
 
     operations = [
         migrations.RenameField(
-            model_name='playerstat',
-            old_name='total_time_played',
-            new_name='total_time_played_seconds',
-        ),
+            model_name="playerstat",
+            old_name="total_time_played",
+            new_name="total_time_played_seconds",
+        )
     ]

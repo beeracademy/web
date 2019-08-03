@@ -4,6 +4,7 @@ import web.views as views
 
 urlpatterns = [
     path("", views.index),
+    path("about/", views.about),
     path("games/", views.GamesView.as_view()),
     path("games/<int:pk>/", views.GameDetailView.as_view()),
     path("players/", views.PlayersView.as_view()),

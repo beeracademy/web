@@ -121,7 +121,9 @@ class PlayerStat(models.Model):
             self.worst_game = worst_game[1]
 
         if self.total_chugs > 0:
-            self.average_chug_time = (total_chug_time / self.total_chugs).total_seconds()
+            self.average_chug_time = (
+                total_chug_time / self.total_chugs
+            ).total_seconds()
 
         self.save()
 

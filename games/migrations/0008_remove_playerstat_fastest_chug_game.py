@@ -5,13 +5,8 @@ from django.db import migrations
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('games', '0007_playerstat'),
-    ]
+    dependencies = [("games", "0007_playerstat")]
 
     operations = [
-        migrations.RemoveField(
-            model_name='playerstat',
-            name='fastest_chug_game',
-        ),
+        migrations.RemoveField(model_name="playerstat", name="fastest_chug_game")
     ]

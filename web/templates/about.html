@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% load bootstrap4 %}
+
+{% block content %}
+
+<h2><i class="fas fa-gamepad"></i> How to play</h2>
+
+<hr>
+
+Academy is a turn based game. Each player draws a card, the card has a value ranging between 2 and 14. A beverage
+contains the amount of sips which have been chosen at the begining of the game (default: 14).
+Before a player can draw a card, the player has to be at the indicated value of their chosen beverage. If the player in
+question is not at the designated value of sips, the other players have to wait until the player in question is at the
+designated value. When the player is at the indicated value, one of the other players draws a card for the player.
+If the drawn card is an ace a new beverage has to be consumed. This will be timed. The timer starts when the player in
+question starts drinking and stops when the beverage is finished.
+There are many ways to win the game, the most common is winning in consuming most sips in the game, other ways are: to
+drink the most aces, to drink the fastest ace, to have the fastest average round time, etc..
+
+<br>
+
+<h2><i class="fab fa-github"></i> Github</h2>
+
+<hr>
+
+The new academy is open source and the code can be found on <a href="https://github.com/beeracademy"
+    target="_blank">github</a>. Feel free to fork and contribute.
+
+<br>
+
+<h2><i class="fas fa-info-circle"></i> About the game</h2>
+
+<hr>
+
+<h5>2002-2005</h5>
+
+Idea & koncept by Ole Rahbek & Rasmus Kold and coded by Rasmus Kold.
+
+<br>
+<br>
+<h5>2014-2019</h5>
+
+Based on the original Academy coded by FUBR & Cramer.
+
+<br>
+<br>
+<h5>Current</h5>
+
+Based on 2014-2019 academy coded by Asger Drewsen and Jonas Tranberg.
+
+<br>
+<h2><i class="fas fa-phone-volume"></i> Contact</h2>
+
+<hr>
+
+If you have business inquiries or other questions, please fill out the following form to contact us or call our asian
+tech support at <a href="tel:+4550709670">+45 50 70 96 70</a>. Thank you.
+{% endblock %}
