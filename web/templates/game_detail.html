@@ -32,7 +32,7 @@
 {% for stats in object.get_player_stats %}
 <div class="col-md-auto">
     <div class="card">
-        <img class="card-img-top" src="{{ stats.player.image }}" alt="Card image cap">
+        <img class="card-img-top" src="{{ stats.player.image_url }}" alt="Card image cap">
         <ul class="list-group list-group-flush">
             <li class="list-group-item">{{ stats.player.username }}</li>
             <li class="list-group-item">Total sips: {{ stats.total_sips }}</li>

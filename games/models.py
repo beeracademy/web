@@ -2,6 +2,7 @@ import os
 import pytz
 from django.db import models
 from django.contrib.auth.models import AbstractUser, UserManager
+from django.contrib.staticfiles.templatetags.staticfiles import static
 from django.utils import timezone
 import bcrypt
 import secrets
@@ -226,6 +227,12 @@ class User(AbstractUser):
 
     def stats_for_season(self, season):
         return PlayerStat.get_or_create(self, season)
+
+    def image_url(self):
+        if self.image:
+            return self.image.url
+        else:
+            return static("user.png")
 
 
 class Season:
