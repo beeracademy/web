@@ -156,8 +156,9 @@ class PlayerStat(models.Model):
 
     @property
     def approx_ects(self):
-        hours_played = self.total_time_played / (60 * 60)
-        return hours_played / 28
+        HOURS_PER_ECTS = 28
+        hours_played = self.total_time_played_seconds / (60 * 60)
+        return hours_played / HOURS_PER_ECTS
 
     @property
     def approx_money_spent(self):
