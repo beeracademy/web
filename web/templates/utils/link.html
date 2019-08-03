@@ -1,0 +1,1 @@
+{% if not text %}-{% else %}{% if not id %}{{ text }}{% else %}<a href="{{ prefix }}/{{ id }}/">{{ text }}</a>{% endif %}{% endif %}

@@ -6,6 +6,7 @@ import secrets
 import datetime
 from enum import Enum, auto
 from operator import itemgetter
+from tqdm import tqdm
 
 
 class CaseInsensitiveUserManager(UserManager):
@@ -15,6 +16,145 @@ class CaseInsensitiveUserManager(UserManager):
 
 def get_user_image_path(self, filename):
     return f"user_images/{self.id}.jpg"
+
+
+class PlayerStat(models.Model):
+    user = models.ForeignKey("User", on_delete=models.CASCADE)
+    season_number = models.PositiveIntegerField()
+
+    total_games = models.PositiveIntegerField()
+    total_time_played_seconds = models.FloatField()
+
+    total_sips = models.PositiveIntegerField()
+
+    best_game = models.ForeignKey(
+        "Game", on_delete=models.CASCADE, null=True, related_name="+"
+    )
+    worst_game = models.ForeignKey(
+        "Game", on_delete=models.CASCADE, null=True, related_name="+"
+    )
+    best_game_sips = models.PositiveIntegerField(null=True)
+    worst_game_sips = models.PositiveIntegerField(null=True)
+
+    total_chugs = models.PositiveIntegerField()
+
+    fastest_chug = models.ForeignKey(
+        "Chug", on_delete=models.CASCADE, null=True, related_name="+"
+    )
+
+    average_chug_time = models.FloatField(null=True)
+
+    @classmethod
+    def update_all(cls):
+        PlayerStat.objects.all().delete()
+        for season_number in tqdm(range(Season.current_season().number)):
+            cls.update_season(Season(season_number))
+
+    @classmethod
+    def update_season(cls, season):
+        PlayerStat.objects.filter(season_number=season.number).delete()
+        for user in tqdm(User.objects.all()):
+            cls.create(user, season)
+
+    @classmethod
+    def get_or_create(cls, user, season):
+        try:
+            return PlayerStat.objects.get(user=user, season_number=season.number)
+        except PlayerStat.DoesNotExist:
+            return cls.create(user, season)
+
+    @classmethod
+    def create(cls, user, season):
+        ps = PlayerStat(user=user, season_number=season.number)
+        ps.update()
+        return ps
+
+    def update(self):
+        games = self.user.gameplayer_set.filter(
+            game__start_datetime__gte=self.season.start_date,
+            game__end_datetime__lte=self.season.end_date,
+        )
+
+        self.total_games = games.count()
+        total_time_played = datetime.timedelta()
+        self.total_sips = 0
+        self.total_chugs = 0
+        best_game = (-float("inf"), None)
+        worst_game = (float("inf"), None)
+        self.fastest_chug = None
+        total_chug_time = datetime.timedelta()
+
+        for gameplayer in games.all():
+            game = gameplayer.game
+
+            if game.get_state() == Game.State.ENDED:
+                player_index = game.ordered_players().index(self.user)
+                total_time_played += game.get_duration()
+
+                game_sips = 0
+
+                for i, c in enumerate(game.ordered_cards()):
+                    if i % game.players.count() == player_index:
+                        game_sips += c.value
+                        if hasattr(c, "chug"):
+                            chug_time = c.chug.duration
+                            self.total_chugs += 1
+                            total_chug_time += chug_time
+                            if (
+                                not self.fastest_chug
+                                or chug_time < self.fastest_chug.duration
+                            ):
+                                self.fastest_chug = c.chug
+
+                self.total_sips += game_sips
+
+                combined = (game_sips, game)
+                best_game = max(best_game, combined, key=itemgetter(0))
+                worst_game = min(worst_game, combined, key=itemgetter(0))
+
+        self.total_time_played_seconds = total_time_played.total_seconds()
+
+        if self.total_games > 0:
+            self.best_game_sips = best_game[0]
+            self.worst_game_sips = worst_game[0]
+            self.best_game = best_game[1]
+            self.worst_game = worst_game[1]
+
+        if self.total_chugs > 0:
+            self.average_chug_time = (total_chug_time / self.total_chugs).total_seconds()
+
+        self.save()
+
+    @property
+    def season(self):
+        if self.season_number == 0:
+            return all_time_season
+        return Season(self.season_number)
+
+    @property
+    def total_time_played(self):
+        return datetime.timedelta(seconds=self.total_time_played_seconds)
+
+    @property
+    def total_beers(self):
+        return self.total_sips / Game.STANDARD_SIPS_PER_BEER
+
+    @property
+    def approx_ects(self):
+        hours_played = self.total_time_played / (60 * 60)
+        return hours_played / 28
+
+    @property
+    def approx_money_spent(self):
+        AVERAGE_BEER_PRICE_DKK = 10
+        cost = self.total_beers * AVERAGE_BEER_PRICE_DKK
+        return f"{cost} DKK"
+
+    @property
+    def average_game_sips(self):
+        if self.total_games == 0:
+            return None
+        return self.total_sips / self.total_games
 
 
 class User(AbstractUser):
@@ -57,70 +197,7 @@ class User(AbstractUser):
         ).count()
 
     def stats_for_season(self, season):
-        games = self.gameplayer_set.filter(
-            game__start_datetime__gte=season.start_date,
-            game__end_datetime__lte=season.end_date,
-        )
-
-        stats = {}
-        stats["total_games"] = games.count()
-        stats["total_time_played"] = datetime.timedelta()
-        stats["total_sips"] = 0
-        stats["total_chugs"] = 0
-        best_game = (-float("inf"), None)
-        worst_game = (float("inf"), None)
-        fastest_chug = None
-        total_chug_time = datetime.timedelta()
-
-        for gameplayer in games.all():
-            game = gameplayer.game
-
-            if game.get_state() == Game.State.ENDED:
-                player_index = game.ordered_players().index(self)
-                stats["total_time_played"] += game.get_duration()
-
-                game_sips = 0
-
-                for i, c in enumerate(game.ordered_cards()):
-                    if i % game.players.count() == player_index:
-                        game_sips += c.value
-                        if hasattr(c, "chug"):
-                            chug_time = c.chug.duration
-                            stats["total_chugs"] += 1
-                            total_chug_time += chug_time
-                            if not fastest_chug or chug_time < fastest_chug.duration:
-                                fastest_chug = c.chug
-
-                stats["total_sips"] += game_sips
-
-                combined = (game_sips, game)
-                best_game = max(best_game, combined, key=itemgetter(0))
-                worst_game = min(worst_game, combined, key=itemgetter(0))
-
-        hours_played = stats["total_time_played"].total_seconds() / (60 * 60)
-        stats["approx_ects"] = hours_played / 28
-
-        stats["best_game_sips"] = None
-        stats["best_game_id"] = None
-        stats["worst_game_sips"] = None
-        stats["worst_game_id"] = None
-        stats["average_game_sips"] = None
-        if stats["total_games"] > 0:
-            stats["best_game_sips"] = best_game[0]
-            stats["best_game_id"] = best_game[1].id
-            stats["worst_game_sips"] = worst_game[0]
-            stats["worst_game_id"] = worst_game[1].id
-            stats["average_game_sips"] = stats["total_sips"] / stats["total_games"]
-
-        stats["fastest_chug_time"] = None
-        stats["fastest_chug_game_id"] = None
-        stats["average_chug_time"] = None
-        if stats["total_chugs"] > 0:
-            stats["fastest_chug_time"] = fastest_chug.duration
-            stats["fastest_chug_game_id"] = fastest_chug.card.game.id
-            stats["average_chug_time"] = total_chug_time / stats["total_chugs"]
-
-        return stats
+        return PlayerStat.get_or_create(self, season)
 
 
 class Season:
@@ -169,7 +246,7 @@ class Season:
 
 
 class _AllTimeSeason:
-    number = ""
+    number = 0
     start_date = Season.FIRST_SEASON_START
     end_date = Season.current_season().end_date
 
@@ -182,6 +259,7 @@ all_time_season = _AllTimeSeason()
 
 class Game(models.Model):
     TOTAL_ROUNDS = 13
+    STANDARD_SIPS_PER_BEER = 14
 
     class Meta:
         ordering = ("-end_datetime",)
@@ -195,7 +273,7 @@ class Game(models.Model):
     players = models.ManyToManyField(User, through="GamePlayer")
     start_datetime = models.DateTimeField(default=timezone.now)
     end_datetime = models.DateTimeField(blank=True, null=True)
-    sips_per_beer = models.PositiveSmallIntegerField(default=14)
+    sips_per_beer = models.PositiveSmallIntegerField(default=STANDARD_SIPS_PER_BEER)
     description = models.CharField(max_length=1000, blank=True)
     official = models.BooleanField(default=True)
 

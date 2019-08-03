@@ -36,19 +36,19 @@
 				<tbody>
 					<tr>
 						<th>Total sips</th>
-						<td>{{ stats.total_sips }}</td>
+						<td>{{ stats.total_sips }} ({{ stats.total_beers }} beers)</td>
 					</tr>
 					<tr>
 						<th>Best game</th>
-						<td><a href="/games/{{ stats.best_game_id }}">{{ stats.best_game_sips }}</a></td>
+						<td>{% include "utils/link.html" with text=stats.best_game_sips prefix="/games" id=stats.best_game_id %}</td>
 					</tr>
 					<tr>
 						<th>Worst game</th>
-						<td><a href="/games/{{ stats.worst_game_id }}">{{ stats.worst_game_sips }}</a></td>
+						<td>{% include "utils/link.html" with text=stats.worst_game_sips prefix="/games" id=stats.worst_game_id %}</td>
 					</tr>
 					<tr>
 						<th>Average game</th>
-						<td>{{ stats.average_game_sips }}</a></td>
+						<td>{% firstof stats.average_game_sips "-" %}</a></td>
 					</tr>
 					<tr>
 						<th>Total chugs</th>
@@ -56,11 +56,11 @@
 					</tr>
 					<tr>
 						<th>Fastest chug time</th>
-						<td><a href="/games/{{ stats.fastest_chug_game_id }}">{{ stats.fastest_chug_time }}</a></td>
+						<td>{% include "utils/link.html" with text=stats.fastest_chug prefix="/games" id=stats.fastest_chug.card.game.id %}</td>
 					</tr>
 					<tr>
 						<th>Average chug time</th>
-						<td>{{ stats.average_chug_time }}</td>
+						<td>{% firstof stats.average_chug_time "-" %}</td>
 					</tr>
 				</tbody>
 			</table>

@@ -3,7 +3,7 @@ from django.db.models import F
 from django.contrib.auth.views import LoginView, LogoutView
 from django.views.generic import DetailView, ListView
 from django.core.paginator import Paginator
-from games.models import User, Game, Season, all_time_season
+from games.models import User, Game, Season, PlayerStat, all_time_season
 from functools import partial
 from .utils import updated_query_url
 
@@ -21,9 +21,11 @@ class MyLogoutView(LogoutView):
 
 
 class PaginatedListView(ListView):
+    page_limit = 20
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        paginator = Paginator(context["object_list"], 20)
+        paginator = Paginator(context["object_list"], self.page_limit)
         page = self.request.GET.get("page")
         object_list = paginator.get_page(page)
         context["object_list"] = object_list
@@ -83,38 +85,88 @@ class PlayerDetailView(DetailView):
         return context
 
 
+def django_getattr(obj, key):
+    keys = key.split("__")
+    for k in keys:
+        obj = getattr(obj, k)
+    return obj
+
+
+class Ranking:
+    def __init__(self, name, ordering, game_key=None):
+        self.name = name
+        self.ordering = ordering
+        self.game_key = game_key
+
+    @property
+    def value_key(self):
+        return self.ordering.lstrip("-")
+
+    def get_value(self, o):
+        return django_getattr(o, self.value_key)
+
+    def get_game(self, o):
+        if self.game_key:
+            return django_getattr(o, self.game_key)
+        return None
+
+
 class RankingView(PaginatedListView):
     template_name = "ranking.html"
+    page_limit = 15
+    rankings = [
+        Ranking("Total sips", "-total_sips"),
+        Ranking("Best game", "-best_game_sips", "best_game"),
+        Ranking("Worst game", "worst_game_sips", "worst_game"),
+        Ranking("Total chugs", "-total_chugs"),
+        Ranking(
+            "Fastest chug time",
+            "fastest_chug__duration_in_milliseconds",
+            "fastest_chug__card__game",
+        ),
+    ]
+
+    def get_ranking(self):
+        ranking_type = self.request.GET.get("type")
+        for ranking in self.rankings:
+            if ranking_type == ranking.name:
+                return ranking
+
+        return self.rankings[0]
 
     def get_queryset(self):
-        return [{
-            "user": User.objects.first(),
-            "rank": 7,
-            "value": 1234,
-        }] * 100
+        season = get_season(self.request)
+        ranking = self.get_ranking()
+        return PlayerStat.objects.filter(
+            **{
+                "season_number": season.number,
+                "total_games__gt": 0,
+                f"{ranking.value_key}__isnull": False,
+            }
+        ).order_by(ranking.ordering)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["season"] = get_season(self.request)
 
-        ranking_names = [
-            "Total sips",
-            "Best game",
-            "Worst game",
-            "Total chugs",
-            "Fastest chug time",
-        ]
-
         ranking_urls = []
-        for name in ranking_names:
-            ranking_urls.append((name, updated_query_url(self.request, "type", name)))
+        for ranking in self.rankings:
+            ranking_urls.append(
+                (ranking.name, updated_query_url(self.request, "type", ranking.name))
+            )
 
         context["ranking_tabs"] = ranking_urls
 
-        ranking_type = self.request.GET.get("type")
-        if not ranking_type in ranking_names:
-            ranking_type = ranking_names[0]
+        ranking = self.get_ranking()
+        context["ranking"] = {"name": ranking.name}
 
-        context["ranking"] = {"name": ranking_type}
+        object_list = context["object_list"]
+        start_index = object_list.start_index()
+        for i, o in enumerate(object_list):
+            o.rank = start_index + i
+            o.value = ranking.get_value(o)
+            o.game = ranking.get_game(o)
+            print(ranking.game_key)
+            print(o.best_game, o.game)
 
         return context
