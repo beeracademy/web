@@ -438,8 +438,5 @@ class Chug(models.Model):
     def duration_str(self):
         return str(self.duration)
 
-    def card_str(self):
-        return "Ace of " + self.card.suit_str()
-
     def __str__(self):
         return f"{self.card.get_user()}: {self.card} ({self.duration_str()})"
