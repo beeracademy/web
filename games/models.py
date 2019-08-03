@@ -84,7 +84,7 @@ class User(AbstractUser):
                 for i, c in enumerate(game.ordered_cards()):
                     if i % game.players.count() == player_index:
                         game_sips += c.value
-                        if c.value == 14:
+                        if hasattr(c, "chug"):
                             chug_time = c.chug.duration
                             stats["total_chugs"] += 1
                             total_chug_time += chug_time
@@ -241,7 +241,7 @@ class Game(models.Model):
 
     def current_player_to_chug(self):
         card = self.cards.last()
-        if card and card.value == 14 and not hasattr(card, "chug"):
+        if card and card.value == Chug.VALUE and not hasattr(card, "chug"):
             return card.get_user()
 
         return None
@@ -302,7 +302,7 @@ class Game(models.Model):
         assert self.get_state() == self.State.WAITING_FOR_CHUG
 
         newest_card = self.cards.last()
-        assert newest_card.value == 14
+        assert newest_card.value == Chug.VALUE
 
         return Chug.objects.create(
             card=newest_card, duration_in_milliseconds=duration_in_milliseconds
@@ -426,6 +426,8 @@ class Card(models.Model):
 
 
 class Chug(models.Model):
+    VALUE = 14
+
     card = models.OneToOneField("Card", on_delete=models.CASCADE, related_name="chug")
     duration_in_milliseconds = models.PositiveIntegerField()
 
