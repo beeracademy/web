@@ -1,2 +1,2 @@
 #!/bin/bash
-rsync -rv --no-perms academy:newsite/academyhp/advanced/frontend/web/profilepictures .
+rsync -rv --no-perms academy@beeracademy.nu:newsite/academyhp/advanced/frontend/web/profilepictures .
