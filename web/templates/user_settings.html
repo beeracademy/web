@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 
+{% load static %}
 {% load bootstrap4 %}
 
 {% block content %}
@@ -45,7 +46,7 @@
 		file_input.click();
 	});
 	$("#delete_button").click(function() {
-		$("#image").attr("src", "/static/user.png");
+		$("#image").attr("src", "{% static "user.png" %}");
 		$("#id_image_deleted").prop("checked", true);
 	});
 	file_input.change(function() {
