@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 
+{% load static %}
 {% load bootstrap4 %}
 
 {% block content %}
@@ -35,7 +36,7 @@ The new academy is open source and the code can be found on <a href="https://git
         Idea & koncept by Ole Rahbek & Rasmus Kold and coded by Rasmus Kold.
     </div>
     <div class="col-md-2 text-right">
-        <a class="btn btn-secondary col-md-12" href="">Download</a>
+        <a class="btn btn-secondary col-md-12" href="{% static "old/academy_v1.zip" %}">Download</a>
     </div>
 </div>
 
@@ -48,7 +49,7 @@ The new academy is open source and the code can be found on <a href="https://git
         Based on the original Academy coded by FUBR & Cramer.        
     </div>
     <div class="col-md-2 text-right">
-        <a class="btn btn-secondary col-md-12" href="">Download</a>
+        <a class="btn btn-secondary col-md-12" href="{% static "old/academy_v2.jar" %}">Download</a>
     </div>
 </div>
 
