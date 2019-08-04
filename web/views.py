@@ -1,7 +1,11 @@
 from django.shortcuts import render
 from django.db.models import F
+from django.core.files import File
+from django.contrib import messages
+from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.views import LoginView, LogoutView
-from django.views.generic import DetailView, ListView
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.generic import DetailView, ListView, UpdateView
 from django.core.paginator import Paginator
 from games.models import (
     User,
@@ -13,6 +17,7 @@ from games.models import (
     filter_season,
 )
 from .utils import updated_query_url
+from .forms import UserSettingsForm
 
 
 def index(request):
@@ -121,9 +126,31 @@ def django_getattr(obj, key):
     return obj
 
 
-class PlayerSettingsView(DetailView):
+class UserSettingsView(UpdateView, LoginRequiredMixin):
     model = User
-    template_name = "player_settings.html"
+    template_name = "user_settings.html"
+    form_class = UserSettingsForm
+
+    def get_object(self):
+        return self.request.user
+
+    def get_success_url(self):
+        return f"/players/{self.get_object().id}/"
+
+    def form_valid(self, form):
+        messages.success(self.request, "Profile updated")
+
+        if form.cleaned_data["new_password"]:
+            messages.success(self.request, "Password changed")
+            self.object.set_password(form.cleaned_data["new_password"])
+            update_session_auth_hash(self.request, self.request.user)
+
+        image_io = form.cleaned_data["image_io"]
+        if image_io:
+            self.object.image.save(None, File(image_io), save=True)
+            image_io.close()
+
+        return super().form_valid(form)
 
 
 class Ranking:

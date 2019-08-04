@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% load bootstrap4 %}
+
+{% block content %}
+
+<h4><i class="fas fa-cogs"></i> Settings</h4>
+
+<hr>
+
+<form method="post">
+	{% csrf_token %}
+	<input type="file" id="file_input" accept="image/*" style="display: none;">
+	{{ form.new_image_data_url }}
+	<div class="row">
+		<div class="col-md-6 text-center">
+			<img src="{{ object.image_url }}" width="156" height="262" id="image" alt="Profile picture"><br><br>
+			<button type="button" id="upload_button" class="btn btn-primary col-5">Upload image</button>
+			<button type="button" class="btn btn-danger col-5">Delete</button>
+			<br><br>
+		</div>
+		<div class="col-md-6">
+			{% bootstrap_field form.username %}
+			{% bootstrap_field form.email %}
+			{% bootstrap_field form.new_password %}
+			<br>
+		</div>
+	</div>
+	<div class="row">
+	{% buttons %}
+	<button type="submit" class="btn btn-primary col-md-auto">Save</button>
+	{% endbuttons %}
+	</div>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+	var file_input = $("#file_input");
+	$("#upload_button").click(function() {
+		file_input.click();
+	});
+	file_input.change(function() {
+		var files = file_input.get(0).files;
+		if (files.length === 0) {
+		} else {
+			var file = files[0];
+			var reader = new FileReader();
+			reader.readAsDataURL(file);
+			reader.onload = function(evt) {
+				if(evt.target.readyState === FileReader.DONE) {
+					var url = evt.target.result;
+					$("#image").attr("src", url);
+					$("#id_new_image_data_url").val(url);
+				}
+			};
+		}
+	});
+</script>
+{% endblock %}

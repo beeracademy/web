@@ -9,8 +9,8 @@ urlpatterns = [
     path("games/<int:pk>/", views.GameDetailView.as_view()),
     path("players/", views.PlayerListView.as_view()),
     path("players/<int:pk>/", views.PlayerDetailView.as_view()),
-    path("players/<int:pk>/settings/", views.PlayerSettingsView.as_view()),
     path("ranking/", views.RankingView.as_view()),
+    path("settings/", views.UserSettingsView.as_view()),
     path("login/", views.MyLoginView.as_view()),
     path("logout/", views.MyLogoutView.as_view()),
 ]
