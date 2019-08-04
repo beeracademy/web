@@ -126,7 +126,7 @@ def django_getattr(obj, key):
     return obj
 
 
-class UserSettingsView(UpdateView, LoginRequiredMixin):
+class UserSettingsView(LoginRequiredMixin, UpdateView):
     model = User
     template_name = "user_settings.html"
     form_class = UserSettingsForm
