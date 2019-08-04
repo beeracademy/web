@@ -1,9 +1,13 @@
 {% extends "paginated_list_view.html" %}
 
-{% block title %}<i class="fas fa-gamepad"></i> Games{% endblock %}
-
 {% block beforetable %}
-{% include "season_chooser.html" %}
+<h2>
+	<i class="fas fa-gamepad"></i> Games
+	<div style="float: right;">
+		{% include "season_chooser.html" %}
+	</div>
+</h2>
+	
 {% endblock %}
 
 {% block thead %}
