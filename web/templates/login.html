@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 
+{% load static %}
 {% load bootstrap4 %}
 
 {% block content %}
@@ -21,9 +22,16 @@
 	</div>
 </div>
 
+<audio id="oops" preload="auto">
+	<source src="{% static "sound/oops.ogg" %}" type="audio/ogg; codecs=vorbis">
+	<source src="{% static "sound/oops.mp3" %}" type="audio/mpeg">
+</audio>
+{% endblock %}
+
+{% block scripts %}
 <script>
-	if(document.getElementsByClassName("alert-danger").length > 0){
-		(new Audio('/static/sound/oops.mp3')).play();
+	if($(".alert-danger").length > 0){
+		$("#oops").get(0).play();
 	}
 </script>
 {% endblock %}
