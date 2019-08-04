@@ -69,6 +69,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "academy.context_processors.constants",
                 "games.context_processors.seasons",
             ]
         },
@@ -146,4 +147,4 @@ REST_FRAMEWORK = {
     "PAGE_SIZE": 100,
 }
 
-PLAY_URL = "localhost:4200"
+PLAY_URL = "http://localhost:4200/"
