@@ -150,6 +150,9 @@ class UserSettingsView(UpdateView, LoginRequiredMixin):
             self.object.image.save(None, File(image_io), save=True)
             image_io.close()
 
+        if form.cleaned_data["image_deleted"]:
+            self.object.image.delete(save=True)
+
         return super().form_valid(form)
 
 

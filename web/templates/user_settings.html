@@ -10,13 +10,16 @@
 
 <form method="post">
 	{% csrf_token %}
-	<input type="file" id="file_input" accept="image/*" style="display: none;">
-	{{ form.new_image_data_url }}
+	<div style="display: none;">
+		<input type="file" id="file_input" accept="image/*" style="display: none;">
+		{{ form.new_image_data_url }}
+		{{ form.image_deleted }}
+	</div>
 	<div class="row">
 		<div class="col-md-6 text-center">
 			<img src="{{ object.image_url }}" width="156" height="262" id="image" alt="Profile picture"><br><br>
 			<button type="button" id="upload_button" class="btn btn-primary col-5">Upload image</button>
-			<button type="button" class="btn btn-danger col-5">Delete</button>
+			<button type="button" id="delete_button" class="btn btn-danger col-5">Delete</button>
 			<br><br>
 		</div>
 		<div class="col-md-6">
@@ -29,6 +32,7 @@
 	<div class="row">
 	{% buttons %}
 	<button type="submit" class="btn btn-primary col-md-auto">Save</button>
+	<a href="." class="btn btn-danger col-md-auto">Cancel</a>
 	{% endbuttons %}
 	</div>
 </form>
@@ -40,10 +44,15 @@
 	$("#upload_button").click(function() {
 		file_input.click();
 	});
+	$("#delete_button").click(function() {
+		$("#image").attr("src", "/static/user.png");
+		$("#id_image_deleted").prop("checked", true);
+	});
 	file_input.change(function() {
 		var files = file_input.get(0).files;
-		if (files.length === 0) {
-		} else {
+		if (files.length > 0) {
+			// Add some loading thingy
+
 			var file = files[0];
 			var reader = new FileReader();
 			reader.readAsDataURL(file);
@@ -52,6 +61,7 @@
 					var url = evt.target.result;
 					$("#image").attr("src", url);
 					$("#id_new_image_data_url").val(url);
+					$("#id_image_deleted").prop("checked", false);
 				}
 			};
 		}
