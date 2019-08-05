@@ -4,6 +4,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser, UserManager
 from django.contrib.staticfiles.templatetags.staticfiles import static
 from django.utils import timezone
+from django.utils.html import mark_safe
 import bcrypt
 import secrets
 import datetime
@@ -561,9 +562,20 @@ class Card(models.Model):
     def card_str(self):
         return f"{self.value_str()} of {self.suit_str()}"
 
+    SUIT_SYMBOLS ={
+        "S": ("♠", "black"),
+        "C": ("♣", "black"),
+        "H": ("♥", "red"),
+        "D": ("♦", "red"),
+        "A": ("☘", "green"),
+        "I": ("🟊", "green"),
+    }
     def suit_symbol(self):
-        mapping = {"S": "♠", "C": "♣", "H": "♥", "D": "♦", "A": "☘", "I": "🟊"}
-        return mapping[self.suit]
+        return self.SUIT_SYMBOLS[self.suit]
+
+    def colored_suit_symbol(self):
+        symbol, color = self.SUIT_SYMBOLS[self.suit]
+        return mark_safe(f'<span style="color: {color};">{symbol}</span>')
 
 
 class Chug(models.Model):

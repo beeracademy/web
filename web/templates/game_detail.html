@@ -55,12 +55,11 @@
 {% for c in object.ordered_chugs %}
 <div class="col-md-auto">
     <div class="card">
-        <div class="card-header">
-            {{ c.card.get_user }}
+        <div class="card-header" style="font-size: 4rem; text-align: center;">{{ c.card.colored_suit_symbol }}
         </div>
         <ul class="list-group list-group-flush">
+            <li class="list-group-item"><a href="/players/{{ c.card.get_user.id }}/">{{ c.card.get_user }}</a></li>
             <li class="list-group-item">{{ c.duration_str }}</li>
-            <li class="list-group-item">{{ c.card.card_str }}</li>
         </ul>
     </div>
 </div>
@@ -84,7 +83,7 @@
         <tr>
             <td>{{ forloop.counter }}</td>
             {% for c in row %}
-            <td title="{{ c.card_str }}">{{c.suit_symbol}} {{ c.value }}</td>
+            <td title="{{ c.card_str }}"><span style="width: 1rem; display: inline-block;"{{ c.colored_suit_symbol }}</span> {{ c.value }}</td>
             {% endfor %}
         </tr>
         {% endfor %}
