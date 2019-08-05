@@ -184,12 +184,9 @@ class GameUpdateSerializer(serializers.ModelSerializer):
 
             chug = getattr(card, "chug", None)
             chug_data = card_data.get("chug_duration_ms")
-            if (
-                chug
-                and chug_data
-                and chug.duration_in_milliseconds
-                != chug_data
-            ) or (chug and not chug_data):
+            if (chug and chug_data and chug.duration_in_milliseconds != chug_data) or (
+                chug and not chug_data
+            ):
                 raise serializers.ValidationError(
                     {"cards": f"Card {i} has different chug data than server"}
                 )

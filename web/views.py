@@ -7,17 +7,24 @@ from django.contrib.auth.views import LoginView, LogoutView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import DetailView, ListView, UpdateView
 from django.core.paginator import Paginator
-from games.models import (
-    User,
-    Game,
-    GamePlayer,
-    Season,
-    PlayerStat,
-    all_time_season,
-    filter_season,
-)
+from games.models import User, Game, GamePlayer, Season, all_time_season, filter_season
+from games.ranking import RANKINGS, get_ranking_from_key
 from .utils import updated_query_url
 from .forms import UserSettingsForm
+from urllib.parse import urlencode
+
+RANKING_PAGE_LIMIT = 15
+
+
+def get_ranking_url(ranking, user, season):
+    rank = ranking.get_rank(user, season)
+    if rank is None:
+        return None
+
+    page = (rank - 1) // RANKING_PAGE_LIMIT + 1
+    return f"/ranking/?" + urlencode(
+        {"season": season.number, "type": ranking.value_key, "page": page}
+    )
 
 
 def index(request):
@@ -116,14 +123,18 @@ class PlayerDetailView(DetailView):
         season = get_season(self.request)
         context["season"] = season
         context["stats"] = self.object.stats_for_season(season)
+
+        context["rankings"] = []
+        for ranking in RANKINGS:
+            context["rankings"].append(
+                {
+                    "name": ranking.name,
+                    "rank": ranking.get_rank(self.object, season),
+                    "url": get_ranking_url(ranking, self.object, season),
+                }
+            )
+
         return context
-
-
-def django_getattr(obj, key):
-    keys = key.split("__")
-    for k in keys:
-        obj = getattr(obj, k)
-    return obj
 
 
 class UserSettingsView(LoginRequiredMixin, UpdateView):
@@ -156,58 +167,18 @@ class UserSettingsView(LoginRequiredMixin, UpdateView):
         return super().form_valid(form)
 
 
-class Ranking:
-    def __init__(self, name, ordering, game_key=None):
-        self.name = name
-        self.ordering = ordering
-        self.game_key = game_key
-
-    @property
-    def value_key(self):
-        return self.ordering.lstrip("-")
-
-    def get_value(self, o):
-        return django_getattr(o, self.value_key)
-
-    def get_game(self, o):
-        if self.game_key:
-            return django_getattr(o, self.game_key)
-        return None
-
-
 class RankingView(PaginatedListView):
     template_name = "ranking.html"
-    page_limit = 15
-    rankings = [
-        Ranking("Total sips", "-total_sips"),
-        Ranking("Best game", "-best_game_sips", "best_game"),
-        Ranking("Worst game", "worst_game_sips", "worst_game"),
-        Ranking("Total chugs", "-total_chugs"),
-        Ranking(
-            "Fastest chug",
-            "fastest_chug__duration_in_milliseconds",
-            "fastest_chug__card__game",
-        ),
-    ]
+    page_limit = RANKING_PAGE_LIMIT
 
     def get_ranking(self):
         ranking_type = self.request.GET.get("type")
-        for ranking in self.rankings:
-            if ranking_type == ranking.name:
-                return ranking
-
-        return self.rankings[0]
+        return get_ranking_from_key(ranking_type) or RANKINGS[0]
 
     def get_queryset(self):
         season = get_season(self.request)
         ranking = self.get_ranking()
-        return PlayerStat.objects.filter(
-            **{
-                "season_number": season.number,
-                "total_games__gt": 0,
-                f"{ranking.value_key}__isnull": False,
-            }
-        ).order_by(ranking.ordering)
+        return ranking.get_qs(season)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -215,12 +186,12 @@ class RankingView(PaginatedListView):
         context["season"] = season
 
         ranking_urls = []
-        for ranking in self.rankings:
+        for ranking in RANKINGS:
             ranking_urls.append(
                 (
                     ranking.name,
                     updated_query_url(
-                        self.request, {"type": ranking.name, "page": None}
+                        self.request, {"type": ranking.key, "page": None}
                     ),
                 )
             )
@@ -238,15 +209,9 @@ class RankingView(PaginatedListView):
             o.game = ranking.get_game(o)
 
         if self.request.user.is_authenticated:
-            stats = self.request.user.stats_for_season(season)
-            try:
-                user_index = list(self.get_queryset()).index(stats)
-                context["user_rank"] = user_index + 1
-                user_page = (user_index // self.page_limit) + 1
-                context["user_rank_url"] = updated_query_url(
-                    self.request, {"page": user_page}
-                )
-            except ValueError:
-                pass
+            context["user_rank"] = ranking.get_rank(self.request.user, season)
+            context["user_rank_url"] = get_ranking_url(
+                ranking, self.request.user, season
+            )
 
         return context
