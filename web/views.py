@@ -83,7 +83,7 @@ class GameListView(PaginatedListView):
     def get_queryset(self):
         season = get_season(self.request)
         return filter_season(Game.objects, season, should_include_live=True).order_by(
-            F("end_datetime").desc(nulls_first=True)
+            F("end_datetime").desc(nulls_first=True), "-start_datetime"
         )
 
     def get_context_data(self, **kwargs):
