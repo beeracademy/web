@@ -33,6 +33,7 @@
 ```
 
 ### Response
+On success:
 ```javascript
 {
   "id": int,
@@ -40,6 +41,9 @@
   "image": string, // relative path from web server to image url
 }
 ```
+
+If a user with that username doesn't exist, the response is 404 Not Found.
+If a user with that username exists, but the password was wrong, the response is 400 Bad Request.
 
 ## Start game
 
