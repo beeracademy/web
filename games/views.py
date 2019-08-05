@@ -4,7 +4,7 @@ from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 from rest_framework.decorators import action
-from .models import User, Game, Card, Chug
+from .models import User, Game, Card, Chug, PlayerStat
 from .serializers import (
     UserSerializer,
     GameInfoSerializer,
@@ -133,4 +133,8 @@ class GameViewSet(viewsets.ReadOnlyModelViewSet):
         serializer.is_valid(raise_exception=True)
 
         update_game(game, serializer.validated_data)
+
+        if not game.is_live():
+            PlayerStat.update_on_game_finished(game)
+
         return Response({})

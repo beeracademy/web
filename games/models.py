@@ -68,6 +68,15 @@ class PlayerStat(models.Model):
     average_chug_time_seconds = models.FloatField(null=True)
 
     @classmethod
+    def update_on_game_finished(cls, game):
+        season = game.get_season()
+        for s in [season, all_time_season]:
+            for player in game.players.all():
+                ps, created = cls.get_or_create(player, s)
+                if not created:
+                    ps.update()
+
+    @classmethod
     def update_all(cls):
         PlayerStat.objects.all().delete()
         for season_number in tqdm(range(Season.current_season().number)):
@@ -82,9 +91,12 @@ class PlayerStat(models.Model):
     @classmethod
     def get_or_create(cls, user, season):
         try:
-            return PlayerStat.objects.get(user=user, season_number=season.number)
+            return (
+                PlayerStat.objects.get(user=user, season_number=season.number),
+                False,
+            )
         except PlayerStat.DoesNotExist:
-            return cls.create(user, season)
+            return (cls.create(user, season), True)
 
     @classmethod
     def create(cls, user, season):
@@ -248,7 +260,7 @@ class User(AbstractUser):
         return filter_season(self.gameplayer_set, season, key="game").count()
 
     def stats_for_season(self, season):
-        return PlayerStat.get_or_create(self, season)
+        return PlayerStat.get_or_create(self, season)[0]
 
     def image_url(self):
         if self.image:
