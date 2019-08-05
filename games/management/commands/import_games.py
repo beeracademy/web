@@ -243,8 +243,6 @@ class Command(BaseCommand):
                     # This was played while a DST transition happened
                     print(f"Manually fixing {game.id}")
 
-                    game.save()
-
                     after_dst = False
                     prev_dt = None
                     for c in cards:
@@ -258,6 +256,9 @@ class Command(BaseCommand):
                         if after_dst:
                             c.drawn_datetime -= datetime.timedelta(hours=1)
                             c.save()
+
+                first_card.refresh_from_db()
+                last_card.refresh_from_db()
 
             if (
                 first_card.drawn_datetime < game.start_datetime
