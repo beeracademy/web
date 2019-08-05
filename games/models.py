@@ -105,7 +105,9 @@ class PlayerStat(models.Model):
         return ps
 
     def update(self):
-        games = filter_season(self.user.gameplayer_set, self.season, key="game")
+        games = filter_season(self.user.gameplayer_set, self.season, key="game").filter(
+            game__official=True
+        )
 
         self.total_games = games.count()
         total_time_played = datetime.timedelta()
