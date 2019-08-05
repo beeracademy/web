@@ -390,7 +390,7 @@ class Game(models.Model):
         return self.end_datetime.strftime("%B %d, %Y %H:%M")
 
     def ordered_players(self):
-        return [p.user for p in self.gameplayer_set.all()]
+        return [p.user for p in self.gameplayer_set.order_by("position")]
 
     def next_player_to_draw(self):
         return self.ordered_players()[self.cards.count() % self.players.count()]
@@ -421,7 +421,7 @@ class Game(models.Model):
         return ", ".join(p.username for p in self.ordered_players())
 
     def ordered_cards(self):
-        return self.cards.all()
+        return self.cards.order_by("index")
 
     def cards_by_round(self):
         n = self.players.count()
@@ -524,17 +524,19 @@ class Game(models.Model):
 
 class GamePlayer(models.Model):
     class Meta:
-        ordering = ("id",)
+        unique_together = [("game", "user", "position")]
+        ordering = ("position",)
 
     game = models.ForeignKey(Game, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+    position = models.PositiveSmallIntegerField()
     dnf = models.BooleanField(default=False)
 
 
 class Card(models.Model):
     class Meta:
-        unique_together = [("game", "value", "suit")]
-        ordering = ("id",)
+        unique_together = [("game", "value", "suit"), ("game", "index")]
+        ordering = ("index",)
 
     VALUES = [
         *zip(range(2, 11), map(str, range(2, 11))),
@@ -554,6 +556,7 @@ class Card(models.Model):
     ]
 
     game = models.ForeignKey("Game", on_delete=models.CASCADE, related_name="cards")
+    index = models.PositiveSmallIntegerField()
     value = models.SmallIntegerField(choices=VALUES)
     suit = models.CharField(max_length=1, choices=SUITS)
     drawn_datetime = models.DateTimeField()
@@ -573,12 +576,8 @@ class Card(models.Model):
     def __str__(self):
         return f"{self.value} {self.suit}"
 
-    def get_index(self):
-        return Card.objects.filter(game=self.game, id__lt=self.id).count()
-
     def get_user(self):
-        i = self.get_index()
-        return self.game.ordered_players()[i % self.game.players.count()]
+        return self.game.ordered_players()[self.index % self.game.players.count()]
 
     def value_str(self):
         return dict(self.VALUES)[self.value]

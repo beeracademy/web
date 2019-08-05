@@ -2,7 +2,7 @@ from rest_framework import serializers
 
 # from rest_framework import generics
 from rest_framework.authtoken.models import Token
-from .models import User, Game, Card, Chug
+from .models import User, Game, Card, GamePlayer
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -49,10 +49,9 @@ class CreateGameSerializer(serializers.Serializer):
 
     def create(self, validated_data):
         game = Game.objects.create()
-        for user in validated_data["tokens"]:
-            game.players.add(user)
+        for i, user in enumerate(validated_data["tokens"]):
+            GamePlayer.objects.create(game=game, user=user, position=i)
 
-        game.save()
         return game
 
 

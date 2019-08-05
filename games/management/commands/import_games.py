@@ -3,9 +3,10 @@ from django.core.files import File
 from django.db.utils import IntegrityError
 import csv
 import datetime
+from collections import Counter
 import pytz
 from tqdm import tqdm
-from games.models import User, Game, Card, Chug
+from games.models import User, Game, Card, Chug, GamePlayer
 
 
 class Command(BaseCommand):
@@ -79,7 +80,7 @@ class Command(BaseCommand):
         for relation in tqdm(relations):
             game = Game.objects.get(id=relation["gameid"])
             user = User.objects.get(id=relation["profileid"])
-            game.players.add(user)
+            GamePlayer.objects.create(game=game, user=user, position=relation["place"])
 
     def get_value_and_suit(self, card_id):
         i = int(card_id) - 1
@@ -87,11 +88,15 @@ class Command(BaseCommand):
         suit = Card.SUITS[i // len(Card.VALUES)][0]
         return value, suit
 
-    def create_card(self, card_id, game, drawn_datetime):
+    def create_card(self, card_id, game, drawn_datetime, index):
         value, suit = self.get_value_and_suit(card_id)
 
         Card.objects.create(
-            game=game, value=value, suit=suit, drawn_datetime=drawn_datetime
+            game=game,
+            value=value,
+            suit=suit,
+            drawn_datetime=drawn_datetime,
+            index=index,
         )
 
     def is_bad_card_date(self, dt):
@@ -118,6 +123,7 @@ class Command(BaseCommand):
         )
 
         card_delta = {}
+        cards_imported = Counter()
 
         for relation in tqdm(relations):
             pg_relation = player_game_relations[relation["playergamerelation"]]
@@ -155,7 +161,13 @@ class Command(BaseCommand):
             drawn_datetime -= card_delta[game.id]
 
             try:
-                self.create_card(relation["cardid"], game, drawn_datetime)
+                self.create_card(
+                    card_id=relation["cardid"],
+                    game=game,
+                    drawn_datetime=drawn_datetime,
+                    index=cards_imported[game],
+                )
+                cards_imported[game] += 1
             except IntegrityError:
                 # Game 1072 has a harmless duplicate card
                 if game.id == 1072:

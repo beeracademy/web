@@ -98,12 +98,13 @@ def update_game(game, data):
         if chug_data and not hasattr(last_card, "chug"):
             Chug.objects.create(card=last_card, duration_in_milliseconds=chug_data)
 
-    for card_data in new_cards[previous_cards:]:
+    for i, card_data in enumerate(new_cards[previous_cards:]):
         card = Card.objects.create(
             game=game,
             value=card_data["value"],
             suit=card_data["suit"],
             drawn_datetime=card_data["drawn_datetime"],
+            index=previous_cards + i,
         )
 
         chug_data = card_data.get("chug_duration_ms")
