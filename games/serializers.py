@@ -56,25 +56,19 @@ class CreateGameSerializer(serializers.Serializer):
         return game
 
 
-class ChugUpdateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Chug
-        fields = ["duration_in_milliseconds"]
-
-    def validate_duration_in_milliseconds(self, value):
-        if value < 0:
-            raise serializers.ValidationError("Duration must be positive.")
-
-        return value
-
-
 class CardUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Card
-        fields = ["value", "suit", "drawn_datetime", "chug"]
+        fields = ["value", "suit", "drawn_datetime", "chug_duration_ms"]
 
-    chug = ChugUpdateSerializer(required=False)
     drawn_datetime = serializers.DateTimeField()
+    chug_duration_ms = serializers.IntegerField(write_only=True, required=False)
+
+    def validate_chug_duration_ms(self, value):
+        if value < 0:
+            raise serializers.ValidationError("Chug duration must be positive")
+
+        return value
 
     def validate(self, data):
         if data["value"] != 14 and data.get("chug"):
@@ -172,7 +166,7 @@ class GameUpdateSerializer(serializers.ModelSerializer):
             previous_dt = dt
 
         for i, card_data in enumerate(new_cards):
-            if card_data["value"] == 14 and "chug" not in card_data:
+            if card_data["value"] == 14 and "chug_duration_ms" not in card_data:
                 if i != len(new_cards) - 1 or final_update:
                     raise serializers.ValidationError(
                         {"cards": f"Card {i} has missing chug data"}
@@ -189,12 +183,12 @@ class GameUpdateSerializer(serializers.ModelSerializer):
                 )
 
             chug = getattr(card, "chug", None)
-            chug_data = card_data.get("chug")
+            chug_data = card_data.get("chug_duration_ms")
             if (
                 chug
                 and chug_data
                 and chug.duration_in_milliseconds
-                != chug_data["duration_in_milliseconds"]
+                != chug_data
             ) or (chug and not chug_data):
                 raise serializers.ValidationError(
                     {"cards": f"Card {i} has different chug data than server"}

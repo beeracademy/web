@@ -48,7 +48,7 @@ class ApiTest(TestCase):
         game_state["cards"] = game_state["cards"][:cards_drawn]
         if not include_chug:
             try:
-                del game_state["cards"][-1]["chug"]
+                game_state["cards"][-1]["chug_duration_ms"]
             except (IndexError, KeyError):
                 pass
 
@@ -78,9 +78,7 @@ class ApiTest(TestCase):
                 {"value": value, "suit": suit, "drawn_datetime": timezone.now()}
             )
             if value == 14:
-                self.final_game_data["cards"][-1]["chug"] = {
-                    "duration_in_milliseconds": 1234
-                }
+                self.final_game_data["cards"][-1]["chug_duration_ms"] = 1234
 
         self.final_game_data["end_datetime"] = timezone.now()
         self.final_game_data["description"] = "foo"
@@ -145,7 +143,7 @@ class ApiTest(TestCase):
         self.set_token(self.t1)
 
         game_data = self.final_game_data
-        del game_data["cards"][-1]["chug"]
+        del game_data["cards"][-1]["chug_duration_ms"]
 
         self.update_game(game_data, 400)
 

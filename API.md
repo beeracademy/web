@@ -87,9 +87,7 @@ If a user with that username exists, but the password was wrong, the response is
 
   // Should only be given if value == 14 and
   // player has finished chugging:
-  "chug": { 
-    "duration_in_milliseconds": int,
-  },
+  "chug_duration_ms": int,
 }
 ```
 

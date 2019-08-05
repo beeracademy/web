@@ -94,11 +94,11 @@ def update_game(game, data):
     previous_cards = cards.count()
     if previous_cards > 0:
         last_card_data = new_cards[previous_cards - 1]
-        chug_data = last_card_data.get("chug")
+        chug_data = last_card_data.get("chug_duration_ms")
         if chug_data and not hasattr(last_card, "chug"):
             Chug.objects.create(
                 card=last_card,
-                duration_in_milliseconds=chug_data["duration_in_milliseconds"],
+                duration_in_milliseconds=chug_data,
             )
 
     for card_data in new_cards[previous_cards:]:
@@ -109,11 +109,11 @@ def update_game(game, data):
             drawn_datetime=card_data["drawn_datetime"],
         )
 
-        chug_data = card_data.get("chug")
+        chug_data = card_data.get("chug_duration_ms")
         if chug_data:
             Chug.objects.create(
                 card=card,
-                duration_in_milliseconds=chug_data["duration_in_milliseconds"],
+                duration_in_milliseconds=chug_data,
             )
 
     game.save()
