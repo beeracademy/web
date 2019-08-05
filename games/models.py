@@ -1,6 +1,7 @@
 import os
 import pytz
 from django.db import models
+from django.db.models import Q
 from django.contrib.auth.models import AbstractUser, UserManager
 from django.contrib.staticfiles.templatetags.staticfiles import static
 from django.utils import timezone
@@ -24,15 +25,20 @@ def get_user_image_name(user, filename=None):
     return f"user_images/{user.id}.png"
 
 
-def filter_season(qs, season, key=None):
+def filter_season(qs, season, key=None, should_include_live=False):
     if key:
         key += "__"
     else:
         key = ""
     key += "end_datetime"
-    return qs.filter(
-        **{f"{key}__gte": season.start_datetime, f"{key}__lte": season.end_datetime}
-    )
+
+    q = Q(**{f"{key}__gte": season.start_datetime, f"{key}__lte": season.end_datetime})
+
+    includes_live = season == all_time_season or Season.current_season() == season
+    if includes_live and should_include_live:
+        q |= Q(**{f"{key}__isnull": True})
+
+    return qs.filter(q)
 
 
 class PlayerStat(models.Model):
@@ -260,6 +266,12 @@ class Season:
     def __str__(self):
         return f"Season {self.number}"
 
+    def __eq__(self, other):
+        return self.number == other.number
+
+    def __neq__(self, other):
+        return self.number != other.number
+
     @property
     def start_datetime(self):
         extra_half_years = self.number - 1
@@ -476,7 +488,7 @@ class Game(models.Model):
             full_beers = total_sips[i] // self.sips_per_beer
             extra_sips = total_sips[i] % self.sips_per_beer
 
-            if last_sip[0] == i and self.get_state() != self.State.ENDED:
+            if last_sip and last_sip[0] == i and self.get_state() != self.State.ENDED:
                 time_per_sip = div_or_none(
                     total_times[i], (total_sips[i] - last_sip[1])
                 )
@@ -562,7 +574,7 @@ class Card(models.Model):
     def card_str(self):
         return f"{self.value_str()} of {self.suit_str()}"
 
-    SUIT_SYMBOLS ={
+    SUIT_SYMBOLS = {
         "S": ("♠", "black"),
         "C": ("♣", "black"),
         "H": ("♥", "red"),
@@ -570,6 +582,7 @@ class Card(models.Model):
         "A": ("☘", "green"),
         "I": ("🟊", "green"),
     }
+
     def suit_symbol(self):
         return self.SUIT_SYMBOLS[self.suit]
 
