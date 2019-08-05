@@ -1,7 +1,6 @@
 import os
 import pytz
 from django.db import models
-from django.conf import settings
 from django.contrib.auth.models import AbstractUser, UserManager
 from django.contrib.staticfiles.templatetags.staticfiles import static
 from django.utils import timezone
@@ -12,6 +11,7 @@ from enum import Enum, auto
 from operator import itemgetter
 from tqdm import tqdm
 from PIL import Image
+from .seed import shuffle_with_seed
 
 
 class CaseInsensitiveUserManager(UserManager):
@@ -409,9 +409,7 @@ class Game(models.Model):
         return self.players.count() * len(Card.VALUES)
 
     def get_all_cards(self):
-        for suit, _ in Card.SUITS[: self.players.count()]:
-            for value, _ in Card.VALUES:
-                yield value, suit
+        return Card.get_ordered_cards_for_players(self.players.count())
 
     def cards_left(self):
         all_cards = set(self.get_all_cards())
@@ -530,7 +528,19 @@ class Card(models.Model):
     game = models.ForeignKey("Game", on_delete=models.CASCADE, related_name="cards")
     value = models.SmallIntegerField(choices=VALUES)
     suit = models.CharField(max_length=1, choices=SUITS)
-    drawn_datetime = models.DateTimeField(auto_now_add=True)
+    drawn_datetime = models.DateTimeField()
+
+    @classmethod
+    def get_ordered_cards_for_players(cls, player_count):
+        for suit, _ in Card.SUITS[:player_count]:
+            for value, _ in Card.VALUES:
+                yield value, suit
+
+    @classmethod
+    def get_shuffled_deck(cls, player_count, seed):
+        cards = list(cls.get_ordered_cards_for_players(player_count))
+        shuffle_with_seed(cards, seed)
+        return cards
 
     def __str__(self):
         return f"{self.value} {self.suit}"

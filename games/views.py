@@ -7,11 +7,9 @@ from rest_framework.decorators import action
 from .models import User, Game, Card, Chug
 from .serializers import (
     UserSerializer,
-    GameSerializer,
+    GameInfoSerializer,
+    GameUpdateSerializer,
     CreateGameSerializer,
-    EndGameSerializer,
-    CardSerializer,
-    ChugSerializer,
 )
 
 
@@ -20,8 +18,9 @@ class CustomAuthToken(ObtainAuthToken):
         try:
             response = super().post(request, *args, **kwargs)
             token = Token.objects.get(key=response.data["token"])
-            if token.user.image:
-                response.data["image"] = token.user.image.url
+            user = token.user
+            response.data["id"] = user.id
+            response.data["image"] = user.image_url()
             return response
         except serializers.ValidationError as e:
             # If username doesn't exist return with code 404,
@@ -78,53 +77,66 @@ class UserViewSet(viewsets.ModelViewSet):
     permission_classes = (CreateOrAuthenticated,)
 
 
+def update_game(game, data):
+    def update_field(key):
+        if key in data:
+            setattr(game, key, data[key])
+
+    update_field("start_datetime")
+    update_field("end_datetime")
+    update_field("official")
+    update_field("description")
+
+    cards = game.ordered_cards()
+    new_cards = data["cards"]
+
+    last_card = cards.last()
+    previous_cards = cards.count()
+    if previous_cards > 0:
+        last_card_data = new_cards[previous_cards - 1]
+        chug_data = last_card_data.get("chug")
+        if chug_data and not hasattr(last_card, "chug"):
+            Chug.objects.create(
+                card=last_card,
+                duration_in_milliseconds=chug_data["duration_in_milliseconds"],
+            )
+
+    for card_data in new_cards[previous_cards:]:
+        card = Card.objects.create(
+            game=game,
+            value=card_data["value"],
+            suit=card_data["suit"],
+            drawn_datetime=card_data["drawn_datetime"],
+        )
+
+        chug_data = card_data.get("chug")
+        if chug_data:
+            Chug.objects.create(
+                card=card,
+                duration_in_milliseconds=chug_data["duration_in_milliseconds"],
+            )
+
+    game.save()
+
+
 class GameViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Game.objects.all()
-    serializer_class = GameSerializer
+    serializer_class = GameInfoSerializer
     permission_classes = (CreateOrAuthenticated,)
 
     def create(self, request):
         serializer = CreateGameSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         game = serializer.save()
-        return Response(GameSerializer(game).data)
-
-    @action(detail=True, methods=["post"], permission_classes=[ShouldDrawNext])
-    def draw_card(self, request, pk=None):
-        game = Game.objects.get(id=pk)
-        self.check_object_permissions(request, game)
-
-        card = game.draw_card()
-        return Response(CardSerializer(card).data)
-
-    @action(detail=True, methods=["post"], permission_classes=[ShouldRegisterChug])
-    def register_chug(self, request, pk=None):
-        game = Game.objects.get(id=pk)
-        self.check_object_permissions(request, game)
-
-        serializer = ChugSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-
-        game.add_chug(serializer.data["duration_in_milliseconds"])
-        return Response(serializer.data)
+        return Response(self.serializer_class(game).data)
 
     @action(detail=True, methods=["post"], permission_classes=[PartOfGame])
-    def end_game(self, request, pk=None):
+    def update_state(self, request, pk=None):
         game = Game.objects.get(id=pk)
         self.check_object_permissions(request, game)
 
-        serializer = EndGameSerializer(game, data=request.data)
+        serializer = GameUpdateSerializer(game=game, data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save()
 
-        return Response(serializer.data)
-
-
-class CardViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Card.objects.all()
-    serializer_class = CardSerializer
-
-
-class ChugViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Chug.objects.all()
-    serializer_class = ChugSerializer
+        update_game(game, serializer.validated_data)
+        return Response({})

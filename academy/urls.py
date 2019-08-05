@@ -17,20 +17,12 @@ from django.contrib import admin
 from django.conf import settings
 from django.urls import path, include
 from rest_framework import routers
-from games.views import (
-    UserViewSet,
-    GameViewSet,
-    CardViewSet,
-    ChugViewSet,
-    CustomAuthToken,
-)
+from games.views import UserViewSet, GameViewSet, CustomAuthToken
 
 
 router = routers.DefaultRouter()
 router.register("users", UserViewSet)
 router.register("games", GameViewSet)
-router.register("cards", CardViewSet)
-router.register("chugs", ChugViewSet)
 
 
 urlpatterns = [
