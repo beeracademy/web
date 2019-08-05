@@ -3,6 +3,15 @@
 {% load static %}
 {% load bootstrap4 %}
 
+{% block styles %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.5/cropper.min.css" integrity="sha256-mS+0WtWHI0Mw4UuIK5xU+b+pB/vfWZiEHV4sJWx7az8=" crossorigin="anonymous" />
+<style>
+#image {
+	max-width: 100%;
+}
+</style>
+{% endblock %}
+
 {% block content %}
 
 <h4><i class="fas fa-cogs"></i> Settings</h4>
@@ -18,7 +27,7 @@
 	</div>
 	<div class="row">
 		<div class="col-md-6 text-center">
-			<img src="{{ object.image_url }}" width="156" height="262" id="image" alt="Profile picture"><br><br>
+			<img src="{{ object.image_url }}" id="image" width="156" height="262" alt="Profile picture"><br><br>
 			<button type="button" id="upload_button" class="btn btn-primary col-5">Upload image</button>
 			<button type="button" id="delete_button" class="btn btn-danger col-5">Delete</button>
 			<br><br>
@@ -40,28 +49,50 @@
 {% endblock %}
 
 {% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.5/cropper.min.js" integrity="sha256-vshROrHusjRqmlrpFKS7oAAd4YV7Stzn6DlDmtIBG/4=" crossorigin="anonymous"></script>
 <script>
+	var image = document.getElementById("image");
+
+	function updateCropped() {
+		var new_url = cropper.getCroppedCanvas().toDataURL("image/png");
+		$("#id_new_image_data_url").val(new_url);
+	}
+
+	var cropper = new Cropper(image, {
+		aspectRatio: 156 / 262,
+		autoCropArea: true,
+	});
+
+	image.addEventListener("cropend", updateCropped);
+
+	var firstReady = true;
+	image.addEventListener("ready", function() {
+		if (firstReady) {
+			firstReady = false;
+		} else {
+			updateCropped();
+		}
+	});
+
 	var file_input = $("#file_input");
 	$("#upload_button").click(function() {
 		file_input.click();
 	});
 	$("#delete_button").click(function() {
-		$("#image").attr("src", "{% static "user.png" %}");
+		cropper.replace("{% static "user.png" %}");
+		$("#id_new_image_data_url").val("");
 		$("#id_image_deleted").prop("checked", true);
 	});
 	file_input.change(function() {
 		var files = file_input.get(0).files;
 		if (files.length > 0) {
-			// Add some loading thingy
-
 			var file = files[0];
 			var reader = new FileReader();
 			reader.readAsDataURL(file);
 			reader.onload = function(evt) {
 				if(evt.target.readyState === FileReader.DONE) {
 					var url = evt.target.result;
-					$("#image").attr("src", url);
-					$("#id_new_image_data_url").val(url);
+					cropper.replace(url);
 					$("#id_image_deleted").prop("checked", false);
 				}
 			};
