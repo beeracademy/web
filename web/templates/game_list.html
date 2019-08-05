@@ -22,7 +22,7 @@
 
 {% block tbody %}
 {% for game in object_list %}
-<tr data-href="/games/{{ game.id }}/"{% if user in game.ordered_players %} class="table-primary"{% endif %}>
+<tr data-href="/games/{{ game.id }}/" class="{% if user in game.ordered_players %}table-primary {% endif %}{% if game.is_live %}table-success live {% endif %}" data-start-time="{{ game.start_datetime.timestamp }}">
 	<td>
 		{% for player in game.ordered_players %}
 		<a href="/players/{{ player.id }}/">{{ player.username }}</a>{% if not forloop.last %},{% endif %}
@@ -30,7 +30,38 @@
 	</td>
 	<td>{{ game.season_number_str }}</td>
 	<td>{{ game.end_str }}</td>
-	<td>{{ game.duration_str }}</td>
+	<td class="duration">{{ game.duration_str }}</td>
 </tr>
 {% endfor %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+	function twoPad(s) {
+		s = s.toString();
+		if (s.length == 1) {
+			s = "0" + s;
+		}
+		return s;
+	}
+
+	function formatDuration(ms) {
+		var total_seconds = Math.floor(ms / 1000);
+		var seconds = total_seconds % 60;
+		var total_minutes = Math.floor(total_seconds / 60);
+		var minutes = total_minutes % 60;
+		var total_hours = Math.floor(total_minutes / 60);
+
+		return total_hours + ":" + twoPad(minutes) + ":" + twoPad(seconds);
+	}
+
+	setInterval(function() {
+		$(".live").each(function(i, el) {
+			var start = new Date(parseFloat(el.getAttribute("data-start-time")) * 1000);
+			var difference = Date.now() - start;
+			var newDuration = formatDuration(difference);
+			el.querySelector(".duration").textContent = newDuration;
+		});
+	}, 1000);
+</script>
 {% endblock %}

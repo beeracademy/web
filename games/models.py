@@ -367,13 +367,13 @@ class Game(models.Model):
     def duration_str(self):
         duration = self.get_duration()
         if not duration:
-            return "Live"
+            duration = timezone.now() - self.start_datetime
 
         return datetime.timedelta(seconds=round(duration.total_seconds()))
 
     def end_str(self):
         if not self.end_datetime:
-            return "-"
+            return "Live"
 
         return self.end_datetime.strftime("%B %d, %Y %H:%M")
 
@@ -401,6 +401,9 @@ class Game(models.Model):
             return self.State.WAITING_FOR_END
 
         return self.State.WAITING_FOR_DRAW
+
+    def is_live(self):
+        return self.end_datetime is None
 
     def players_str(self):
         return ", ".join(p.username for p in self.ordered_players())
