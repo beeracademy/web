@@ -22,3 +22,11 @@ a {
 a:hover {
     color: #9b0615;
 }
+
+tr.live {
+    background-color: rgba(92, 184, 92, 0.4) !important;
+}
+
+tr.in-game {
+    background-color: rgba(52, 152, 219,0.4) !important;
+}
