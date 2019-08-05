@@ -7,11 +7,20 @@ from django.contrib.auth.views import LoginView, LogoutView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import DetailView, ListView, UpdateView
 from django.core.paginator import Paginator
-from games.models import User, Game, GamePlayer, Season, all_time_season, filter_season
+from games.models import (
+    User,
+    Game,
+    GamePlayer,
+    Season,
+    all_time_season,
+    filter_season,
+    Chug,
+)
 from games.ranking import RANKINGS, get_ranking_from_key
 from .utils import updated_query_url
 from .forms import UserSettingsForm
 from urllib.parse import urlencode
+import random
 
 RANKING_PAGE_LIMIT = 15
 
@@ -27,12 +36,45 @@ def get_ranking_url(ranking, user, season):
     )
 
 
+def get_recent_players(n):
+    recent_players = set()
+    for game in Game.objects.order_by("-end_datetime"):
+        for p in game.players.all():
+            if p.image:
+                recent_players.add(p)
+
+        if len(recent_players) >= n:
+            break
+
+    recent_players = random.sample(list(recent_players), n)
+    random.shuffle(recent_players)
+    return recent_players
+
+
+def get_bad_chuggers(n, sample_size):
+    worst_time = {}
+    for chug in Chug.objects.order_by("-card__drawn_datetime"):
+        u = chug.card.get_user()
+        if u.image:
+            worst_time[u] = max(worst_time.get(u, 0), chug.duration_in_milliseconds)
+
+        if len(worst_time) >= sample_size:
+            break
+
+    bad_chuggers = sorted(worst_time.keys(), key=lambda u: -worst_time[u])[:n]
+    random.shuffle(bad_chuggers)
+    return bad_chuggers
+
+
 def index(request):
     BEERS_PER_PLAYER = sum(range(2, 15)) / Game.STANDARD_SIPS_PER_BEER
     total_players = GamePlayer.objects.count()
+
     context = {
         "total_beers": total_players * BEERS_PER_PLAYER,
         "total_games": Game.objects.all().count(),
+        "recent_players": get_recent_players(4),
+        "wall_of_shame_players": get_bad_chuggers(4, 20),
     }
     return render(request, "index.html", context)
 
