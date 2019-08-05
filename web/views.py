@@ -21,6 +21,7 @@ from .utils import updated_query_url
 from .forms import UserSettingsForm
 from urllib.parse import urlencode
 import random
+import re
 
 RANKING_PAGE_LIMIT = 15
 
@@ -124,7 +125,15 @@ class GameListView(PaginatedListView):
 
     def get_queryset(self):
         season = get_season(self.request)
-        return filter_season(Game.objects, season, should_include_live=True).order_by(
+        qs = filter_season(Game.objects, season, should_include_live=True)
+
+        query = self.request.GET.get("query", "")
+        usernames = re.split(r"[\s,]", query)
+        for username in usernames:
+            if username != "":
+                qs = qs.filter(players__username__icontains=username.strip())
+
+        return qs.distinct().order_by(
             F("end_datetime").desc(nulls_first=True), "-start_datetime"
         )
 
@@ -132,6 +141,7 @@ class GameListView(PaginatedListView):
         context = super().get_context_data(**kwargs)
         season = get_season(self.request)
         context["season"] = season
+        context["query"] = self.request.GET.get("query", "")
         return context
 
 
@@ -143,6 +153,15 @@ class GameDetailView(DetailView):
 class PlayerListView(PaginatedListView):
     model = User
     template_name = "player_list.html"
+
+    def get_queryset(self):
+        query = self.request.GET.get("query", "")
+        return User.objects.filter(username__icontains=query)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["query"] = self.request.GET.get("query", "")
+        return context
 
 
 def get_season(request):

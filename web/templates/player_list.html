@@ -1,9 +1,17 @@
 {% extends "paginated_list_view.html" %}
 
-{% block thead %}
+{% block beforetable %}
 <h2><i class="fas fa-users"></i> Players</h2>
 <br>
 
+<form method="get">
+	<div class="form-group">
+		<input type="text" name="query" class="form-control" placeholder="Search" value="{{ query }}" autofocus>
+	</div>
+</form>
+{% endblock %}
+
+{% block thead %}
 <tr>
 	<th scope="col">Username</th>
 	<th scope="col">Games Played in {{ current_season }}</th>
@@ -19,4 +27,4 @@
 	<td>{{ user.total_game_count }}</td>
 </tr>
 {% endfor %}
-{% endblock %}
+{% endblock %} 

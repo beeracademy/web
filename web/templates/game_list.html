@@ -8,6 +8,12 @@
 	</div>
 </h2>
 	
+<form method="get">
+	<div class="form-group">
+		<input type="hidden" name="season" value="{{ season.number }}">
+		<input type="text" name="query" class="form-control" placeholder="Search" value="{{ query }}" autofocus>
+	</div>
+</form>
 {% endblock %}
 
 {% block thead %}
