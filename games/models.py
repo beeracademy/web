@@ -7,7 +7,6 @@ from django.contrib.staticfiles.templatetags.staticfiles import static
 from django.utils import timezone
 from django.utils.html import mark_safe
 import bcrypt
-import secrets
 import datetime
 from enum import Enum, auto
 from operator import itemgetter
@@ -437,35 +436,6 @@ class Game(models.Model):
 
     def get_total_card_count(self):
         return self.players.count() * len(Card.VALUES)
-
-    def get_all_cards(self):
-        return Card.get_ordered_cards_for_players(self.players.count())
-
-    def cards_left(self):
-        all_cards = set(self.get_all_cards())
-        for card_object in self.cards.all():
-            card = card_object.value, card_object.suit
-            assert card in all_cards
-
-            all_cards.remove(card)
-
-        return all_cards
-
-    def draw_card(self):
-        assert self.get_state() == self.State.WAITING_FOR_DRAW
-
-        value, suit = secrets.choice(list(self.cards_left()))
-        return Card.objects.create(game=self, value=value, suit=suit)
-
-    def add_chug(self, duration_in_milliseconds):
-        assert self.get_state() == self.State.WAITING_FOR_CHUG
-
-        newest_card = self.cards.last()
-        assert newest_card.value == Chug.VALUE
-
-        return Chug.objects.create(
-            card=newest_card, duration_in_milliseconds=duration_in_milliseconds
-        )
 
     def get_turn_durations(self):
         prev_datetime = None

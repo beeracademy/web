@@ -41,28 +41,6 @@ class CreateOrAuthenticated(IsAuthenticatedOrReadOnly):
         return super().has_permission(request, view)
 
 
-class ShouldDrawNext(IsAuthenticatedOrReadOnly):
-    def has_object_permission(self, request, view, game):
-        if request.method == "POST":
-            return (
-                game.get_state() == Game.State.WAITING_FOR_DRAW
-                and request.user == game.next_player_to_draw()
-            )
-
-        return False
-
-
-class ShouldRegisterChug(IsAuthenticatedOrReadOnly):
-    def has_object_permission(self, request, view, game):
-        if request.method == "POST":
-            return (
-                game.get_state() == Game.State.WAITING_FOR_CHUG
-                and request.user == game.current_player_to_chug()
-            )
-
-        return False
-
-
 class PartOfGame(IsAuthenticatedOrReadOnly):
     def has_object_permission(self, request, view, game):
         if request.method == "POST":
