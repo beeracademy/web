@@ -13,6 +13,7 @@ djangorestframework = "*"
 django-filter = "*"
 tqdm = "*"
 "django-bootstrap4" = "*"
+gunicorn = "*"
 
 [dev-packages]
 
