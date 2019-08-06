@@ -47,7 +47,7 @@ def get_recent_players(n):
         if len(recent_players) >= n:
             break
 
-    recent_players = random.sample(list(recent_players), n)
+    recent_players = random.sample(list(recent_players), min(n, len(recent_players)))
     random.shuffle(recent_players)
     return recent_players
 
