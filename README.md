@@ -4,18 +4,18 @@ Frontend and api server for Academy.
 
 ## Installation
 
-Install Python 3.7 and [Pipenv](https://docs.pipenv.org/).
+Install Python 3.7 and [Poetry](https://poetry.eustace.io/).
 
 To install the python dependencies run:
 
 ```sh
-pipenv install
+poetry install
 ```
 
 Then apply the database migrations:
 
 ```sh
-pipenv run ./manage.py migrate
+poetry run ./manage.py migrate
 ```
 
 ## Running
@@ -23,5 +23,5 @@ pipenv run ./manage.py migrate
 To start the server locally run:
 
 ```sh
-pipenv run ./manage.py runserver
+poetry run ./manage.py runserver
 ```
