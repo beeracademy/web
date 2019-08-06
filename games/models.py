@@ -41,6 +41,9 @@ def filter_season(qs, season, key=None, should_include_live=False):
 
 
 class PlayerStat(models.Model):
+    class Meta:
+        unique_together = [("user", "season_number")]
+
     user = models.ForeignKey("User", on_delete=models.CASCADE)
     season_number = models.PositiveIntegerField()
 
