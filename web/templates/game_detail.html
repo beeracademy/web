@@ -90,4 +90,83 @@
     </tbody>
 </table>
 
+<canvas id="graph_canvas"></canvas>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.bundle.min.js" integrity="sha256-xKeoJ50pzbUGkpQxDYHD7o7hxe0LaOGeguUidbq6vis=" crossorigin="anonymous"></script>
+
+
+<script>
+    var userColors = [
+        '#16a085',
+        '#27ae60',
+        '#2980b9',
+        '#8e44ad',
+        '#2c3e50',
+        '#f39c12',
+        '#d35400',
+        '#c0392b'
+    ];
+
+    var playerCount = {{ object.players.count }};
+
+    var datasets = [
+        {% for p in object.ordered_players %}
+        {
+            label: "{{ p.username }}",
+            fill: false,
+            lineTension: 0,
+            backgroundColor: userColors[{{ forloop.counter0 }}],
+            borderColor: userColors[{{ forloop.counter0 }}],
+            data: [0],
+        },
+        {% endfor %}
+    ];
+
+    var cardCount = 0;
+    function addCard(value) {
+        var data = datasets[cardCount % playerCount].data;
+        data.push(data[data.length - 1] + value);
+        cardCount++;
+    }
+
+    {% for c in object.ordered_cards %}
+    addCard({{ c.value }});
+    {% endfor %}
+
+    var labels = [];
+    for (var i = 0; i <= 13; i++) {
+        labels.push(i);
+    }
+
+    var config = {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: datasets
+        },
+        options: {
+            responsive: true,
+            animation: false,
+            scales: {
+                yAxes: [{
+                    ticks: {
+                        min: 0
+                    }
+                }],
+                xAxes: [{
+                    label: "Round",
+                    ticks: {
+                        min: 0
+                    }
+                }],
+            },
+        }
+    };
+
+    var ctx = document.getElementById("graph_canvas").getContext("2d");
+    window.myLine = new Chart(ctx, config);
+</script>
 {% endblock %}
