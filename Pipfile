@@ -14,6 +14,7 @@ django-filter = "*"
 tqdm = "*"
 "django-bootstrap4" = "*"
 gunicorn = "*"
+sentry-sdk = "==0.10.2"
 
 [dev-packages]
 
