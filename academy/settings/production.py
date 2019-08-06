@@ -1,7 +1,9 @@
 from .base import *
+from dotenv import load_dotenv
 import sentry_sdk
 from sentry_sdk.integrations.django import DjangoIntegration
 
+load_dotenv()
 
 DEBUG = False
 ALLOWED_HOSTS = ["academy.beer"]

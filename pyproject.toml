@@ -37,6 +37,7 @@ tqdm = "^4.32"
 django-bootstrap4 = "^0.0.8"
 gunicorn = "^19.9"
 sentry-sdk = "=0.10.2"
+python-dotenv = "^0.10.3"
 
 [tool.poetry.dev-dependencies]
 
