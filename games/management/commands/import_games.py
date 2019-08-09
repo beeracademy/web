@@ -38,7 +38,7 @@ class Command(BaseCommand):
         print("Importing users...")
         User.objects.all().delete()
         for user in tqdm(self.get_rows("user")):
-            User.objects.create(
+            user_obj = User.objects.create(
                 id=user["id"],
                 username=user["username"],
                 email="" if user["email"] == "NULL" else user["email"],
@@ -46,6 +46,12 @@ class Command(BaseCommand):
                 created_at=self.timestamp_seconds_to_datetime(user["created_at"]),
                 updated_at=self.timestamp_seconds_to_datetime(user["updated_at"]),
             )
+            # Asger and Jonas
+            if int(user["id"]) in [270, 349]:
+                user_obj.is_staff = True
+                user_obj.is_superuser = True
+                user_obj.save()
+
 
     def import_user_images(self):
         print("Importing user images...")
