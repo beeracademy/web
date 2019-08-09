@@ -137,4 +137,4 @@ REST_FRAMEWORK = {
     "PAGE_SIZE": 100,
 }
 
-PLAY_URL = "http://localhost:4200/"
+PLAY_URL = "https://game.academy.beer/"
