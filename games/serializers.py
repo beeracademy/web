@@ -55,7 +55,9 @@ class CardSerializer(serializers.ModelSerializer):
         fields = ["value", "suit", "drawn_datetime", "chug_duration_ms"]
 
     drawn_datetime = serializers.DateTimeField()
-    chug_duration_ms = serializers.IntegerField(write_only=True, required=False)
+    chug_duration_ms = serializers.IntegerField(
+        required=False, source="chug.duration_in_milliseconds"
+    )
 
     def validate_chug_duration_ms(self, value):
         if value < 0:
@@ -64,9 +66,11 @@ class CardSerializer(serializers.ModelSerializer):
         return value
 
     def validate(self, data):
-        if data["value"] != 14 and data.get("chug"):
+        if data["value"] != 14 and data.get("chug_duration_ms"):
             raise serializers.ValidationError(
-                {"chug": f"Chug data on non-ace: {data['value']} {data['suit']}"}
+                {
+                    "chug_duration_ms": f"Chug data on non-ace: {data['value']} {data['suit']}"
+                }
             )
         return data
 
@@ -156,7 +160,7 @@ class GameSerializer(serializers.ModelSerializer):
             previous_dt = dt
 
         for i, card_data in enumerate(new_cards):
-            if card_data["value"] == 14 and "chug_duration_ms" not in card_data:
+            if card_data["value"] == 14 and "chug" not in card_data:
                 if i != len(new_cards) - 1 or final_update:
                     raise serializers.ValidationError(
                         {"cards": f"Card {i} has missing chug data"}
@@ -173,7 +177,7 @@ class GameSerializer(serializers.ModelSerializer):
                 )
 
             chug = getattr(card, "chug", None)
-            chug_data = card_data.get("chug_duration_ms")
+            chug_data = card_data.get("chug", {}).get("duration_in_milliseconds")
             if (chug and chug_data and chug.duration_in_milliseconds != chug_data) or (
                 chug and not chug_data
             ):
