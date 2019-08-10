@@ -18,7 +18,7 @@ from games.models import (
     Chug,
 )
 from games.ranking import RANKINGS, get_ranking_from_key
-from games.serializers import GameUpdateSerializer
+from games.serializers import GameSerializer
 from .utils import updated_query_url
 from .forms import UserSettingsForm
 import datetime
@@ -155,7 +155,7 @@ class GameDetailView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["game_data"] = GameUpdateSerializer(self.object).data
+        context["game_data"] = GameSerializer(self.object).data
         context["game_data"]["player_names"] = [
             p.username for p in self.object.ordered_players()
         ]

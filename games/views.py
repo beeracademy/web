@@ -4,13 +4,9 @@ from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 from rest_framework.decorators import action
+from rest_framework.pagination import PageNumberPagination
 from .models import User, Game, Card, Chug, PlayerStat
-from .serializers import (
-    UserSerializer,
-    GameInfoSerializer,
-    GameUpdateSerializer,
-    CreateGameSerializer,
-)
+from .serializers import UserSerializer, GameSerializer, CreateGameSerializer
 
 
 class CustomAuthToken(ObtainAuthToken):
@@ -92,10 +88,16 @@ def update_game(game, data):
     game.save()
 
 
+class OneResultSetPagination(PageNumberPagination):
+    page_size = 1
+    max_page_size = 1
+
+
 class GameViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Game.objects.all()
-    serializer_class = GameInfoSerializer
+    serializer_class = GameSerializer
     permission_classes = (CreateOrAuthenticated,)
+    pagination_class = OneResultSetPagination
 
     def create(self, request):
         serializer = CreateGameSerializer(data=request.data)
@@ -108,7 +110,7 @@ class GameViewSet(viewsets.ReadOnlyModelViewSet):
         game = Game.objects.get(id=pk)
         self.check_object_permissions(request, game)
 
-        serializer = GameUpdateSerializer(game=game, data=request.data)
+        serializer = GameSerializer(game, data=request.data)
         serializer.is_valid(raise_exception=True)
 
         update_game(game, serializer.validated_data)

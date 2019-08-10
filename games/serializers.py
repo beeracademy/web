@@ -18,12 +18,6 @@ class UserSerializer(serializers.ModelSerializer):
         return user
 
 
-class GameInfoSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Game
-        fields = ["id", "start_datetime"]
-
-
 class CreateGameSerializer(serializers.Serializer):
     tokens = serializers.ListField(
         child=serializers.CharField(), min_length=2, max_length=6
@@ -55,7 +49,7 @@ class CreateGameSerializer(serializers.Serializer):
         return game
 
 
-class CardUpdateSerializer(serializers.ModelSerializer):
+class CardSerializer(serializers.ModelSerializer):
     class Meta:
         model = Card
         fields = ["value", "suit", "drawn_datetime", "chug_duration_ms"]
@@ -77,10 +71,11 @@ class CardUpdateSerializer(serializers.ModelSerializer):
         return data
 
 
-class GameUpdateSerializer(serializers.ModelSerializer):
+class GameSerializer(serializers.ModelSerializer):
     class Meta:
         model = Game
         fields = [
+            "id",
             "start_datetime",
             "end_datetime",
             "description",
@@ -91,11 +86,8 @@ class GameUpdateSerializer(serializers.ModelSerializer):
 
     start_datetime = serializers.DateTimeField(required=True)
     official = serializers.BooleanField(required=True)
-    cards = CardUpdateSerializer(many=True)
+    cards = CardSerializer(many=True)
     seed = serializers.ListField(child=serializers.IntegerField(), write_only=True)
-
-    def __init__(self, game, *args, **kwargs):
-        super().__init__(game, *args, **kwargs)
 
     def validate(self, data):
         def check_field(field, default=None):
