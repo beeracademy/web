@@ -5,6 +5,7 @@ from django.contrib import messages
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.views import LoginView, LogoutView
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.utils import timezone
 from django.views.generic import DetailView, ListView, UpdateView
 from django.core.paginator import Paginator
 from games.models import (
@@ -19,7 +20,9 @@ from games.models import (
 from games.ranking import RANKINGS, get_ranking_from_key
 from .utils import updated_query_url
 from .forms import UserSettingsForm
+import datetime
 from urllib.parse import urlencode
+from collections import Counter
 import random
 import re
 
@@ -194,6 +197,41 @@ class PlayerDetailView(DetailView):
                     "url": get_ranking_url(ranking, self.object, season),
                 }
             )
+
+        games_played = Counter()
+        for g in self.object.games.all():
+            games_played[g.end_datetime.date()] += 1
+
+        HEATMAP_WEEKS = 53
+        context["heatmap_data"] = {"labels": [""] * HEATMAP_WEEKS, "datasets": []}
+
+        today = timezone.now().date()
+        weekday = today.weekday()
+
+        DAY_NAMES = [
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday",
+            "Saturday",
+            "Sunday",
+        ]
+        DAY_NAMES = DAY_NAMES[weekday + 1 :] + DAY_NAMES[: weekday + 1]
+
+        for d in DAY_NAMES:
+            context["heatmap_data"]["datasets"].append({"label": d, "data": []})
+
+        date = today - datetime.timedelta(days=HEATMAP_WEEKS * 7 - 1)
+        for i in range(HEATMAP_WEEKS * 7):
+            if i % 7 == 0 and date.day <= 7:
+                week = i // 7
+                context["heatmap_data"]["labels"][week] = date.strftime("%b")
+
+            context["heatmap_data"]["datasets"][i % 7]["data"].append(
+                games_played[date]
+            )
+            date += datetime.timedelta(days=1)
 
         return context
 

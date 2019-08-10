@@ -352,7 +352,7 @@ class Game(models.Model):
         WAITING_FOR_END = auto()
         ENDED = auto()
 
-    players = models.ManyToManyField(User, through="GamePlayer")
+    players = models.ManyToManyField(User, through="GamePlayer", related_name="games")
     start_datetime = models.DateTimeField(default=timezone.now)
     end_datetime = models.DateTimeField(blank=True, null=True)
     sips_per_beer = models.PositiveSmallIntegerField(default=STANDARD_SIPS_PER_BEER)

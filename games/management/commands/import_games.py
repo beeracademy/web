@@ -52,7 +52,6 @@ class Command(BaseCommand):
                 user_obj.is_superuser = True
                 user_obj.save()
 
-
     def import_user_images(self):
         print("Importing user images...")
         for user in tqdm(User.objects.all()):
