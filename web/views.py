@@ -12,6 +12,7 @@ from games.models import (
     User,
     Game,
     GamePlayer,
+    Card,
     Season,
     all_time_season,
     filter_season,
@@ -156,10 +157,14 @@ class GameDetailView(DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["game_data"] = GameSerializer(self.object).data
-        context["player_data"] = [{
-            "id": p.id,
-            "name": p.username,
-        } for p in self.object.ordered_players()]
+        context["player_data"] = [
+            {"id": p.id, "name": p.username} for p in self.object.ordered_players()
+        ]
+        context["card_constants"] = {
+            "value_names": dict(Card.VALUES),
+            "suit_names": dict(Card.SUITS),
+            "suit_symbols": Card.SUIT_SYMBOLS,
+        }
         return context
 
 

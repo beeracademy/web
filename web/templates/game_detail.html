@@ -17,7 +17,7 @@
 
 <h1>Game</h1>
 
-<p>{{ object.description }}</p>
+<p id="description"></p>
 
 <table class="table">
 <thead>
@@ -65,18 +65,6 @@
 
 <div class="container">
 <div id="chugs_container" class="row justify-content-md-center">
-{% for c in object.ordered_chugs %}
-<div class="col-md-auto">
-    <div class="card">
-        <div class="card-header">{{ c.card.colored_suit_symbol }}
-        </div>
-        <ul class="list-group list-group-flush">
-            <li class="list-group-item"><a href="/players/{{ c.card.get_user.id }}/">{{ c.card.get_user }}</a></li>
-            <li class="list-group-item">{{ c.duration_str }}</li>
-        </ul>
-    </div>
-</div>
-{% endfor %}
 </div>
 </div>
 
@@ -92,14 +80,6 @@
         </tr>
     </thead>
     <tbody>
-        {% for row in object.cards_by_round %}
-        <tr>
-            <td>{{ forloop.counter }}</td>
-            {% for c in row %}
-            <td title="{{ c.card_str }}"><span class="symbol">{{ c.colored_suit_symbol }}</span> {{ c.value }}</td>
-            {% endfor %}
-        </tr>
-        {% endfor %}
     </tbody>
 </table>
 <br>
@@ -117,6 +97,7 @@
 
 {{ game_data|json_script:"game_data" }}
 {{ player_data|json_script:"player_data" }}
+{{ card_constants|json_script:"card_constants" }}
 
 
 <script>
@@ -131,22 +112,30 @@
         "#c0392b",
     ];
 
+    var card_constants = JSON.parse(document.getElementById("card_constants").textContent);
+
     var players = JSON.parse(document.getElementById("player_data").textContent);
     var playerCount = players.length;
 
     var game_id = {{ object.id }};
 
-    var game_data = JSON.parse(document.getElementById("game_data").textContent);
+    function cardName(card) {
+        return card_constants.value_names[card.value] + " of " + card_constants.suit_names[card.suit];
+    }
 
     function coloredSuit(suit) {
-        return suit;
+        var pair = card_constants.suit_symbols[suit];
+        return $("<span>").css({"color": pair[1]}).text(pair[0]);
     }
 
     function updateGameInfo(game_data) {
-        if (game_data.end_datetime) {
-            $("#game_end_datetime").text(game_data.end_datetime);
+        if (game_data.description) {
+            $("#description").text(game_data.description);
         }
-        $("#game_duration").text(formatDuration(Date.now() - game_data.start_datetime));
+        if (game_data.end_datetime) {
+            $("#game_end_datetime").text(new Date(game_data.end_datetime));
+        }
+        $("#game_duration").text(formatDuration(Date.now() - new Date(game_data.start_datetime)));
     }
 
     function updatePlayerStats(game_data) {
@@ -193,7 +182,7 @@
                 var cell = $("<td>");
                 if (card) {
                     var symbol = $("<span>").attr({"class": "symbol"}).append(coloredSuit(card.suit));
-                    cell.attr({"title": "???"}).append(symbol).append(" " + card.value);
+                    cell.attr({"title": cardName(card)}).append(symbol).append(" " + card.value);
                 }
                 row.append(cell);
             }
@@ -262,6 +251,9 @@
     }
 
     function updateTimeGraph(game_data) {
+        var start_datetime = new Date(game_data.start_datetime);
+        var end_datetime = game_data.end_datetime? new Date(game_data.end_datetime): undefined;
+
         var datasets = [{
             label: "Time",
             fill: false,
@@ -308,11 +300,11 @@
                             labelString: "Time",
                         },
                         ticks: {
-                            min: game_data.start_datetime,
-                            max: game_data.end_datetime,
+                            min: start_datetime,
+                            max: end_datetime,
                             stepSize: 10 * 60 * 1000,
                             callback: function (value) {
-                                var msDiff = value - game_data.start_datetime;
+                                var msDiff = value - start_datetime;
                                 return formatDuration(msDiff);
                             },
                         },
@@ -323,7 +315,7 @@
                         label: function(tooltipItem, data) {
                             var index = tooltipItem.index;
                             var player_name = players[index % playerCount].name;
-                            var previous = index === 0? game_data.start_datetime: data.datasets[0].data[index - 1];
+                            var previous = index === 0? start_datetime: data.datasets[0].data[index - 1];
                             var msDiff = parseInt(tooltipItem.value) - previous;
                             return player_name + "'s turn time: " + formatDuration(msDiff);
                         },
@@ -337,9 +329,6 @@
     }
 
     function updatePage(game_data) {
-        game_data.start_datetime = new Date(game_data.start_datetime);
-        game_data.end_datetime = game_data.end_datetime? new Date(game_data.end_datetime): undefined;
-
         updateGameInfo(game_data)
         updatePlayerStats(game_data)
         updateChugs(game_data);
@@ -348,16 +337,26 @@
         updateTimeGraph(game_data);
     }
 
+    function hasNewData(old_data, new_data) {
+        return JSON.stringify(old_data) !== JSON.stringify(new_data);
+    }
+
     var updateInterval = 1000;
+    var last_game_data = null;
     function updateData() {
         $.get("/api/games/" + game_id + "/", function (game_data) {
-            updatePage(game_data);
+            if (hasNewData(last_game_data, game_data)) {
+                updatePage(game_data);
+            }
             if (!game_data.end_datetime) {
                 setTimeout(updateData, updateInterval);
             }
+
+            last_game_data = game_data;
         });
     }
 
+    var game_data = JSON.parse(document.getElementById("game_data").textContent);
     updatePage(game_data);
 
     setTimeout(updateData, updateInterval);
