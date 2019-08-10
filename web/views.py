@@ -156,9 +156,10 @@ class GameDetailView(DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["game_data"] = GameSerializer(self.object).data
-        context["game_data"]["player_names"] = [
-            p.username for p in self.object.ordered_players()
-        ]
+        context["player_data"] = [{
+            "id": p.id,
+            "name": p.username,
+        } for p in self.object.ordered_players()]
         return context
 
 

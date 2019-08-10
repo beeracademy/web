@@ -1,5 +1,18 @@
 {% extends "base.html" %}
 
+{% block styles %}
+<style>
+.card-header {
+    font-size: 4rem;
+    text-align: center;
+}
+.symbol {
+    width: 1rem;
+    display: inline-block;
+}
+</style>
+{% endblock %}
+
 {% block content %}
 
 <h1>Game</h1>
@@ -19,8 +32,8 @@
     <tr>
     <td>{{ object.id }}</td>
     <td>{{ object.start_datetime }}</td>
-    <td>{{ object.end_datetime }}</td>
-    <td>{{ object.duration_str }}</td>
+    <td id="game_end_datetime">{% firstof object.end_datetime "-" %}</td>
+    <td id="game_duration">{{ object.duration_str }}</td>
     </tr>
 </tbody>
 </table>
@@ -51,11 +64,11 @@
 <h2>Chugs</h2>
 
 <div class="container">
-<div class="row justify-content-md-center">
+<div id="chugs_container" class="row justify-content-md-center">
 {% for c in object.ordered_chugs %}
 <div class="col-md-auto">
     <div class="card">
-        <div class="card-header" style="font-size: 4rem; text-align: center;">{{ c.card.colored_suit_symbol }}
+        <div class="card-header">{{ c.card.colored_suit_symbol }}
         </div>
         <ul class="list-group list-group-flush">
             <li class="list-group-item"><a href="/players/{{ c.card.get_user.id }}/">{{ c.card.get_user }}</a></li>
@@ -69,7 +82,7 @@
 
 <h2>Round overview</h2>
 
-<table class="table table-bordered table-striped table-hover table-sm">
+<table id="cards_table" class="table table-bordered table-striped table-hover table-sm">
     <thead>
         <tr>
             <th scope="col">Round</th>
@@ -83,7 +96,7 @@
         <tr>
             <td>{{ forloop.counter }}</td>
             {% for c in row %}
-            <td title="{{ c.card_str }}"><span style="width: 1rem; display: inline-block;"{{ c.colored_suit_symbol }}</span> {{ c.value }}</td>
+            <td title="{{ c.card_str }}"><span class="symbol">{{ c.colored_suit_symbol }}</span> {{ c.value }}</td>
             {% endfor %}
         </tr>
         {% endfor %}
@@ -103,14 +116,10 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.bundle.min.js" integrity="sha256-xKeoJ50pzbUGkpQxDYHD7o7hxe0LaOGeguUidbq6vis=" crossorigin="anonymous"></script>
 
 {{ game_data|json_script:"game_data" }}
+{{ player_data|json_script:"player_data" }}
 
 
 <script>
-    var game_data = JSON.parse(document.getElementById("game_data").textContent);
-    var start_datetime = new Date(game_data.start_datetime);
-    var end_datetime = game_data.end_datetime? new Date(game_data.end_datetime): undefined;
-    var playerCount = game_data.player_names.length;
-
     var userColors = [
         "#16a085",
         "#27ae60",
@@ -119,139 +128,238 @@
         "#2c3e50",
         "#f39c12",
         "#d35400",
-        "#c0392b"
+        "#c0392b",
     ];
 
-    var datasets = [];
-    for (var i = 0; i < playerCount; i++) {
-        datasets.push({
-            label: game_data.player_names[i],
+    var players = JSON.parse(document.getElementById("player_data").textContent);
+    var playerCount = players.length;
+
+    var game_id = {{ object.id }};
+
+    var game_data = JSON.parse(document.getElementById("game_data").textContent);
+
+    function coloredSuit(suit) {
+        return suit;
+    }
+
+    function updateGameInfo(game_data) {
+        if (game_data.end_datetime) {
+            $("#game_end_datetime").text(game_data.end_datetime);
+        }
+        $("#game_duration").text(formatDuration(Date.now() - game_data.start_datetime));
+    }
+
+    function updatePlayerStats(game_data) {
+    }
+
+    function updateChugs(game_data) {
+        var container = $("#chugs_container");
+        container.html("");
+        for (var i = 0; i < game_data.cards.length; i++) {
+            var card = game_data.cards[i];
+            var duration = card.chug_duration_ms;
+            if (duration) {
+                var playerIndex = i % playerCount;
+                var player = players[playerIndex];
+
+                container.append(
+                    $("<div>").attr({"class": "col-md-auto"}).append(
+                        $("<div>").attr({"class": "card"}).append(
+                            $("<div>").attr({"class": "card-header"}).append(coloredSuit(card.suit))
+                        ).append(
+                            $("<ul>").attr({"class": "list-group list-group-flush"}).append(
+                                $("<li>").attr({"class": "list-group-item"}).append(
+                                    $("<a>").attr({"href": "/players/" + player.id + "/"}).text(player.name)
+                                )
+                            ).append(
+                                $("<li>").attr({"class": "list-group-item"}).text(duration)
+                            )
+                        )
+                    )
+                );
+            }
+        }
+    }
+
+    function updateCardsTable(game_data) {
+        var tbody = $("#cards_table > tbody");
+        tbody.html("");
+        for (var i = 0; i < 13; i++) {
+            var row = $("<tr>");
+            row.append($("<td>").text(i + 1));
+
+            for (var j = 0; j < playerCount; j++) {
+                var card = game_data.cards[i * playerCount + j];
+                var cell = $("<td>");
+                if (card) {
+                    var symbol = $("<span>").attr({"class": "symbol"}).append(coloredSuit(card.suit));
+                    cell.attr({"title": "???"}).append(symbol).append(" " + card.value);
+                }
+                row.append(cell);
+            }
+
+            tbody.append(row);
+        }
+    }
+
+    function updateSipsGraph(game_data) {
+        var datasets = [];
+        for (var i = 0; i < playerCount; i++) {
+            datasets.push({
+                label: players[i].name,
+                fill: false,
+                lineTension: 0,
+                backgroundColor: userColors[i],
+                borderColor: userColors[i],
+                data: [0],
+            });
+        }
+
+        for (var i = 0; i < game_data.cards.length; i++) {
+            var data = datasets[i % playerCount].data;
+            data.push(data[data.length - 1] + game_data.cards[i].value);
+        }
+
+        var labels = [];
+        for (var i = 0; i <= 13; i++) {
+            labels.push(i);
+        }
+
+        var config = {
+            type: "line",
+            data: {
+                labels: labels,
+                datasets: datasets
+            },
+            options: {
+                responsive: true,
+                animation: false,
+                scales: {
+                    xAxes: [{
+                        scaleLabel: {
+                            display: true,
+                            labelString: "Round",
+                        },
+                        ticks: {
+                            min: 0
+                        },
+                    }],
+                    yAxes: [{
+                        scaleLabel: {
+                            display: true,
+                            labelString: "Sips",
+                        },
+                        ticks: {
+                            min: 0
+                        },
+                    }],
+                },
+            }
+        };
+
+        var ctx = document.getElementById("sips_graph_canvas").getContext("2d");
+        new Chart(ctx, config);
+    }
+
+    function updateTimeGraph(game_data) {
+        var datasets = [{
+            label: "Time",
             fill: false,
             lineTension: 0,
-            backgroundColor: userColors[i],
-            borderColor: userColors[i],
-            data: [0],
+            backgroundColor: userColors[0],
+            borderColor: userColors[0],
+            data: [],
+        }];
+
+        for (var i = 0; i < game_data.cards.length; i++) {
+            datasets[0].data.push(new Date(game_data.cards[i].drawn_datetime));
+        }
+
+        var labels = [];
+        for (var i = 0; i < game_data.cards.length; i++) {
+            labels.push(i);
+        }
+
+        var config = {
+            type: "line",
+            data: {
+                labels: labels,
+                datasets: datasets
+            },
+            options: {
+                responsive: true,
+                animation: false,
+                legend: {
+                    display: false,
+                },
+                scales: {
+                    xAxes: [{
+                        scaleLabel: {
+                            display: true,
+                            labelString: "Turn",
+                        },
+                        ticks: {
+                            min: 0
+                        },
+                    }],
+                    yAxes: [{
+                        scaleLabel: {
+                            display: true,
+                            labelString: "Time",
+                        },
+                        ticks: {
+                            min: game_data.start_datetime,
+                            max: game_data.end_datetime,
+                            stepSize: 10 * 60 * 1000,
+                            callback: function (value) {
+                                var msDiff = value - game_data.start_datetime;
+                                return formatDuration(msDiff);
+                            },
+                        },
+                    }],
+                },
+                tooltips: {
+                    callbacks: {
+                        label: function(tooltipItem, data) {
+                            var index = tooltipItem.index;
+                            var player_name = players[index % playerCount].name;
+                            var previous = index === 0? game_data.start_datetime: data.datasets[0].data[index - 1];
+                            var msDiff = parseInt(tooltipItem.value) - previous;
+                            return player_name + "'s turn time: " + formatDuration(msDiff);
+                        },
+                    },
+                },
+            }
+        };
+
+        var ctx = document.getElementById("time_graph_canvas").getContext("2d");
+        new Chart(ctx, config);
+    }
+
+    function updatePage(game_data) {
+        game_data.start_datetime = new Date(game_data.start_datetime);
+        game_data.end_datetime = game_data.end_datetime? new Date(game_data.end_datetime): undefined;
+
+        updateGameInfo(game_data)
+        updatePlayerStats(game_data)
+        updateChugs(game_data);
+        updateCardsTable(game_data);
+        updateSipsGraph(game_data);
+        updateTimeGraph(game_data);
+    }
+
+    var updateInterval = 1000;
+    function updateData() {
+        $.get("/api/games/" + game_id + "/", function (game_data) {
+            updatePage(game_data);
+            if (!game_data.end_datetime) {
+                setTimeout(updateData, updateInterval);
+            }
         });
     }
 
-    for (var i = 0; i < game_data.cards.length; i++) {
-        var data = datasets[i % playerCount].data;
-        data.push(data[data.length - 1] + game_data.cards[i].value);
-    }
+    updatePage(game_data);
 
-    var labels = [];
-    for (var i = 0; i <= 13; i++) {
-        labels.push(i);
-    }
-
-    var config = {
-        type: "line",
-        data: {
-            labels: labels,
-            datasets: datasets
-        },
-        options: {
-            responsive: true,
-            animation: false,
-            scales: {
-                xAxes: [{
-                    scaleLabel: {
-                        display: true,
-                        labelString: "Round",
-                    },
-                    ticks: {
-                        min: 0
-                    },
-                }],
-                yAxes: [{
-                    scaleLabel: {
-                        display: true,
-                        labelString: "Sips",
-                    },
-                    ticks: {
-                        min: 0
-                    },
-                }],
-            },
-        }
-    };
-
-    var ctx = document.getElementById("sips_graph_canvas").getContext("2d");
-    new Chart(ctx, config);
-</script>
-
-<script>
-    var datasets = [{
-        label: "Time",
-        fill: false,
-        lineTension: 0,
-        backgroundColor: userColors[0],
-        borderColor: userColors[0],
-        data: [],
-    }];
-
-    for (var i = 0; i < game_data.cards.length; i++) {
-        datasets[0].data.push(new Date(game_data.cards[i].drawn_datetime));
-    }
-
-    var labels = [];
-    for (var i = 0; i < game_data.cards.length; i++) {
-        labels.push(i);
-    }
-
-    var config = {
-        type: "line",
-        data: {
-            labels: labels,
-            datasets: datasets
-        },
-        options: {
-            responsive: true,
-            animation: false,
-            legend: {
-                display: false,
-            },
-            scales: {
-                xAxes: [{
-                    scaleLabel: {
-                        display: true,
-                        labelString: "Turn",
-                    },
-                    ticks: {
-                        min: 0
-                    },
-                }],
-                yAxes: [{
-                    scaleLabel: {
-                        display: true,
-                        labelString: "Time",
-                    },
-                    ticks: {
-                        min: start_datetime,
-                        max: end_datetime,
-                        stepSize: 10 * 60 * 1000,
-                        callback: function (value) {
-                            var msDiff = value - start_datetime;
-                            return formatDuration(msDiff);
-                        },
-                    },
-                }],
-            },
-            tooltips: {
-                callbacks: {
-                    label: function(tooltipItem, data) {
-                        var index = tooltipItem.index;
-                        var player_name = game_data.player_names[index % playerCount];  
-                        var previous = index === 0? start_datetime: data.datasets[0].data[index - 1];
-                        var msDiff = parseInt(tooltipItem.value) - previous;
-                        return player_name + "'s turn time: " + formatDuration(msDiff);
-                    },
-                },
-            },
-        }
-    };
-
-    var ctx = document.getElementById("time_graph_canvas").getContext("2d");
-    new Chart(ctx, config);
+    setTimeout(updateData, updateInterval);
 </script>
 {% endblock %}
