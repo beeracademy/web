@@ -95,12 +95,11 @@ class GameUpdateSerializer(serializers.ModelSerializer):
     seed = serializers.ListField(child=serializers.IntegerField(), write_only=True)
 
     def __init__(self, game, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.game = game
+        super().__init__(game, *args, **kwargs)
 
     def validate(self, data):
         def check_field(field, default=None):
-            value = getattr(self.game, field)
+            value = getattr(self.instance, field)
             new_value = data.get(field, default)
             if value != default and value != new_value:
                 if new_value == default:
@@ -114,7 +113,7 @@ class GameUpdateSerializer(serializers.ModelSerializer):
                         }
                     )
 
-        if self.game.get_state() == Game.State.ENDED:
+        if self.instance.get_state() == Game.State.ENDED:
             raise serializers.ValidationError({"non_field_errors": "Game has finished"})
 
         check_field("start_datetime")
@@ -122,13 +121,13 @@ class GameUpdateSerializer(serializers.ModelSerializer):
         check_field("official")
         check_field("description", "")
 
-        cards = self.game.ordered_cards()
+        cards = self.instance.ordered_cards()
         new_cards = data["cards"]
 
         previous_cards = len(cards)
 
         seed = data["seed"]
-        seed_cards = Card.get_shuffled_deck(self.game.players.count(), seed)
+        seed_cards = Card.get_shuffled_deck(self.instance.players.count(), seed)
 
         if len(cards) > len(new_cards):
             raise serializers.ValidationError(
