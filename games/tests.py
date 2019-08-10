@@ -165,7 +165,7 @@ class ApiTest(TestCase):
         self.set_token(self.t1)
         game_data = self.get_game_data(10)
         game_data["start_datetime"] = datetime.datetime.fromisoformat(
-            game_data["start_datetime"][:-1]
+            game_data["start_datetime"]
         ) - datetime.timedelta(seconds=1)
         self.update_game(game_data, 400)
 
