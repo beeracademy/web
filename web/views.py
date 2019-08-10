@@ -215,7 +215,8 @@ class PlayerDetailView(DetailView):
 
         games_played = Counter()
         for g in self.object.games.all():
-            games_played[g.end_datetime.date()] += 1
+            if g.end_datetime:
+                games_played[g.end_datetime.date()] += 1
 
         HEATMAP_WEEKS = 53
         context["heatmap_data"] = {"labels": [""] * HEATMAP_WEEKS, "datasets": []}
