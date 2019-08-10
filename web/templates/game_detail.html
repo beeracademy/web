@@ -108,7 +108,7 @@
 <script>
     var game_data = JSON.parse(document.getElementById("game_data").textContent);
     var start_datetime = new Date(game_data.start_datetime);
-    var end_datetime = new Date(game_data.end_datetime);
+    var end_datetime = game_data.end_datetime? new Date(game_data.end_datetime): undefined;
     var playerCount = game_data.player_names.length;
 
     var userColors = [
