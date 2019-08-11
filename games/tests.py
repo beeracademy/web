@@ -15,7 +15,7 @@ class ApiTest(TestCase):
     SEED = list(range(TOTAL_CARDS - 1, 0, -1))
 
     def assert_status(self, r, status):
-        self.assertEqual(r.status_code, status, r.data)
+        self.assertEqual(r.status_code, status, getattr(r, "data", None))
 
     def assert_ok(self, r, status=200):
         self.assert_status(r, 200)
@@ -28,7 +28,7 @@ class ApiTest(TestCase):
         r = client.post(
             "/api-token-auth/", {"username": username, "password": password}
         )
-        self.assertEqual(r.status_code, 200)
+        self.assert_ok(r)
 
         token = r.data["token"]
         return u, token
@@ -85,6 +85,24 @@ class ApiTest(TestCase):
 
     def set_token(self, token):
         self.client.credentials(HTTP_AUTHORIZATION="Token " + token)
+
+    def test_login(self):
+        r = self.client.post(
+            "/api-token-auth/", {"username": "Player1", "password": "test1"}
+        )
+        self.assert_ok(r)
+
+    def test_login_wrong_password(self):
+        r = self.client.post(
+            "/api-token-auth/", {"username": "Player1", "password": "foobar"}
+        )
+        self.assert_status(r, 400)
+
+    def test_login_no_such_user(self):
+        r = self.client.post(
+            "/api-token-auth/", {"username": "Foobar", "password": "foobar"}
+        )
+        self.assert_status(r, 404)
 
     def test_player_order(self):
         game = Game.objects.get(id=self.game_id)
