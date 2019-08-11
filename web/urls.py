@@ -13,4 +13,24 @@ urlpatterns = [
     path("settings/", views.UserSettingsView.as_view()),
     path("login/", views.MyLoginView.as_view()),
     path("logout/", views.MyLogoutView.as_view()),
+    path(
+        "login/password_reset/",
+        views.MyPasswordResetView.as_view(),
+        name="password_reset",
+    ),
+    path(
+        "login/password_reset/done/",
+        views.MyPasswordResetDoneView.as_view(),
+        name="password_reset_done",
+    ),
+    path(
+        "login/password_reset/<uidb64>/<token>/",
+        views.MyPasswordResetConfirmView.as_view(),
+        name="password_reset_confirm",
+    ),
+    path(
+        "login/password_reset/complete/",
+        views.MyPasswordResetCompleteView.as_view(),
+        name="password_reset_complete",
+    ),
 ]

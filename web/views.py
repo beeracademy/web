@@ -3,7 +3,14 @@ from django.db.models import F
 from django.core.files import File
 from django.contrib import messages
 from django.contrib.auth import update_session_auth_hash
-from django.contrib.auth.views import LoginView, LogoutView
+from django.contrib.auth.views import (
+    LoginView,
+    LogoutView,
+    PasswordResetView,
+    PasswordResetDoneView,
+    PasswordResetConfirmView,
+    PasswordResetCompleteView,
+)
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.utils import timezone
 from django.views.generic import DetailView, ListView, UpdateView
@@ -91,6 +98,22 @@ def about(request):
 
 class MyLoginView(LoginView):
     template_name = "login.html"
+
+
+class MyPasswordResetView(PasswordResetView):
+    template_name = "password_reset.html"
+
+
+class MyPasswordResetDoneView(PasswordResetDoneView):
+    template_name = "password_reset_done.html"
+
+
+class MyPasswordResetConfirmView(PasswordResetConfirmView):
+    template_name = "password_reset_confirm.html"
+
+
+class MyPasswordResetCompleteView(PasswordResetCompleteView):
+    template_name = "password_reset_complete.html"
 
 
 class MyLogoutView(LogoutView):
