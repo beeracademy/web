@@ -17,4 +17,7 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = "django.drewsen@gmail.com"
 
+SERVER_EMAIL = "no-reply@academy.beer"
+DEFAULT_FROM_EMAIL = "no-reply@academy.beer"
+
 sentry_sdk.init(dsn=os.getenv("SENTRY_DNS"), integrations=[DjangoIntegration()])
