@@ -46,10 +46,10 @@ class PlayerStat(models.Model):
     user = models.ForeignKey("User", on_delete=models.CASCADE)
     season_number = models.PositiveIntegerField()
 
-    total_games = models.PositiveIntegerField()
-    total_time_played_seconds = models.FloatField()
+    total_games = models.PositiveIntegerField(default=0)
+    total_time_played_seconds = models.FloatField(default=0)
 
-    total_sips = models.PositiveIntegerField()
+    total_sips = models.PositiveIntegerField(default=0)
 
     best_game = models.ForeignKey(
         "Game", on_delete=models.CASCADE, null=True, related_name="+"
@@ -60,7 +60,7 @@ class PlayerStat(models.Model):
     best_game_sips = models.PositiveIntegerField(null=True)
     worst_game_sips = models.PositiveIntegerField(null=True)
 
-    total_chugs = models.PositiveIntegerField()
+    total_chugs = models.PositiveIntegerField(default=0)
 
     fastest_chug = models.ForeignKey(
         "Chug", on_delete=models.CASCADE, null=True, related_name="+"
@@ -73,37 +73,23 @@ class PlayerStat(models.Model):
         season = game.get_season()
         for s in [season, all_time_season]:
             for player in game.players.all():
-                ps, created = cls.get_or_create(player, s)
-                if not created:
-                    ps.update()
+                ps, _ = PlayerStat.objects.get_or_create(
+                    user=player, season_number=s.number
+                )
+                ps.update()
 
     @classmethod
     def update_all(cls):
-        PlayerStat.objects.all().delete()
         for season_number in tqdm(range(Season.current_season().number)):
             cls.update_season(Season(season_number))
 
     @classmethod
     def update_season(cls, season):
-        PlayerStat.objects.filter(season_number=season.number).delete()
         for user in tqdm(User.objects.all()):
-            cls.create(user, season)
-
-    @classmethod
-    def get_or_create(cls, user, season):
-        try:
-            return (
-                PlayerStat.objects.get(user=user, season_number=season.number),
-                False,
+            ps, _ = PlayerStat.objects.get_or_create(
+                user=user, season_number=season.number
             )
-        except PlayerStat.DoesNotExist:
-            return (cls.create(user, season), True)
-
-    @classmethod
-    def create(cls, user, season):
-        ps = PlayerStat(user=user, season_number=season.number)
-        ps.update()
-        return ps
+            ps.update()
 
     def update(self):
         games = filter_season(self.user.gameplayer_set, self.season, key="game").filter(
@@ -245,7 +231,9 @@ class User(AbstractUser):
         return filter_season(self.gameplayer_set, season, key="game").count()
 
     def stats_for_season(self, season):
-        return PlayerStat.get_or_create(self, season)[0]
+        return PlayerStat.objects.get_or_create(user=self, season_number=season.number)[
+            0
+        ]
 
     def image_url(self):
         if self.image:
