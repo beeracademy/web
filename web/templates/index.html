@@ -42,8 +42,8 @@
 <div class="row">
     {% for user in recent_players %}
     <div class="col-6 col-lg-3 py-2">
-        <a href="/players/{{ user.id }}/"><img src="{{ user.image_url }}" class="img-fluid mx-auto d-block"></a>
-        {{ user.username }}
+        <a href="/players/{{ user.id }}/"><img src="{{ user.image_url }}" class="img-fluid mx-auto d-block bottom-shadow"></a>
+        <div class="card-username">{{ user.username }}</div>
     </div>
     {% endfor %}
 </div>
@@ -57,9 +57,26 @@
 <div class="row">
     {% for user in wall_of_shame_players %}
     <div class="col-6 col-lg-3 py-2">
-        <a href="/players/{{ user.id }}/"><img src="{{ user.image_url }}" class="img-fluid mx-auto d-block"></a>
-        {{ user.username }}
+            <a href="/players/{{ user.id }}/"><img src="{{ user.image_url }}" class="img-fluid mx-auto d-block"></a>
+            <div class="card-username">{{ user.username }}</div>
     </div>
     {% endfor %}
 </div>
+
+<style>
+    .card-username {
+        text-align: center;
+        color: #fff;
+        font-weight: bold;
+        margin-top: -40px;
+        font-size: 24px;
+
+        text-shadow:
+            -1px -1px 0 #000,  
+            1px -1px 0 #000,
+            -1px  1px 0 #000,
+            1px  1px 0 #000;
+    }
+</style>
+
 {% endblock %}
