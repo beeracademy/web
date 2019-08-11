@@ -1,8 +1,17 @@
 from django import forms
+from django.contrib.auth.password_validation import (
+    validate_password,
+    get_default_password_validators,
+)
 from games.models import User
 import base64
 from io import BytesIO
 from PIL import Image
+
+
+validators_help_text = "<br>".join(
+    [v.get_help_text() for v in get_default_password_validators()]
+)
 
 
 class UserSettingsForm(forms.ModelForm):
@@ -16,7 +25,9 @@ class UserSettingsForm(forms.ModelForm):
             "image_deleted",
         ]
 
-    new_password = forms.CharField(widget=forms.PasswordInput, required=False)
+    new_password = forms.CharField(
+        widget=forms.PasswordInput, required=False, help_text=validators_help_text
+    )
     new_image_data_url = forms.CharField(required=False)
     image_deleted = forms.BooleanField(required=False)
 
@@ -44,3 +55,8 @@ class UserSettingsForm(forms.ModelForm):
 
         bytes_io.seek(0)
         self.cleaned_data["image_io"] = bytes_io
+
+    def clean_new_password(self):
+        password = self.cleaned_data["new_password"]
+        if password:
+            validate_password(password, self.instance)
