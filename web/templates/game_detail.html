@@ -15,7 +15,9 @@
 
 {% block content %}
 
-<h1>Game</h1>
+<h2>Game</h2>
+
+<hr>
 
 <p id="description"></p>
 
@@ -40,6 +42,8 @@
 
 <h2>Players</h2>
 
+<hr>
+
 <div class="container">
 <div class="row justify-content-md-center">
 {% for stats in object.get_player_stats %}
@@ -63,12 +67,16 @@
 
 <h2>Chugs</h2>
 
+<hr>
+
 <div class="container">
-<div id="chugs_container" class="row justify-content-md-center">
-</div>
+    <div id="chugs_container" class="row justify-content-md-center">
+    </div>
 </div>
 
 <h2>Round overview</h2>
+
+<hr>
 
 <table id="cards_table" class="table table-bordered table-striped table-hover table-sm">
     <thead>
