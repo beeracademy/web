@@ -42,7 +42,7 @@ class Command(BaseCommand):
                 id=user["id"],
                 username=user["username"],
                 email="" if user["email"] == "NULL" else user["email"],
-                old_password_hash=user["password_hash"],
+                password="bcrypt$" + user["password_hash"],
                 created_at=self.timestamp_seconds_to_datetime(user["created_at"]),
                 updated_at=self.timestamp_seconds_to_datetime(user["updated_at"]),
             )

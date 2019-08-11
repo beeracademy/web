@@ -6,7 +6,6 @@ from django.contrib.auth.models import AbstractUser, UserManager
 from django.contrib.staticfiles.templatetags.staticfiles import static
 from django.utils import timezone
 from django.utils.html import mark_safe
-import bcrypt
 import datetime
 from enum import Enum, auto
 from operator import itemgetter
@@ -212,7 +211,6 @@ class User(AbstractUser):
 
     email = models.EmailField(blank=True)
     image = models.ImageField(upload_to=get_user_image_name, blank=True, null=True)
-    old_password_hash = models.CharField(max_length=60, blank=True)
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -238,23 +236,6 @@ class User(AbstractUser):
                 os.remove(expected_image_path)
             except FileNotFoundError:
                 pass
-
-    def set_password(self, raw_password):
-        self.old_password_hash = ""
-        super().set_password(raw_password)
-
-    def check_password(self, raw_password):
-        if self.old_password_hash:
-            if bcrypt.checkpw(
-                bytes(raw_password, "utf-8"), bytes(self.old_password_hash, "ascii")
-            ):
-                self.set_password(raw_password)
-                self.save()
-                return True
-            else:
-                return False
-
-        return super().check_password(raw_password)
 
     def total_game_count(self):
         return self.gameplayer_set.count()
