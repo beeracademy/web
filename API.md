@@ -23,7 +23,7 @@
 
 ### Request
 ```javascript
-// POST /api/api-token-auth/`
+// POST /api-token-auth/`
 {
   "username": string,
   "password": string,
