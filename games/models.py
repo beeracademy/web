@@ -75,77 +75,70 @@ class PlayerStat(models.Model):
                 ps, _ = PlayerStat.objects.get_or_create(
                     user=player, season_number=s.number
                 )
-                ps.update()
+                ps.update_from_new_game(game)
 
     @classmethod
-    def update_all(cls):
+    def recalculate_all(cls):
         for season_number in tqdm(range(Season.current_season().number)):
-            cls.update_season(Season(season_number))
+            cls.recalculate_season(Season(season_number))
 
     @classmethod
-    def update_season(cls, season):
+    def recalculate_season(cls, season):
         for user in tqdm(User.objects.all()):
             ps, _ = PlayerStat.objects.get_or_create(
                 user=user, season_number=season.number
             )
-            ps.update()
+            ps.recalculate()
 
-    def update(self):
-        games = filter_season(self.user.gameplayer_set, self.season, key="game").filter(
-            game__official=True
-        )
+    def recalculate(self):
+        for f in self._meta.fields:
+            if f.default != models.fields.NOT_PROVIDED:
+                setattr(self, f.name, f.default)
+            elif f.null:
+                setattr(self, f.name, None)
 
-        self.total_games = games.count()
-        total_time_played = datetime.timedelta()
-        self.total_sips = 0
-        self.total_chugs = 0
-        best_game = (-float("inf"), None)
-        worst_game = (float("inf"), None)
-        self.fastest_chug = None
-        total_chug_time = datetime.timedelta()
+        gameplayers = filter_season(
+            self.user.gameplayer_set, self.season, key="game"
+        ).filter(game__official=True)
 
-        for gameplayer in games.all():
-            game = gameplayer.game
+        for gp in gameplayers:
+            self.update_from_new_game(gp.game)
 
-            if game.has_ended:
-                player_index = game.ordered_players().index(self.user)
-                duration = game.get_duration()
-                if duration:
-                    total_time_played += duration
+    def update_from_new_game(self, game):
+        self.total_games += 1
 
-                game_sips = 0
+        player_index = game.ordered_players().index(self.user)
+        duration = game.get_duration()
+        if duration:
+            self.total_time_played_seconds += duration.total_seconds()
 
-                for i, c in enumerate(game.ordered_cards()):
-                    if i % game.players.count() == player_index:
-                        game_sips += c.value
-                        if hasattr(c, "chug"):
-                            chug_time = c.chug.duration
-                            self.total_chugs += 1
-                            total_chug_time += chug_time
-                            if (
-                                not self.fastest_chug
-                                or chug_time < self.fastest_chug.duration
-                            ):
-                                self.fastest_chug = c.chug
+        if self.average_chug_time_seconds:
+            total_chug_time = self.total_chugs * self.average_chug_time_seconds
+        else:
+            total_chug_time = 0
+        game_sips = 0
+        for i, c in enumerate(game.ordered_cards()):
+            if i % game.players.count() == player_index:
+                game_sips += c.value
+                if hasattr(c, "chug"):
+                    chug_time = c.chug.duration
+                    self.total_chugs += 1
+                    total_chug_time += chug_time.total_seconds()
+                    if not self.fastest_chug or chug_time < self.fastest_chug.duration:
+                        self.fastest_chug = c.chug
 
-                self.total_sips += game_sips
+        self.total_sips += game_sips
 
-                combined = (game_sips, game)
-                best_game = max(best_game, combined, key=itemgetter(0))
-                worst_game = min(worst_game, combined, key=itemgetter(0))
+        if not self.best_game or game_sips > self.best_game_sips:
+            self.best_game = game
+            self.best_game_sips = game_sips
 
-        self.total_time_played_seconds = total_time_played.total_seconds()
-
-        if self.total_games > 0:
-            self.best_game_sips = best_game[0]
-            self.worst_game_sips = worst_game[0]
-            self.best_game = best_game[1]
-            self.worst_game = worst_game[1]
+        if not self.worst_game or game_sips < self.worst_game_sips:
+            self.worst_game = game
+            self.worst_game_sips = game_sips
 
         if self.total_chugs > 0:
-            self.average_chug_time_seconds = (
-                total_chug_time / self.total_chugs
-            ).total_seconds()
+            self.average_chug_time_seconds = total_chug_time / self.total_chugs
 
         self.save()
 

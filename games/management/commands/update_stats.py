@@ -6,4 +6,4 @@ class Command(BaseCommand):
     help = "Updates cached player stats"
 
     def handle(self, *args, **options):
-        PlayerStat.update_all()
+        PlayerStat.recalculate_all()
