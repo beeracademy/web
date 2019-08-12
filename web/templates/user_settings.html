@@ -27,7 +27,7 @@
 	</div>
 	<div class="row">
 		<div class="col-md-6 text-center">
-			<img src="{{ object.image_url }}" id="image" width="156" height="262" alt="Profile picture"><br><br>
+			<img src="{{ object.image_url }}" id="image" width="{{ IMAGE_WIDTH }}" height="{{ IMAGE_HEIGHT }}" alt="Profile picture"><br><br>
 			<button type="button" id="upload_button" class="btn btn-primary col-5">Upload image</button>
 			<button type="button" id="delete_button" class="btn btn-danger col-5">Delete</button>
 			<br><br>
@@ -59,7 +59,7 @@
 	}
 
 	var cropper = new Cropper(image, {
-		aspectRatio: 156 / 262,
+		aspectRatio: {{ IMAGE_WIDTH }} / {{ IMAGE_HEIGHT }},
 		autoCropArea: true,
 	});
 
