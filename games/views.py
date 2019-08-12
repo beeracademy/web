@@ -115,7 +115,7 @@ class GameViewSet(viewsets.ReadOnlyModelViewSet):
 
         update_game(game, serializer.validated_data)
 
-        if not game.is_live() and game.official:
+        if game.has_ended and game.official:
             PlayerStat.update_on_game_finished(game)
 
         return Response({})

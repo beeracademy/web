@@ -7,7 +7,6 @@ from django.contrib.staticfiles.templatetags.staticfiles import static
 from django.utils import timezone
 from django.utils.html import mark_safe
 import datetime
-from enum import Enum, auto
 from operator import itemgetter
 from tqdm import tqdm
 from PIL import Image
@@ -108,7 +107,7 @@ class PlayerStat(models.Model):
         for gameplayer in games.all():
             game = gameplayer.game
 
-            if game.get_state() == Game.State.ENDED:
+            if game.has_ended:
                 player_index = game.ordered_players().index(self.user)
                 duration = game.get_duration()
                 if duration:
@@ -317,12 +316,6 @@ class Game(models.Model):
     class Meta:
         ordering = ("-end_datetime",)
 
-    class State(Enum):
-        WAITING_FOR_DRAW = auto()
-        WAITING_FOR_CHUG = auto()
-        WAITING_FOR_END = auto()
-        ENDED = auto()
-
     """
     There are 4 kinds of games:
 
@@ -364,8 +357,12 @@ class Game(models.Model):
         datetime = self.end_datetime or self.start_datetime
         return f"{datetime}: {self.players_str()}"
 
+    @property
+    def has_ended(self):
+        return self.end_datetime is not None
+
     def get_season(self):
-        if not self.end_datetime:
+        if not self.has_ended:
             return None
 
         return Season.season_from_date(self.end_datetime)
@@ -401,31 +398,6 @@ class Game(models.Model):
     def ordered_players(self):
         return [p.user for p in self.gameplayer_set.order_by("position")]
 
-    def next_player_to_draw(self):
-        return self.ordered_players()[self.cards.count() % self.players.count()]
-
-    def current_player_to_chug(self):
-        card = self.cards.last()
-        if card and card.value == Chug.VALUE and not hasattr(card, "chug"):
-            return card.get_user()
-
-        return None
-
-    def get_state(self):
-        if self.end_datetime:
-            return self.State.ENDED
-
-        if self.current_player_to_chug():
-            return self.State.WAITING_FOR_CHUG
-
-        if self.cards.count() == self.get_total_card_count():
-            return self.State.WAITING_FOR_END
-
-        return self.State.WAITING_FOR_DRAW
-
-    def is_live(self):
-        return self.end_datetime is None
-
     def players_str(self):
         return ", ".join(p.username for p in self.ordered_players())
 
@@ -453,7 +425,7 @@ class Game(models.Model):
 
             prev_datetime = c.drawn_datetime
 
-        if prev_datetime and self.get_state() == self.State.ENDED:
+        if prev_datetime and self.has_ended:
             yield self.end_datetime - prev_datetime
 
     def get_player_stats(self):
@@ -489,7 +461,7 @@ class Game(models.Model):
 
             if not self.start_datetime:
                 time_per_sip = None
-            elif last_sip and last_sip[0] == i and self.get_state() != self.State.ENDED:
+            elif last_sip and last_sip[0] == i and not self.has_ended:
                 time_per_sip = div_or_none(
                     total_times[i], (total_sips[i] - last_sip[1])
                 )

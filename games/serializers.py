@@ -109,7 +109,7 @@ class GameSerializer(serializers.ModelSerializer):
                         }
                     )
 
-        if self.instance.get_state() == Game.State.ENDED:
+        if self.instance.has_ended:
             raise serializers.ValidationError({"non_field_errors": "Game has finished"})
 
         check_field("start_datetime")

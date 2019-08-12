@@ -27,7 +27,7 @@
 
 {% block tbody %}
 {% for game in object_list %}
-<tr data-href="/games/{{ game.id }}/" class="{% if user in game.ordered_players %}in-game {% endif %}{% if game.is_live %} live {% endif %}" data-start-time="{{ game.start_datetime.timestamp }}">
+<tr data-href="/games/{{ game.id }}/" class="{% if user in game.ordered_players %}in-game {% endif %}{% if not game.has_ended %} live {% endif %}" data-start-time="{{ game.start_datetime.timestamp }}">
 	<td>
 		{% for player in game.ordered_players %}
 		<a href="/players/{{ player.id }}/">{{ player.username }}</a>{% if not forloop.last %},{% endif %}
