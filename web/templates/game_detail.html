@@ -8,7 +8,6 @@
 }
 .card-img-top {
     width: {{ IMAGE_WIDTH }}px;
-    margin: auto;
 }
 .symbol {
     width: 1rem;
@@ -53,9 +52,13 @@
 {% for stats in object.get_player_stats %}
 <div class="col-md-auto">
     <div class="card">
-        <img class="card-img-top" src="{{ stats.player.image_url }}" alt="Card image cap">
+        <a href="/player/{{ stats.player.id }}" style="margin: auto;">
+            <img class="card-img-top" src="{{ stats.player.image_url }}" alt="Card image cap">
+        </a>
         <ul class="list-group list-group-flush">
-            <li class="list-group-item">{{ stats.player.username }}</li>
+            <li class="list-group-item">
+                <a href="/players/{{ stats.player.id }}/">{{ stats.player.username }}</a>
+            </li>
             <li class="list-group-item">Total sips: {{ stats.total_sips }}</li>
             <li class="list-group-item">Sips per turn: {{ stats.sips_per_turn|floatformat:2 }}</li>
             <li class="list-group-item">Total beers: {{ stats.full_beers }} <sup>{{ stats.extra_sips }}</sup>&frasl;<sub>{{ object.sips_per_beer }}</sub></li>
