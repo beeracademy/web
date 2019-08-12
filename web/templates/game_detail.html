@@ -33,7 +33,7 @@
 <tbody>
     <tr>
     <td>{{ object.id }}</td>
-    <td>{{ object.start_datetime }}</td>
+    <td id="game_start_datetime">{% firstof object.start_datetime "?" %}</td>
     <td id="game_end_datetime">{% firstof object.end_datetime "-" %}</td>
     <td id="game_duration">{{ object.duration_str }}</td>
     </tr>
@@ -55,9 +55,9 @@
             <li class="list-group-item">Total sips: {{ stats.total_sips }}</li>
             <li class="list-group-item">Sips per turn: {{ stats.sips_per_turn|floatformat:2 }}</li>
             <li class="list-group-item">Total beers: {{ stats.full_beers }} <sup>{{ stats.extra_sips }}</sup>&frasl;<sub>{{ object.sips_per_beer }}</sub></li>
-            <li class="list-group-item">Total time: {{ stats.total_time }}</li>
-            <li class="list-group-item">Time per round: {{ stats.time_per_turn }}</li>
-            <li class="list-group-item">Time per sip: {{ stats.time_per_sip }}</li>
+            <li class="list-group-item">Total time: {% firstof stats.total_time "?" %}</li>
+            <li class="list-group-item">Time per round: {% firstof stats.time_per_turn "?" %}</li>
+            <li class="list-group-item">Time per sip: {% firstof stats.time_per_sip "?" %}</li>
         </ul>
     </div>
 </div>
@@ -96,7 +96,9 @@
 <br>
 <br>
 <br>
-<canvas id="time_graph_canvas"></canvas>
+<div id="time_graph_container">
+    <canvas id="time_graph_canvas"></canvas>
+</div>
 
 {% endblock %}
 
@@ -140,10 +142,21 @@
         if (game_data.description) {
             $("#description").text(game_data.description);
         }
+        var end_datetime;
         if (game_data.end_datetime) {
-            $("#game_end_datetime").text(new Date(game_data.end_datetime));
+            end_datetime = new Date(game_data.end_datetime);
+            $("#game_end_datetime").text(end_datetime);
+        } else {
+            end_datetime = Date.now();
         }
-        $("#game_duration").text(formatDuration(Date.now() - new Date(game_data.start_datetime)));
+        if (game_data.start_datetime) {
+            var start_datetime = new Date(game_data.start_datetime);
+            duration = formatDuration(end_datetime - start_datetime);
+            $("#game_start_datetime").text(start_datetime);
+        } else {
+            duration = "?";
+        }
+        $("#game_duration").text(duration);
     }
 
     function updatePlayerStats(game_data) {
@@ -259,6 +272,11 @@
     }
 
     function updateTimeGraph(game_data) {
+        if (game_data.cards.length > 0 && game_data.cards[0].drawn_datetime === null) {
+            $("#time_graph_container").html("").append($("<p>").css({"text-align": "center"}).text("Time graph unavailable due to missing data"));
+            return;
+        }
+
         var start_datetime = new Date(game_data.start_datetime);
         var end_datetime = game_data.end_datetime? new Date(game_data.end_datetime): undefined;
 
@@ -367,6 +385,8 @@
     var game_data = JSON.parse(document.getElementById("game_data").textContent);
     updatePage(game_data);
 
-    setTimeout(updateData, updateInterval);
+    if (!game_data.end_datetime) {
+        setTimeout(updateData, updateInterval);
+    }
 </script>
 {% endblock %}

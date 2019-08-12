@@ -63,14 +63,18 @@ class Command(BaseCommand):
                 pass
 
     def import_games(self):
+        BAD_GAME_START_DATE = datetime.date(1970, 1, 1)
+
         print("Importing games...")
         Game.objects.all().delete()
         for game in tqdm(self.get_rows("game")):
+            start_datetime = self.timestamp_milliseconds_to_datetime(game["starttime"])
+            if start_datetime.date() == BAD_GAME_START_DATE:
+                start_datetime = None
+
             Game.objects.create(
                 id=game["id"],
-                start_datetime=self.timestamp_milliseconds_to_datetime(
-                    game["starttime"]
-                ),
+                start_datetime=start_datetime,
                 end_datetime=self.timestamp_milliseconds_to_datetime(game["time"]),
                 description=game["description"],
                 sips_per_beer=game["sips"],
@@ -144,14 +148,11 @@ class Command(BaseCommand):
                 datetime.datetime.strptime(relation["drawtime"], "%Y-%m-%d %H:%M:%S")
             )
 
-            if game.id not in card_delta:
-                # First card in game
-                # Try to adjust it to start_datetime, which is in UTC
-                if game.start_datetime.year == 1970 or self.is_bad_card_date(
-                    drawn_datetime
-                ):
-                    card_delta[game.id] = datetime.timedelta()
-                else:
+            if self.is_bad_card_date(drawn_datetime):
+                drawn_datetime = None
+            else:
+                if game.id not in card_delta:
+                    assert game.start_datetime != None
                     diff_start = drawn_datetime - game.start_datetime
                     seconds = diff_start.total_seconds()
                     hours = seconds / (60 * 60)
@@ -163,7 +164,7 @@ class Command(BaseCommand):
                         game.id,
                     )
 
-            drawn_datetime -= card_delta[game.id]
+                drawn_datetime -= card_delta[game.id]
 
             try:
                 self.create_card(
@@ -198,7 +199,7 @@ class Command(BaseCommand):
         for game in tqdm(Game.objects.all()):
             cards = game.ordered_cards()
 
-            if self.is_bad_card_date(cards.first().drawn_datetime):
+            if not cards.first().drawn_datetime:
                 # We assume that the first card has an unknown drawn datetime
                 # if and only if all of them have
                 continue

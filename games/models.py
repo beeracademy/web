@@ -110,7 +110,9 @@ class PlayerStat(models.Model):
 
             if game.get_state() == Game.State.ENDED:
                 player_index = game.ordered_players().index(self.user)
-                total_time_played += game.get_duration()
+                duration = game.get_duration()
+                if duration:
+                    total_time_played += duration
 
                 game_sips = 0
 
@@ -321,15 +323,46 @@ class Game(models.Model):
         WAITING_FOR_END = auto()
         ENDED = auto()
 
+    """
+    There are 4 kinds of games:
+
+    - Unfinished games:
+        - end_datetime          == None
+        - start_datetime        != None
+        - cards__drawn_datetime != None
+
+    - Finished games after 2015-07-02 (e.g. ):
+        - end_datetime          != None
+        - start_datetime        != None
+        - cards__drawn_datetime != None
+        - example: 1800
+
+    - Finished games between 2014-04-09 and 2015-7-2:
+        - end_datetime          != None
+        - start_datetime        != None
+        - cards__drawn_datetime == None
+        - example: 279
+
+    - Finished games between 2013-02-01 and 2014-4-4:
+        - end_datetime          != None
+        - start_datetime        == None
+        - cards__drawn_datetime == None
+        - example: 119
+
+    This means that if start_datetime is missing,
+    then so are this card draw times.
+    """
+
     players = models.ManyToManyField(User, through="GamePlayer", related_name="games")
-    start_datetime = models.DateTimeField(default=timezone.now)
+    start_datetime = models.DateTimeField(blank=True, null=True, default=timezone.now)
     end_datetime = models.DateTimeField(blank=True, null=True)
     sips_per_beer = models.PositiveSmallIntegerField(default=STANDARD_SIPS_PER_BEER)
     description = models.CharField(max_length=1000, blank=True)
     official = models.BooleanField(default=True)
 
     def __str__(self):
-        return f"{self.start_datetime}: {self.players_str()}"
+        datetime = self.end_datetime or self.start_datetime
+        return f"{datetime}: {self.players_str()}"
 
     def get_season(self):
         if not self.end_datetime:
@@ -344,12 +377,15 @@ class Game(models.Model):
         return str(season.number)
 
     def get_duration(self):
-        if not self.end_datetime:
+        if not (self.start_datetime and self.end_datetime):
             return None
 
         return self.end_datetime - self.start_datetime
 
     def duration_str(self):
+        if not self.start_datetime:
+            return "?"
+
         duration = self.get_duration()
         if not duration:
             duration = timezone.now() - self.start_datetime
@@ -417,14 +453,14 @@ class Game(models.Model):
 
             prev_datetime = c.drawn_datetime
 
-        if self.get_state() == self.State.ENDED:
+        if prev_datetime and self.get_state() == self.State.ENDED:
             yield self.end_datetime - prev_datetime
 
     def get_player_stats(self):
         # Note that toal_drawn and total_done,
         # can differ for one player, if the game hasn't ended.
         def div_or_none(a, b):
-            if b == 0:
+            if a is None or not b:
                 return None
             return a / b
 
@@ -437,17 +473,23 @@ class Game(models.Model):
             total_drawn[i % n] += 1
             last_sip = (i % n, c.value)
 
-        total_times = [datetime.timedelta()] * n
-        total_done = [0] * n
-        for i, dt in enumerate(self.get_turn_durations()):
-            total_times[i % n] += dt
-            total_done[i % n] += 1
+        if self.start_datetime:
+            total_times = [datetime.timedelta()] * n
+            total_done = [0] * n
+            for i, dt in enumerate(self.get_turn_durations()):
+                total_times[i % n] += dt
+                total_done[i % n] += 1
+        else:
+            total_times = [None] * n
+            total_done = [None] * n
 
         for i, p in enumerate(self.ordered_players()):
             full_beers = total_sips[i] // self.sips_per_beer
             extra_sips = total_sips[i] % self.sips_per_beer
 
-            if last_sip and last_sip[0] == i and self.get_state() != self.State.ENDED:
+            if not self.start_datetime:
+                time_per_sip = None
+            elif last_sip and last_sip[0] == i and self.get_state() != self.State.ENDED:
                 time_per_sip = div_or_none(
                     total_times[i], (total_sips[i] - last_sip[1])
                 )
@@ -503,7 +545,7 @@ class Card(models.Model):
     index = models.PositiveSmallIntegerField()
     value = models.SmallIntegerField(choices=VALUES)
     suit = models.CharField(max_length=1, choices=SUITS)
-    drawn_datetime = models.DateTimeField()
+    drawn_datetime = models.DateTimeField(blank=True, null=True)
 
     @classmethod
     def get_ordered_cards_for_players(cls, player_count):
