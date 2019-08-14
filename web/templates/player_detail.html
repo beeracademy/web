@@ -3,10 +3,18 @@
 {% block content %}
 
 <h2>
+	{% if object.is_staff %}
+	<i class="fas fa-crown" style="color: #dc3545;"></i>
+	{% endif %}
+
 	{{ object.username }} 
 
 	{% if object == user %}
 		<a class="btn btn-primary float-right text-light col-md-auto" href="/settings/">Profile settings</a>
+		<br><br class="d-lg-none">
+	{% endif %}
+	{% if user.is_staff and object != user %}
+		<a class="btn btn-primary float-right text-light col-md-auto" href="/admin/games/user/{{ object.id }}/change/">Edit</a>
 		<br><br class="d-lg-none">
 	{% endif %}
 </h2>

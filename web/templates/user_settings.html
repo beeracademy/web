@@ -14,7 +14,9 @@
 
 {% block content %}
 
-<h4><i class="fas fa-cogs"></i> Settings</h4>
+<h3>
+	<i class="fas fa-cogs"></i> Settings
+</h3>
 
 <hr>
 
@@ -27,23 +29,30 @@
 	</div>
 	<div class="row">
 		<div class="col-md-6 text-center">
-			<img src="{{ object.image_url }}" id="image" width="{{ IMAGE_WIDTH }}" height="{{ IMAGE_HEIGHT }}" alt="Profile picture"><br><br>
-			<button type="button" id="upload_button" class="btn btn-primary col-5">Upload image</button>
-			<button type="button" id="delete_button" class="btn btn-danger col-5">Delete</button>
-			<br><br>
+			<div style="margin: 0px 20%;">
+				<img src="{{ object.image_url }}" id="image" width="{{ IMAGE_WIDTH }}" height="{{ IMAGE_HEIGHT }}" alt="Profile picture">
+			</div>
+			<br>
+			<button type="button" id="upload_button" class="btn btn-primary col-md-3">Upload image</button>
+			<div class="d-lg-none" style="height: 10px;"></div>
+			<button type="button" id="delete_button" class="btn btn-danger col-md-3">Delete</button>
+			<br class="d-lg-none">
+			<br class="d-lg-none">
 		</div>
 		<div class="col-md-6">
 			{% bootstrap_field form.username %}
 			{% bootstrap_field form.email %}
+			<hr>
 			{% bootstrap_field form.new_password %}
-			<br>
 		</div>
 	</div>
-	<div class="row">
-	{% buttons %}
-	<button type="submit" class="btn btn-primary col-md-auto">Save</button>
-	<a href="/players/{{object.id}}/" class="btn btn-danger col-md-auto">Cancel</a>
-	{% endbuttons %}
+
+	<hr>
+	<div class="text-right">
+
+		<button type="submit" class="btn btn-primary col-md-1 pull-right">Save</button>
+		<div class="d-lg-none" style="height: 10px;"></div>
+		<a href="/players/{{object.id}}/" class="btn btn-danger col-md-1">Cancel</a>
 	</div>
 </form>
 {% endblock %}
@@ -62,6 +71,8 @@
 		aspectRatio: {{ IMAGE_WIDTH }} / {{ IMAGE_HEIGHT }},
 		autoCropArea: true,
 	});
+
+	
 
 	image.addEventListener("cropend", updateCropped);
 
