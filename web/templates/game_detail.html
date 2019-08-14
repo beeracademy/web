@@ -36,9 +36,9 @@
 <tbody>
     <tr>
     <td>{{ object.id }}</td>
-    <td id="game_start_datetime">{% firstof object.start_datetime "?" %}</td>
-    <td id="game_end_datetime">{% firstof object.end_datetime "-" %}</td>
-    <td id="game_duration">{{ object.duration_str }}</td>
+    <td id="game_start_datetime">-</td>
+    <td id="game_end_datetime">-</td>
+    <td id="game_duration">-</td>
     </tr>
 </tbody>
 </table>
@@ -49,22 +49,22 @@
 
 <div class="container">
 <div class="row justify-content-md-center">
-{% for stats in object.get_player_stats %}
+{% for player in game.ordered_players %}
 <div class="col-md-auto">
     <div class="card">
-        <a href="/player/{{ stats.player.id }}" style="margin: auto;">
-            <img class="card-img-top" src="{{ stats.player.image_url }}" alt="Card image cap">
+        <a href="/player/{{ player.id }}" style="margin: auto;">
+            <img class="card-img-top" src="{{ player.image_url }}" alt="Card image cap">
         </a>
         <ul class="list-group list-group-flush">
             <li class="list-group-item">
-                <a href="/players/{{ stats.player.id }}/">{{ stats.player.username }}</a>
+                <a href="/players/{{ player.id }}/">{{ player.username }}</a>
             </li>
-            <li class="list-group-item">Total sips: {{ stats.total_sips }}</li>
-            <li class="list-group-item">Sips per turn: {{ stats.sips_per_turn|floatformat:2 }}</li>
-            <li class="list-group-item">Total beers: {{ stats.full_beers }} <sup>{{ stats.extra_sips }}</sup>&frasl;<sub>{{ object.sips_per_beer }}</sub></li>
-            <li class="list-group-item">Total time: {% firstof stats.total_time "?" %}</li>
-            <li class="list-group-item">Time per round: {% firstof stats.time_per_turn "?" %}</li>
-            <li class="list-group-item">Time per sip: {% firstof stats.time_per_sip "?" %}</li>
+            <li class="list-group-item">Total sips: <span class="total_sips">-</span></li>
+            <li class="list-group-item">Sips per turn: <span class="sips_per_turn">-</span></li>
+            <li class="list-group-item">Total beers: <span class="full_beers">-</span> <sup><span class="extra_sips">-</span></sup>&frasl;<sub>{{ object.sips_per_beer }}</sub></li>
+            <li class="list-group-item">Total time: <span class="total_time">-</span></li>
+            <li class="list-group-item">Time per round: <span class="time_per_turn">-</span></li>
+            <li class="list-group-item">Time per sip: <span class="time_per_sip">-</span></li>
         </ul>
     </div>
 </div>
@@ -152,21 +152,45 @@
         var end_datetime;
         if (game_data.end_datetime) {
             end_datetime = new Date(game_data.end_datetime);
-            $("#game_end_datetime").text(end_datetime);
+            $("#game_end_datetime").text(formatDate(end_datetime));
         } else {
             end_datetime = Date.now();
         }
+        var duration, start_text;
         if (game_data.start_datetime) {
             var start_datetime = new Date(game_data.start_datetime);
             duration = formatDuration(end_datetime - start_datetime);
-            $("#game_start_datetime").text(start_datetime);
+            start_text = formatDate(start_datetime);
         } else {
             duration = "?";
+            start_text = "?";
         }
         $("#game_duration").text(duration);
+        $("#game_start_datetime").text(start_text);
     }
 
     function updatePlayerStats(game_data) {
+        var formatMap = {
+            sips_per_turn: function(x) { return Math.round(x, 2); },
+            total_time: formatDuration,
+            time_per_turn: formatDuration,
+            time_per_sip: formatDuration,
+        };
+
+        for (var i = 0; i < playerCount; i++) {
+            var stats = game_data.player_stats[i];
+            for (var k in stats) {
+                if (stats.hasOwnProperty(k)) {
+                    var text = stats[k];
+                    if (text === null) {
+                        text = "?";
+                    } else if (formatMap.hasOwnProperty(k)) {
+                        text = formatMap[k](text);
+                    }
+                    $("." + k).eq(i).text(text);
+                }
+            }
+        }
     }
 
     function updateChugs(game_data) {
@@ -189,7 +213,7 @@
                                     $("<a>").attr({"href": "/players/" + player.id + "/"}).text(player.name)
                                 )
                             ).append(
-                                $("<li>").attr({"class": "list-group-item"}).text(duration)
+                                $("<li>").attr({"class": "list-group-item"}).text(formatDuration(duration, 3))
                             )
                         )
                     )

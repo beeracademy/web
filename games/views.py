@@ -6,7 +6,12 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 from .models import User, Game, Card, Chug, PlayerStat
-from .serializers import UserSerializer, GameSerializer, CreateGameSerializer
+from .serializers import (
+    UserSerializer,
+    GameSerializer,
+    GameSerializerWithPlayerStats,
+    CreateGameSerializer,
+)
 
 
 class CustomAuthToken(ObtainAuthToken):
@@ -98,6 +103,10 @@ class GameViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = GameSerializer
     permission_classes = (CreateOrAuthenticated,)
     pagination_class = OneResultSetPagination
+
+    def retrieve(self, request, pk=None):
+        game = Game.objects.get(id=pk)
+        return Response(GameSerializerWithPlayerStats(game).data)
 
     def create(self, request):
         serializer = CreateGameSerializer(data=request.data)

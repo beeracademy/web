@@ -1,8 +1,7 @@
 from rest_framework import serializers
-
-# from rest_framework import generics
 from rest_framework.authtoken.models import Token
 from .models import User, Game, Card, GamePlayer
+import datetime
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -199,3 +198,20 @@ class GameSerializer(serializers.ModelSerializer):
                 )
 
         return data
+
+
+class GameSerializerWithPlayerStats(GameSerializer):
+    class Meta(GameSerializer.Meta):
+        fields = GameSerializer.Meta.fields + ["player_stats"]
+
+    player_stats = serializers.SerializerMethodField()
+
+    def get_player_stats(self, obj):
+        l = []
+        for stats in obj.get_player_stats():
+            for k, v in stats.items():
+                if isinstance(v, datetime.timedelta):
+                    stats[k] = v.total_seconds() * 1000
+            l.append(stats)
+
+        return l

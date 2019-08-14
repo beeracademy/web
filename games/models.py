@@ -7,7 +7,6 @@ from django.contrib.staticfiles.templatetags.staticfiles import static
 from django.utils import timezone
 from django.utils.html import mark_safe
 import datetime
-from operator import itemgetter
 from tqdm import tqdm
 from PIL import Image
 from .seed import shuffle_with_seed
@@ -448,7 +447,7 @@ class Game(models.Model):
             total_times = [None] * n
             total_done = [None] * n
 
-        for i, p in enumerate(self.ordered_players()):
+        for i in range(n):
             full_beers = total_sips[i] // self.sips_per_beer
             extra_sips = total_sips[i] % self.sips_per_beer
 
@@ -462,7 +461,6 @@ class Game(models.Model):
                 time_per_sip = div_or_none(total_times[i], total_sips[i])
 
             yield {
-                "player": p,
                 "total_sips": total_sips[i],
                 "sips_per_turn": div_or_none(total_sips[i], total_drawn[i]),
                 "full_beers": full_beers,
