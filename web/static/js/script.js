@@ -1,4 +1,4 @@
-$("tr[data-href]").click(function(e) {
+$("[data-href]").click(function(e) {
     var url = this.getAttribute("data-href");
     var openInNew = e.ctrlKey || (e.metaKey && navigator.userAgent.indexOf("Mac OS X"));
 
@@ -25,4 +25,15 @@ function formatDuration(ms) {
     var total_hours = Math.floor(total_minutes / 60);
 
     return total_hours + ":" + twoPad(minutes) + ":" + twoPad(seconds);
+}
+
+if ($(".live").length) {
+    setInterval(function() {
+        $(".live").each(function(i, el) {
+            var start = new Date(parseFloat(el.getAttribute("data-start-time")) * 1000);
+            var difference = Date.now() - start;
+            var newDuration = formatDuration(difference);
+            el.querySelector(".duration").textContent = newDuration;
+        });
+    }, 1000);
 }

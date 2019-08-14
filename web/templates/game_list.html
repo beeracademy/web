@@ -39,16 +39,3 @@
 </tr>
 {% endfor %}
 {% endblock %}
-
-{% block scripts %}
-<script>
-	setInterval(function() {
-		$(".live").each(function(i, el) {
-			var start = new Date(parseFloat(el.getAttribute("data-start-time")) * 1000);
-			var difference = Date.now() - start;
-			var newDuration = formatDuration(difference);
-			el.querySelector(".duration").textContent = newDuration;
-		});
-	}, 1000);
-</script>
-{% endblock %}
