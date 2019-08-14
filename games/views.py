@@ -29,7 +29,7 @@ class CustomAuthToken(ObtainAuthToken):
             non_field_errors = e.detail.get("non_field_errors", [])
             if "Unable to log in with provided credentials." in non_field_errors:
                 username = request.data["username"]
-                if not User.objects.filter(username=username).exists():
+                if not User.objects.filter(username__iexact=username).exists():
                     e.status_code = 404
             raise
 
