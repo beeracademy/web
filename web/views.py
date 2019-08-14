@@ -88,7 +88,7 @@ def index(request):
         "total_games": Game.objects.all().count(),
         "recent_players": get_recent_players(4),
         "wall_of_shame_players": get_bad_chuggers(4, 20),
-        "live_games": Game.objects.filter(end_datetime__isnull=True)[:5],
+        "live_games": Game.objects.filter(end_datetime__isnull=True).order_by("-start_datetime")[:5],
     }
     return render(request, "index.html", context)
 

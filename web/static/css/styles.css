@@ -25,9 +25,24 @@ a:hover {
 }
 
 tr.live {
-    background-color: rgba(92, 184, 92, 0.4) !important;
+    background-color: #bd2130 !important;
+    color: #fff;
 }
+
+tr.live a {
+    color: #fff;
+}
+
 
 tr.in-game {
     background-color: rgba(52, 152, 219,0.4) !important;
+    color: #000;
+}
+
+tr.in-game a {
+    color: #bd2130;    
+}
+
+.rounder {
+    border-radius: 5px;
 }

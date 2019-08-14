@@ -7,4 +7,4 @@ SECRET_KEY = "finish him!"
 
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
-PLAY_URL = "localhost:4200"
+PLAY_URL = "http://localhost:4200"
