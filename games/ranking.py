@@ -1,4 +1,19 @@
 from .models import PlayerStat
+import datetime
+
+
+def add_thousand_seperators(value):
+    return f"{value:,}"
+
+
+def format_duration(ms):
+    td = datetime.timedelta(milliseconds=ms)
+    s = str(td)
+    if not "." in s:
+        s += "."
+
+    a, b = s.split(".")
+    return a.split(":", 1)[1] + "." + b.rstrip("0").ljust(3, "0")
 
 
 def django_getattr(obj, key):
@@ -9,10 +24,13 @@ def django_getattr(obj, key):
 
 
 class Ranking:
-    def __init__(self, name, ordering, game_key=None):
+    def __init__(
+        self, name, ordering, game_key=None, formatter=add_thousand_seperators
+    ):
         self.name = name
         self.ordering = ordering
         self.game_key = game_key
+        self.formatter = formatter
 
     @property
     def key(self):
@@ -23,7 +41,7 @@ class Ranking:
         return self.ordering.lstrip("-")
 
     def get_value(self, o):
-        return django_getattr(o, self.value_key)
+        return self.formatter(django_getattr(o, self.value_key))
 
     def get_game(self, o):
         if self.game_key:
@@ -58,6 +76,7 @@ RANKINGS = [
         "Fastest chug",
         "fastest_chug__duration_in_milliseconds",
         "fastest_chug__card__game",
+        format_duration,
     ),
 ]
 
