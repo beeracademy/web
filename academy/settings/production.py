@@ -21,4 +21,6 @@ EMAIL_HOST_PASSWORD = os.environ["EMAIL_HOST_PASSWORD"]
 SERVER_EMAIL = "no-reply@academy.beer"
 DEFAULT_FROM_EMAIL = "no-reply@academy.beer"
 
+PLAY_URL = "https://game.academy.beer/"
+
 sentry_sdk.init(dsn=os.getenv("SENTRY_DNS"), integrations=[DjangoIntegration()])

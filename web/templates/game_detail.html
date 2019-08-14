@@ -18,7 +18,13 @@
 
 {% block content %}
 
-<h2>Game</h2>
+<h2>
+    Game
+	{% if user.is_staff %}
+		<a class="btn btn-primary float-right text-light col-md-auto" href="/admin/games/game/{{ object.id }}/change/">Edit</a>
+		<br><br class="d-lg-none">
+	{% endif %}
+</h2>
 
 <hr>
 
