@@ -15,7 +15,9 @@ class Command(BaseCommand):
 
     def timestamp_to_datetime(self, t):
         try:
-            return pytz.utc.localize(datetime.datetime.fromtimestamp(int(t) / 1000))
+            return pytz.timezone("Europe/Copenhagen").localize(
+                datetime.datetime.fromtimestamp(int(t) / 1000)
+            )
         except ValueError:
             raise CommandError(f"Invalid timestamp: {t}")
 
