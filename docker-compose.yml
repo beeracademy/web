@@ -10,11 +10,11 @@ services:
     expose:
       - "8000"
     labels:
-      - "traefik.backend=website"
+      - "traefik.enable=true"
+      - "traefik.backend=academy.beer"
       - "traefik.frontend.rule=Host:academy.beer"
       - "traefik.port=8000"
       - "traefik.docker.network=web"
-      - "traefik.enable=true"
       - "traefik.domain=academy.beer"
     container_name: academy.beer
     depends_on:
