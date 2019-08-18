@@ -1,0 +1,5 @@
+#!/bin/sh
+export DJANGO_SETTINGS_MODULE=academy.settings.production
+./manage.py collectstatic &&
+./manage.py migrate &&
+exec gunicorn --bind 0.0.0.0 --workers 4 academy.wsgi:application

@@ -23,4 +23,16 @@ DEFAULT_FROM_EMAIL = "no-reply@academy.beer"
 
 PLAY_URL = "https://game.academy.beer/"
 
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": "postgres",
+        "USER": "postgres",
+        "HOST": "db",
+        "PORT": 5432,
+    }
+}
+
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+
 sentry_sdk.init(dsn=os.getenv("SENTRY_DNS"), integrations=[DjangoIntegration()])
