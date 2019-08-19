@@ -21,7 +21,7 @@ class CustomAuthToken(ObtainAuthToken):
             token = Token.objects.get(key=response.data["token"])
             user = token.user
             response.data["id"] = user.id
-            response.data["image"] = user.image_url()
+            response.data["image"] = request.build_absolute_uri(user.image_url())
             return response
         except serializers.ValidationError as e:
             # If username doesn't exist return with code 404,
