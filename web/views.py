@@ -64,9 +64,11 @@ def get_recent_players(n):
     return recent_players
 
 
-def get_bad_chuggers(n):
+def get_bad_chuggers(n, max_chugs=50):
     bad_chuggers = set()
-    for chug in Chug.objects.filter(duration_in_milliseconds__gte=20 * 1000).order_by("-card__drawn_datetime"):
+    for chug in Chug.objects.filter(duration_in_milliseconds__gte=20 * 1000).order_by(
+        "-card__drawn_datetime"
+    )[:max_chugs]:
         u = chug.card.get_user()
         if u.image:
             bad_chuggers.add(u)
