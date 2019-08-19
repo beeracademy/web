@@ -415,6 +415,9 @@ class Game(models.Model):
     def get_turn_durations(self):
         prev_datetime = self.start_datetime
         for c in self.ordered_cards():
+            if c.drawn_datetime is None:
+                return
+
             if prev_datetime is not None:
                 yield c.drawn_datetime - prev_datetime
 
@@ -437,7 +440,8 @@ class Game(models.Model):
             total_drawn[i % n] += 1
             last_sip = (i % n, c.value)
 
-        if self.start_datetime:
+        first_card = self.ordered_cards().first()
+        if first_card and first_card.drawn_datetime:
             total_times = [datetime.timedelta()] * n
             total_done = [0] * n
             for i, dt in enumerate(self.get_turn_durations()):
