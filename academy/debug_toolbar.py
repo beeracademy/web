@@ -1,2 +1,11 @@
 def show_toolbar(request):
-    return request.user and request.user.is_superuser and 'djdt' in request.GET
+    if not (request.user and request.user.is_superuser):
+        return False
+
+    if "djdt" in request.GET:
+        return True
+
+    if request.path.startswith("/__debug__/"):
+        return True
+
+    return False
