@@ -413,15 +413,12 @@ class Game(models.Model):
         return self.players.count() * len(Card.VALUES)
 
     def get_turn_durations(self):
-        prev_datetime = None
+        prev_datetime = self.start_datetime
         for c in self.ordered_cards():
             if prev_datetime is not None:
                 yield c.drawn_datetime - prev_datetime
 
             prev_datetime = c.drawn_datetime
-
-        if prev_datetime and self.has_ended:
-            yield self.end_datetime - prev_datetime
 
     def get_player_stats(self):
         # Note that toal_drawn and total_done,
