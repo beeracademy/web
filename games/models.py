@@ -104,6 +104,9 @@ class PlayerStat(models.Model):
             self.update_from_new_game(gp.game)
 
     def update_from_new_game(self, game):
+        if not game.official:
+            return
+
         self.total_games += 1
 
         player_index = game.ordered_players().index(self.user)
