@@ -22,6 +22,7 @@ SERVER_EMAIL = "no-reply@academy.beer"
 DEFAULT_FROM_EMAIL = "no-reply@academy.beer"
 
 PLAY_URL = "https://game.academy.beer/"
+MEDIA_URL = "https://media.academy.beer/"
 
 DATABASES = {
     "default": {
