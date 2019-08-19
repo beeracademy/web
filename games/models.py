@@ -78,7 +78,7 @@ class PlayerStat(models.Model):
 
     @classmethod
     def recalculate_all(cls):
-        for season_number in tqdm(range(Season.current_season().number)):
+        for season_number in tqdm(range(Season.current_season().number + 1)):
             cls.recalculate_season(Season(season_number))
 
     @classmethod
