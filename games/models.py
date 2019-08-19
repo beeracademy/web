@@ -78,7 +78,7 @@ class PlayerStat(models.Model):
 
     @classmethod
     def recalculate_all(cls):
-        for season_number in tqdm(range(Season.current_season().number)):
+        for season_number in tqdm(range(Season.current_season().number + 1)):
             cls.recalculate_season(Season(season_number))
 
     @classmethod
@@ -104,6 +104,9 @@ class PlayerStat(models.Model):
             self.update_from_new_game(gp.game)
 
     def update_from_new_game(self, game):
+        if not game.official:
+            return
+
         self.total_games += 1
 
         player_index = game.ordered_players().index(self.user)
@@ -410,15 +413,12 @@ class Game(models.Model):
         return self.players.count() * len(Card.VALUES)
 
     def get_turn_durations(self):
-        prev_datetime = None
+        prev_datetime = self.start_datetime
         for c in self.ordered_cards():
             if prev_datetime is not None:
                 yield c.drawn_datetime - prev_datetime
 
             prev_datetime = c.drawn_datetime
-
-        if prev_datetime and self.has_ended:
-            yield self.end_datetime - prev_datetime
 
     def get_player_stats(self):
         # Note that toal_drawn and total_done,

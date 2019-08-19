@@ -104,6 +104,18 @@ class ApiTest(TestCase):
         )
         self.assert_status(r, 404)
 
+    def test_login_case_insensitive(self):
+        r = self.client.post(
+            "/api-token-auth/", {"username": "PLAYER1", "password": "test1"}
+        )
+        self.assert_ok(r)
+
+    def test_login_case_insensitive_wrong_password(self):
+        r = self.client.post(
+            "/api-token-auth/", {"username": "PLAYER1", "password": "foobar"}
+        )
+        self.assert_status(r, 400)
+
     def test_player_order(self):
         game = Game.objects.get(id=self.game_id)
         self.assertEqual(game.ordered_players(), [self.u1, self.u2])

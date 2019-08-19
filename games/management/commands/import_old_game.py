@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand, CommandError
-from games.models import User, Game, Card, Chug, GamePlayer
+from games.models import User, Game, Card, Chug, GamePlayer, PlayerStat
 from django.db import transaction
 import datetime
 import argparse
@@ -15,7 +15,9 @@ class Command(BaseCommand):
 
     def timestamp_to_datetime(self, t):
         try:
-            return pytz.utc.localize(datetime.datetime.fromtimestamp(int(t) / 1000))
+            return pytz.timezone("Europe/Copenhagen").localize(
+                datetime.datetime.fromtimestamp(int(t) / 1000)
+            )
         except ValueError:
             raise CommandError(f"Invalid timestamp: {t}")
 
@@ -163,5 +165,7 @@ class Command(BaseCommand):
                 raise CommandError(
                     f"Wrong number of chugs: {chugs_count}, but expected {player_count}"
                 )
+
+            PlayerStat.update_on_game_finished(game)
 
         print(f"Successfully imported game. Id: {game.id}")

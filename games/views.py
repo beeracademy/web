@@ -21,7 +21,7 @@ class CustomAuthToken(ObtainAuthToken):
             token = Token.objects.get(key=response.data["token"])
             user = token.user
             response.data["id"] = user.id
-            response.data["image"] = user.image_url()
+            response.data["image"] = request.build_absolute_uri(user.image_url())
             return response
         except serializers.ValidationError as e:
             # If username doesn't exist return with code 404,
@@ -29,7 +29,7 @@ class CustomAuthToken(ObtainAuthToken):
             non_field_errors = e.detail.get("non_field_errors", [])
             if "Unable to log in with provided credentials." in non_field_errors:
                 username = request.data["username"]
-                if not User.objects.filter(username=username).exists():
+                if not User.objects.filter(username__iexact=username).exists():
                     e.status_code = 404
             raise
 
@@ -105,7 +105,11 @@ class GameViewSet(viewsets.ReadOnlyModelViewSet):
     pagination_class = OneResultSetPagination
 
     def retrieve(self, request, pk=None):
-        game = Game.objects.get(id=pk)
+        try:
+            game = Game.objects.get(id=pk)
+        except Game.DoesNotExist:
+            raise serializers.ValidationError("Game doesn't exist")
+
         return Response(GameSerializerWithPlayerStats(game).data)
 
     def create(self, request):
@@ -116,7 +120,11 @@ class GameViewSet(viewsets.ReadOnlyModelViewSet):
 
     @action(detail=True, methods=["post"], permission_classes=[PartOfGame])
     def update_state(self, request, pk=None):
-        game = Game.objects.get(id=pk)
+        try:
+            game = Game.objects.get(id=pk)
+        except Game.DoesNotExist:
+            raise serializers.ValidationError("Game doesn't exist")
+
         self.check_object_permissions(request, game)
 
         serializer = GameSerializer(game, data=request.data)
