@@ -64,17 +64,17 @@ def get_recent_players(n):
     return recent_players
 
 
-def get_bad_chuggers(n, sample_size):
-    worst_time = {}
-    for chug in Chug.objects.order_by("-card__drawn_datetime"):
+def get_bad_chuggers(n):
+    bad_chuggers = set()
+    for chug in Chug.objects.filter(duration_in_milliseconds__gte=20 * 1000).order_by("-card__drawn_datetime"):
         u = chug.card.get_user()
         if u.image:
-            worst_time[u] = max(worst_time.get(u, 0), chug.duration_in_milliseconds)
+            bad_chuggers.add(u)
 
-        if len(worst_time) >= sample_size:
+        if len(bad_chuggers) >= n:
             break
 
-    bad_chuggers = sorted(worst_time.keys(), key=lambda u: -worst_time[u])[:n]
+    bad_chuggers = random.sample(list(bad_chuggers), min(n, len(bad_chuggers)))
     random.shuffle(bad_chuggers)
     return bad_chuggers
 
@@ -87,7 +87,7 @@ def index(request):
         "total_beers": total_players * BEERS_PER_PLAYER,
         "total_games": Game.objects.all().count(),
         "recent_players": get_recent_players(4),
-        "wall_of_shame_players": get_bad_chuggers(4, 20),
+        "wall_of_shame_players": get_bad_chuggers(4),
         "live_games": Game.objects.filter(end_datetime__isnull=True).order_by(
             "-start_datetime"
         )[:5],
