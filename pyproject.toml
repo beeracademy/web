@@ -40,6 +40,7 @@ sentry-sdk = "=0.10.2"
 python-dotenv = "^0.10.3"
 whitenoise = "^4.1"
 psycopg2 = "^2.8"
+django-debug-toolbar = "^2.0"
 
 [tool.poetry.dev-dependencies]
 

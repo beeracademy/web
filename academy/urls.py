@@ -18,6 +18,7 @@ from django.conf import settings
 from django.urls import path, include
 from rest_framework import routers
 from games.views import UserViewSet, GameViewSet, CustomAuthToken
+import debug_toolbar
 
 
 router = routers.DefaultRouter()
@@ -31,6 +32,7 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("api-auth/", include("rest_framework.urls", namespace="rest_framework")),
     path("api-token-auth/", CustomAuthToken.as_view()),
+    path("__debug__/", include(debug_toolbar.urls)),
 ]
 
 if settings.DEBUG:
