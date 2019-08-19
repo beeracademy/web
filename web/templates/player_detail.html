@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 
+{% load humanize %}
+
 {% block content %}
 
 <h2>
@@ -75,7 +77,7 @@
 			<tbody>
 				<tr>
 					<th>Games played</th>
-					<td>{{ stats.total_games }}</td>
+					<td>{{ stats.total_games|intcomma }}</td>
 				</tr>
 				<tr>
 					<th>Total time played</th>
@@ -85,7 +87,7 @@
 				</tr>
 				<tr>
 					<th>Estimated money spent</th>
-					<td>{{ stats.approx_money_spent }}</td>
+					<td>{{ stats.approx_money_spent|intcomma }}</td>
 				</tr>
 			</tbody>
 		</table>
@@ -95,7 +97,7 @@
 			<tbody>
 				<tr>
 					<th>Total sips</th>
-					<td>{{ stats.total_sips }} ({{ stats.total_beers|floatformat:0 }} beers)</td>
+					<td>{{ stats.total_sips|intcomma }} ({{ stats.total_beers|floatformat:0|intcomma }} beers)</td>
 				</tr>
 				<tr>
 					<th>Best game</th>
@@ -113,7 +115,7 @@
 				</tr>
 				<tr>
 					<th>Total chugs</th>
-					<td>{{ stats.total_chugs }}</td>
+					<td>{{ stats.total_chugs|intcomma }}</td>
 				</tr>
 				<tr>
 					<th>Fastest chug time</th>
