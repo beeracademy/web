@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 
 {% load static %}
+{% load humanize %}
 
 {% block content %}
 
@@ -21,7 +22,7 @@
             <div class="card-body text-center">
                 <i class="fas fa-beer fa-3x"></i>
                 <p class="card-title">Beers consumed</p>
-                <h4 class="card-text">{{ total_beers|floatformat:0|intcommma }}</h4>
+                <h4 class="card-text">{{ total_beers|floatformat:0|intcomma }}</h4>
             </div>
         </div>
         <div class="card col-md-3 m-auto">
