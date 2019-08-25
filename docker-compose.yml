@@ -9,6 +9,7 @@ services:
       - default
     volumes:
       - ./media:/app/media
+      - ./.env:/app/.env
     expose:
       - "8000"
     labels:
