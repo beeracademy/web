@@ -6,6 +6,7 @@ from django.contrib.auth.models import AbstractUser, UserManager
 from django.contrib.staticfiles.templatetags.staticfiles import static
 from django.utils import timezone
 from django.utils.html import mark_safe
+from django.urls import reverse
 import datetime
 from tqdm import tqdm
 from PIL import Image
@@ -236,6 +237,9 @@ class User(AbstractUser):
             return self.image.url
         else:
             return static("user.png")
+
+    def get_absolute_url(self):
+        return reverse("player_detail", args=[self.id])
 
 
 class Season:
@@ -473,6 +477,9 @@ class Game(models.Model):
                 "time_per_turn": div_or_none(total_times[i], total_done[i]),
                 "time_per_sip": time_per_sip,
             }
+
+    def get_absolute_url(self):
+        return reverse("game_detail", args=[self.id])
 
 
 class GamePlayer(models.Model):
