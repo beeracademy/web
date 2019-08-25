@@ -3,16 +3,16 @@ import web.views as views
 
 
 urlpatterns = [
-    path("", views.index),
-    path("about/", views.about),
-    path("games/", views.GameListView.as_view()),
-    path("games/<int:pk>/", views.GameDetailView.as_view()),
-    path("players/", views.PlayerListView.as_view()),
-    path("players/<int:pk>/", views.PlayerDetailView.as_view()),
-    path("ranking/", views.RankingView.as_view()),
-    path("settings/", views.UserSettingsView.as_view()),
-    path("login/", views.MyLoginView.as_view()),
-    path("logout/", views.MyLogoutView.as_view()),
+    path("", views.index, name="index"),
+    path("about/", views.about, name="about"),
+    path("games/", views.GameListView.as_view(), name="game_list"),
+    path("games/<int:pk>/", views.GameDetailView.as_view(), name="game_detail"),
+    path("players/", views.PlayerListView.as_view(), name="player_list"),
+    path("players/<int:pk>/", views.PlayerDetailView.as_view(), name="player_detail"),
+    path("ranking/", views.RankingView.as_view(), name="ranking"),
+    path("settings/", views.UserSettingsView.as_view(), name="settings"),
+    path("login/", views.MyLoginView.as_view(), name="login"),
+    path("logout/", views.MyLogoutView.as_view(), name="logout"),
     path(
         "login/password_reset/",
         views.MyPasswordResetView.as_view(),
