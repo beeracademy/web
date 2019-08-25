@@ -45,7 +45,7 @@ def get_ranking_url(ranking, user, season):
 
     page = (rank - 1) // RANKING_PAGE_LIMIT + 1
     return f"/ranking/?" + urlencode(
-        {"season": season.number, "type": ranking.value_key, "page": page}
+        {"season": season.number, "type": ranking.key, "page": page}
     )
 
 
