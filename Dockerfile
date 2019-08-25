@@ -1,5 +1,7 @@
 FROM python:3.7
 
+ENV DJANGO_SETTINGS_MODULE=academy.settings.production
+
 RUN pip install poetry
 
 WORKDIR /app
