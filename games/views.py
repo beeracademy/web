@@ -5,7 +5,7 @@ from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
-from .models import User, Game, Card, Chug, PlayerStat
+from .models import User, Game, Card, Chug, PlayerStat, GamePlayer
 from .serializers import (
     UserSerializer,
     GameSerializer,
@@ -61,6 +61,14 @@ def update_game(game, data):
         if key in data:
             setattr(game, key, data[key])
 
+    game_already_ended = game.has_ended
+
+    if game.players.count() == 0:
+        for i, p_id in enumerate(data["player_ids"]):
+            GamePlayer.objects.create(
+                game=game, user=User.objects.get(id=p_id), position=i
+            )
+
     update_field("start_datetime")
     update_field("end_datetime")
     update_field("official")
@@ -91,6 +99,9 @@ def update_game(game, data):
             Chug.objects.create(card=card, duration_in_milliseconds=chug_data)
 
     game.save()
+
+    if game.has_ended and not game_already_ended:
+        PlayerStat.update_on_game_finished(game)
 
 
 class OneResultSetPagination(PageNumberPagination):
@@ -131,8 +142,5 @@ class GameViewSet(viewsets.ReadOnlyModelViewSet):
         serializer.is_valid(raise_exception=True)
 
         update_game(game, serializer.validated_data)
-
-        if game.has_ended and game.official:
-            PlayerStat.update_on_game_finished(game)
 
         return Response({})

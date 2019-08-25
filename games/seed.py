@@ -1,6 +1,18 @@
 from random import Random
 
 
+def is_seed_valid_for_players(seed, player_count):
+    n = 13 * player_count
+    if len(seed) + 1 != n:
+        return False
+
+    for i, v in zip(range(n - 1, 0, -1), seed):
+        if not (0 <= v <= i):
+            return False
+
+    return True
+
+
 def generate_seed(n, random_seed=None):
     random = Random(random_seed)
     seed = []

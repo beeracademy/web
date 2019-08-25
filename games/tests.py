@@ -71,6 +71,8 @@ class ApiTest(TestCase):
             "official": True,
             "seed": self.SEED,
             "cards": [],
+            "player_ids": [self.u1.id, self.u2.id],
+            "player_names": [self.u1.username, self.u2.username],
         }
 
         for value, suit in Card.get_ordered_cards_for_players(self.PLAYER_COUNT):

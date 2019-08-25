@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from rest_framework.authtoken.models import Token
 from .models import User, Game, Card, GamePlayer
+from .seed import is_seed_valid_for_players
 import datetime
 
 
@@ -85,17 +86,26 @@ class GameSerializer(serializers.ModelSerializer):
             "official",
             "cards",
             "seed",
+            "player_ids",
+            "player_names",
         ]
 
     start_datetime = serializers.DateTimeField(required=True)
     official = serializers.BooleanField(required=True)
     cards = CardSerializer(many=True)
     seed = serializers.ListField(child=serializers.IntegerField(), write_only=True)
+    player_ids = serializers.ListField(
+        child=serializers.IntegerField(), write_only=True
+    )
+    player_names = serializers.ListField(child=serializers.CharField(), write_only=True)
 
     def validate(self, data):
-        def check_field(field, default=None):
+        DEFAULT = object()
+
+        def check_field(field, default=None, new_value=DEFAULT):
             value = getattr(self.instance, field)
-            new_value = data.get(field, default)
+            if new_value is DEFAULT:
+                new_value = data.get(field, default)
             if value != default and value != new_value:
                 if new_value == default:
                     raise serializers.ValidationError(
@@ -104,7 +114,7 @@ class GameSerializer(serializers.ModelSerializer):
                 else:
                     raise serializers.ValidationError(
                         {
-                            field: "Differs from server value: {repr(value)} != {repr(new_value)}"
+                            field: f"Differs from server value: {repr(value)} != {repr(new_value)}"
                         }
                     )
 
@@ -121,8 +131,28 @@ class GameSerializer(serializers.ModelSerializer):
 
         previous_cards = len(cards)
 
+        player_count = len(data["player_names"])
+        instance_player_count = self.instance.players.count()
+        if instance_player_count > 0:
+            if player_count != instance_player_count:
+                raise serializers.ValidationError(
+                    {
+                        "player_names": f"Number of players doesn't match server: {instance_player_count} != {player_count}"
+                    }
+                )
+
+            player_ids = [p.id for p in self.instance.ordered_players()]
+            if data["player_ids"] != player_ids:
+                raise serializers.ValidationError(
+                    {
+                        "player_ids": f"Player ids doesn't match server: {player_ids} != {data['player_ids']}"
+                    }
+                )
+
         seed = data["seed"]
-        seed_cards = Card.get_shuffled_deck(self.instance.players.count(), seed)
+        if not is_seed_valid_for_players(seed, player_count):
+            raise serializers.ValidationError({"seed": "Invalid seed"})
+        seed_cards = Card.get_shuffled_deck(player_count, seed)
 
         if len(cards) > len(new_cards):
             raise serializers.ValidationError(
@@ -150,11 +180,19 @@ class GameSerializer(serializers.ModelSerializer):
             increasing_datetimes.append(end_dt)
 
         previous_dt = None
+        extra_time = datetime.timedelta()
         for dt in increasing_datetimes:
+            dt += extra_time
             if previous_dt and dt < previous_dt:
-                raise serializers.ValidationError(
-                    {"cards": "Card times are not increasing"}
-                )
+                if self.context.get("fix_times"):
+                    time_increase = previous_dt - dt + datetime.timedelta(seconds=13)
+                    print(f"Moving time forward by {time_increase}")
+                    extra_time += time_increase
+                    dt += time_increase
+                else:
+                    raise serializers.ValidationError(
+                        {"cards": "Card times are not increasing"}
+                    )
 
             previous_dt = dt
 
