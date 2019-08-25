@@ -1,0 +1,41 @@
+{% extends "admin/change_form.html" %}
+{% block extrahead %}{{ block.super }}
+<script>
+  (function ($) {
+    $(function() {
+      var file_input = $("#file_input");
+      file_input.change(function() {
+        $("#id_game_log").text("");
+        var files = file_input.get(0).files;
+        if (files.length > 0) {
+          var file = files[0];
+          var reader = new FileReader();
+          reader.readAsText(file);
+          reader.onload = function(evt) {
+            if(evt.target.readyState === FileReader.DONE) {
+              var text = evt.target.result;
+              try {
+                var data = JSON.parse(text);
+                var indented = JSON.stringify(data, null, 2);
+                $("#id_game_log").text(indented);
+              } catch(e) {
+                alert(e);
+              }
+            }
+          };
+        }
+      });
+    });
+  })(django.jQuery);
+</script>
+{% endblock %}
+
+{% block extrastyle %}{{ block.super }}
+<style>
+#id_game_log {
+  font-family: monospace;
+  max-height: initial;
+}
+</style>{% endblock %}
+
+{% block content %}<input id="file_input" type="file" accept="application.json">{{ block.super }}{% endblock %}
