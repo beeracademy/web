@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 from .models import User, Game, Card, Chug, PlayerStat, GamePlayer
+from .facebook import post_to_page
 from .serializers import (
     UserSerializer,
     GameSerializer,
@@ -127,6 +128,12 @@ class GameViewSet(viewsets.ReadOnlyModelViewSet):
         serializer = CreateGameSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         game = serializer.save()
+
+        players_str = ", ".join(map(lambda p: p.username, game.ordered_players()))
+        game_url = request.build_absolute_uri("/games/{}/".format(game.id))
+
+        post_to_page("A game between {} just started!".format(players_str), game_url)
+
         return Response(self.serializer_class(game).data)
 
     @action(detail=True, methods=["post"], permission_classes=[PartOfGame])
