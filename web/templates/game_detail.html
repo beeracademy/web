@@ -126,6 +126,12 @@
 
 
 <script>
+    {% if user.is_staff %}
+    var isStaff = true;
+    {% else %}
+    var isStaff = false;
+    {% endif %}
+
     var userColors = [
         "#16a085",
         "#27ae60",
@@ -211,19 +217,28 @@
                 var playerIndex = i % playerCount;
                 var player = players[playerIndex];
 
+                var list = $("<ul>").attr({"class": "list-group list-group-flush"}).append(
+                    $("<li>").attr({"class": "list-group-item"}).append(
+                        $("<a>").attr({"href": "/players/" + player.id + "/"}).text(player.name)
+                    )).append(
+                        $("<li>").attr({"class": "list-group-item"}).text(formatDuration(duration, 3))
+                    );
+
+                if (isStaff) {
+                    list.append($("<li>").attr({"class": "list-group-item"}).append(
+                        $("<a>").attr({
+                            "class": "btn btn-primary text-light",
+                            "href": "/admin/games/chug/" + card.chug_id + "/change/",
+                            "style": "width: 100%",
+                        }).text("Edit")
+                    ));
+                }
+
                 container.append(
                     $("<div>").attr({"class": "col-md-auto"}).append(
                         $("<div>").attr({"class": "card"}).append(
                             $("<div>").attr({"class": "card-header"}).append(coloredSuit(card.suit))
-                        ).append(
-                            $("<ul>").attr({"class": "list-group list-group-flush"}).append(
-                                $("<li>").attr({"class": "list-group-item"}).append(
-                                    $("<a>").attr({"href": "/players/" + player.id + "/"}).text(player.name)
-                                )
-                            ).append(
-                                $("<li>").attr({"class": "list-group-item"}).text(formatDuration(duration, 3))
-                            )
-                        )
+                        ).append(list)
                     )
                 );
             }

@@ -52,12 +52,13 @@ class CreateGameSerializer(serializers.Serializer):
 class CardSerializer(serializers.ModelSerializer):
     class Meta:
         model = Card
-        fields = ["value", "suit", "drawn_datetime", "chug_duration_ms"]
+        fields = ["value", "suit", "drawn_datetime", "chug_duration_ms", "chug_id"]
 
     drawn_datetime = serializers.DateTimeField()
     chug_duration_ms = serializers.IntegerField(
         required=False, source="chug.duration_in_milliseconds"
     )
+    chug_id = serializers.IntegerField(read_only=True, source="chug.id")
 
     def validate_chug_duration_ms(self, value):
         if value < 0:
