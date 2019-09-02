@@ -62,6 +62,9 @@ tr.live a {
     color: #fff;
 }
 
+tr.dnf {
+    text-decoration: line-through;
+}
 
 tr.in-game {
     background-color: rgba(52, 152, 219,0.4) !important;

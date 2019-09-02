@@ -85,6 +85,7 @@ class GameSerializer(serializers.ModelSerializer):
             "end_datetime",
             "description",
             "official",
+            "dnf",
             "cards",
             "seed",
             "player_ids",

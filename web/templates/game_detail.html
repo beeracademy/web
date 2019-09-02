@@ -168,13 +168,18 @@
             end_datetime = new Date(game_data.end_datetime);
             $("#game_end_datetime").text(formatDate(end_datetime));
         } else {
-            end_datetime = Date.now();
+            if (game_data.dnf) {
+                end_datetime = new Date(game_data.cards[game_data.cards.length - 1].drawn_datetime);
+                $("#game_end_datetime").text("DNF");
+            } else {
+                end_datetime = Date.now();
+            }
         }
         var duration, start_text;
         if (game_data.start_datetime) {
             var start_datetime = new Date(game_data.start_datetime);
-            duration = formatDuration(end_datetime - start_datetime);
             start_text = formatDate(start_datetime);
+            duration = formatDuration(end_datetime - start_datetime);
         } else {
             duration = "?";
             start_text = "?";
@@ -428,7 +433,7 @@
             if (hasNewData(last_game_data, game_data)) {
                 updatePage(game_data);
             }
-            if (!game_data.end_datetime) {
+            if (!game_data.end_datetime && !game_data.dnf) {
                 setTimeout(updateData, updateInterval);
             }
 

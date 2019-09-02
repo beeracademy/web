@@ -99,13 +99,13 @@ class PlayerStat(models.Model):
 
         gameplayers = filter_season(
             self.user.gameplayer_set, self.season, key="game"
-        ).filter(game__official=True)
+        ).filter(game__official=True, game__dnf=False)
 
         for gp in gameplayers:
             self.update_from_new_game(gp.game)
 
     def update_from_new_game(self, game):
-        if not game.official:
+        if not game.official or game.dnf:
             return
 
         self.total_games += 1
@@ -351,20 +351,39 @@ class Game(models.Model):
     sips_per_beer = models.PositiveSmallIntegerField(default=STANDARD_SIPS_PER_BEER)
     description = models.CharField(max_length=1000, blank=True)
     official = models.BooleanField(default=True)
+    dnf = models.BooleanField(default=False)
 
     def __str__(self):
         datetime = self.end_datetime or self.start_datetime
         return f"{datetime}: {self.players_str()}"
 
     @property
-    def has_ended(self):
+    def is_completed(self):
         return self.end_datetime is not None
+
+    @property
+    def has_ended(self):
+        return self.is_completed or self.dnf
+
+    @property
+    def is_live(self):
+        return not self.is_completed and not self.dnf
+
+    def get_last_activity_time(self):
+        if self.end_datetime:
+            return self.end_datetime
+
+        cards = self.ordered_cards()
+        if len(cards) > 0:
+            return cards.last().drawn_datetime
+
+        return self.start_datetime
 
     def get_season(self):
         if not self.has_ended:
             return None
 
-        return Season.season_from_date(self.end_datetime)
+        return Season.season_from_date(self.get_last_activity_time())
 
     def season_number_str(self):
         season = self.get_season()
@@ -373,6 +392,9 @@ class Game(models.Model):
         return str(season.number)
 
     def get_duration(self):
+        if self.dnf:
+            return self.get_last_activity_time() - self.start_datetime
+
         if not (self.start_datetime and self.end_datetime):
             return None
 
@@ -389,6 +411,9 @@ class Game(models.Model):
         return datetime.timedelta(seconds=round(duration.total_seconds()))
 
     def end_str(self):
+        if self.dnf:
+            return "DNF"
+
         if not self.end_datetime:
             return "Live"
 
@@ -461,7 +486,7 @@ class Game(models.Model):
 
             if not self.start_datetime:
                 time_per_sip = None
-            elif last_sip and last_sip[0] == i and not self.has_ended:
+            elif last_sip and last_sip[0] == i and not self.is_completed:
                 time_per_sip = div_or_none(
                     total_times[i], (total_sips[i] - last_sip[1])
                 )

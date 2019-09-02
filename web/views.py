@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from django.db.models import F
+from django.db.models import F, Case, When, Value, IntegerField, DateTimeField
 from django.core.files import File
 from django.contrib import messages
 from django.contrib.auth import update_session_auth_hash
@@ -90,9 +90,9 @@ def index(request):
         "total_games": Game.objects.all().count(),
         "recent_players": get_recent_players(4),
         "wall_of_shame_players": get_bad_chuggers(4),
-        "live_games": Game.objects.filter(end_datetime__isnull=True).order_by(
-            "-start_datetime"
-        )[:5],
+        "live_games": Game.objects.filter(
+            end_datetime__isnull=True, dnf=False
+        ).order_by("-start_datetime")[:5],
     }
     return render(request, "index.html", context)
 
@@ -166,8 +166,21 @@ class GameListView(PaginatedListView):
             if username != "":
                 qs = qs.filter(players__username__icontains=username.strip())
 
+        # First show live games (but not dnf games),
+        # then show all other games sorted by
+        # end_datetime if it is not null,
+        # otherwise use start_datetime instead
         return qs.distinct().order_by(
-            F("end_datetime").desc(nulls_first=True), "-start_datetime"
+            Case(
+                When(end_datetime__isnull=True, dnf=False, then=Value(0)),
+                default=Value(1),
+                output_field=IntegerField(),
+            ),
+            Case(
+                When(end_datetime__isnull=True, then="start_datetime"),
+                default="end_datetime",
+                output_field=DateTimeField(),
+            ).desc(),
         )
 
     def get_context_data(self, **kwargs):
