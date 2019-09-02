@@ -36,7 +36,7 @@ DATABASES = {
 
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
-sentry_sdk.init(dsn=os.getenv("SENTRY_DNS"), integrations=[DjangoIntegration()])
+sentry_sdk.init(dsn=os.environ["SENTRY_DNS"], integrations=[DjangoIntegration()])
 
 FACEBOOK_PAGE_ID = "227174884109471"
-FACEBOOK_ACCESS_TOKEN = os.getenv("FACEBOOK_ACCESS_TOKEN")
+FACEBOOK_ACCESS_TOKEN = os.environ["FACEBOOK_ACCESS_TOKEN"]
