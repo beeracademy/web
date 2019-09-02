@@ -66,6 +66,14 @@ tr.dnf {
     text-decoration: line-through;
 }
 
+a.dnf {
+    text-decoration: line-through;
+}
+
+.dnf-img-text {
+    font-size: 4em;
+}
+
 tr.in-game {
     background-color: rgba(52, 152, 219,0.4) !important;
     color: #000;

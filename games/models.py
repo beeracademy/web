@@ -108,9 +108,13 @@ class PlayerStat(models.Model):
         if not game.official or game.dnf:
             return
 
+        gp = game.gameplayer_set.get(user=self.user)
+        if gp.dnf:
+            return
+
         self.total_games += 1
 
-        player_index = game.ordered_players().index(self.user)
+        player_index = gp.position
         duration = game.get_duration()
         if duration:
             self.total_time_played_seconds += duration.total_seconds()
@@ -419,8 +423,11 @@ class Game(models.Model):
 
         return self.end_datetime.strftime("%B %d, %Y %H:%M")
 
+    def ordered_gameplayers(self):
+        return self.gameplayer_set.order_by("position")
+
     def ordered_players(self):
-        return [p.user for p in self.gameplayer_set.order_by("position")]
+        return [p.user for p in self.ordered_gameplayers()]
 
     def players_str(self):
         return ", ".join(p.username for p in self.ordered_players())

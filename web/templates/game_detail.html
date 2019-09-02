@@ -57,15 +57,18 @@
 
 <div class="container">
 <div class="row justify-content-md-center">
-{% for player in game.ordered_players %}
+{% for gp in game.ordered_gameplayers %}
 <div class="col-md-auto">
     <div class="card">
-        <a href="/players/{{ player.id }}/" style="margin: auto;">
-            <img class="card-img-top" src="{{ player.image_url }}" alt="Card image cap">
+        <a href="/players/{{ gp.user.id }}/" style="margin: auto;">
+            {% if gp.dnf %}
+            <div class="dnf-img-text">DNF</div>
+            {% endif %}
+            <img class="card-img-top" src="{{ gp.user.image_url }}" alt="Card image cap">
         </a>
         <ul class="list-group list-group-flush">
             <li class="list-group-item">
-                <a href="/players/{{ player.id }}/">{{ player.username }}</a>
+                <a href="/players/{{ gp.user.id }}/" class="{% if gp.dnf %}dnf{% endif %}">{{ gp.user.username }}</a>
             </li>
             <li class="list-group-item">Total sips: <span class="total_sips">-</span></li>
             <li class="list-group-item">Sips per turn: <span class="sips_per_turn">-</span></li>

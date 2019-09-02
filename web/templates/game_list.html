@@ -31,8 +31,8 @@
 {% for game in object_list %}
 <tr data-href="/games/{{ game.id }}/" class="{% if user in game.ordered_players %}in-game {% endif %}{% if game.is_live %}live {% endif %}{% if game.dnf %}dnf {% endif %}" data-start-time="{{ game.start_datetime.timestamp }}">
 	<td>
-		{% for player in game.ordered_players %}
-		<a href="/players/{{ player.id }}/">{{ player.username }}</a>{% if not forloop.last %},{% endif %}
+		{% for gp in game.ordered_gameplayers %}
+		<a href="/players/{{ gp.user.id }}/" class="{% if gp.dnf %}dnf{% endif %}">{{ gp.user.username }}</a>{% if not forloop.last %},{% endif %}
 		{% endfor %}
 	</td>
 	<td>{{ game.season_number_str }}</td>
