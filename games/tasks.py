@@ -8,7 +8,7 @@ from .models import Game, PlayerStat
 def mark_dnf_games():
     DNF_THRESHOLD = datetime.timedelta(hours=12)
 
-    for game in Game.objects.filter(end_datetime_isnull=True, dnf=False):
+    for game in Game.objects.filter(end_datetime__isnull=True, dnf=False):
         if timezone.now() - game.get_last_activity_time() >= DNF_THRESHOLD:
             game.dnf = True
             game.save()
