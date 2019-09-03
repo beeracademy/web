@@ -1,5 +1,8 @@
 # Academy Web Server
 
+[![Docker Build Status](https://img.shields.io/docker/cloud/build/beeracademy/web?style=for-the-badge)](https://hub.docker.com/r/beeracademy/web)
+[![Docker Pulls](https://img.shields.io/docker/pulls/beeracademy/web?style=for-the-badge)](https://hub.docker.com/r/beeracademy/web)
+
 Frontend and api server for Academy.
 
 ## Installation
