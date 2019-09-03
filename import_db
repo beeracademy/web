@@ -1,0 +1,26 @@
+#!/bin/bash
+set -euo pipefail
+cd "$(dirname "${BASH_SOURCE[0]}")" || exit
+
+echo "This will DELETE your local database!"
+echo -n "Continue? [yN] "
+read -r ans
+if ! [[ $ans = y || $ans = Y ]]; then
+	exit 1
+fi
+
+rm -f db.sqlite3
+poetry run ./manage.py migrate
+
+echo
+echo "Dumping and downloading production database..."
+
+fixture=$(mktemp --suffix .json)
+
+ssh academy.beer 'sudo docker exec academy.beer ./manage.py dumpdata --natural-foreign --exclude auth.permission --exclude contenttypes' > "$fixture"
+
+echo "Importing production database..."
+echo
+poetry run ./manage.py loaddata "$fixture"
+
+rm -f "$fixture"
