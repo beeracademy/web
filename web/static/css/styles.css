@@ -72,6 +72,14 @@ a.dnf {
 
 .dnf-img-text {
     font-size: 4em;
+    position: absolute;
+    -webkit-text-stroke: 2px #fff;
+    font-weight: 900;
+    z-index: 1;
+}
+
+.dnf-img-text + img {
+    filter: grayscale(1);
 }
 
 tr.in-game {
