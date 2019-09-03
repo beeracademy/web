@@ -40,3 +40,5 @@ sentry_sdk.init(dsn=os.environ["SENTRY_DNS"], integrations=[DjangoIntegration()]
 
 FACEBOOK_PAGE_ID = "227174884109471"
 FACEBOOK_ACCESS_TOKEN = os.environ["FACEBOOK_ACCESS_TOKEN"]
+
+CELERY_BROKER_URL = "amqp://guest:guest@rabbitmq:5672//"

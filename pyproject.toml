@@ -42,6 +42,8 @@ whitenoise = "^4.1"
 psycopg2 = "^2.8"
 django-debug-toolbar = "^2.0"
 facebook-sdk = "^3.1"
+celery = "^4.3"
+django-celery-beat = "^1.5"
 
 [tool.poetry.dev-dependencies]
 
