@@ -27,6 +27,24 @@ services:
       - celery
       - celery-beat
 
+  celery:
+    image: *app
+    command: ["celery", "worker", "--app=academy", "--loglevel=INFO"]
+    volumes:
+      - ./.env:/app/.env
+    depends_on:
+      - rabbitmq
+      - db
+
+  celery-beat:
+    image: *app
+    command: ["celery", "beat", "--app=academy", "--loglevel=INFO", "--scheduler=django_celery_beat.schedulers:DatabaseScheduler"]
+    volumes:
+      - ./.env:/app/.env
+    depends_on:
+      - rabbitmq
+      - db
+
   db:
     image: postgres
 
@@ -46,22 +64,6 @@ services:
       - "traefik.docker.network=web"
       - "traefik.domain=media.academy.beer"
     container_name: media.academy.beer
-
-  celery:
-    image: *app
-    command: ["celery", "worker", "--app=academy", "--loglevel=INFO"]
-    volumes:
-      - ./.env:/app/.env
-    depends_on:
-      - rabbitmq
-
-  celery-beat:
-    image: *app
-    command: ["celery", "beat", "--app=academy", "--loglevel=INFO", "--scheduler=django_celery_beat.schedulers:DatabaseScheduler"]
-    volumes:
-      - ./.env:/app/.env
-    depends_on:
-      - rabbitmq
 
   rabbitmq:
     image: rabbitmq
