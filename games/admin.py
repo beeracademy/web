@@ -91,6 +91,7 @@ class UploadForm(forms.ModelForm):
 class GameAdmin(admin.ModelAdmin):
     list_filter = ["official"]
     add_form_template = "admin/games/game/upload_game.html"
+    save_on_top = True
 
     def get_form(self, request, obj=None, **kwargs):
         if not obj:
