@@ -1,7 +1,5 @@
 from .base import *
 from dotenv import load_dotenv
-import sentry_sdk
-from sentry_sdk.integrations.django import DjangoIntegration
 
 load_dotenv()
 
@@ -36,7 +34,10 @@ DATABASES = {
 
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
-sentry_sdk.init(dsn=os.environ["SENTRY_DNS"], integrations=[DjangoIntegration()])
+# Server admins (get an email when server errors happen)
+ADMINS = [
+	('Asger Hautop Drewsen', 'asgerdrewsen@gmail.com'),
+]
 
 FACEBOOK_PAGE_ID = "227174884109471"
 FACEBOOK_ACCESS_TOKEN = os.environ["FACEBOOK_ACCESS_TOKEN"]
