@@ -37,7 +37,6 @@ class GamePlayerInline(admin.TabularInline):
 
 class CardInline(admin.TabularInline):
     model = Card
-    readonly_fields = CardAdmin.readonly_fields
 
 
 class UploadGameView(CreateView):
