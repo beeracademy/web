@@ -3,6 +3,6 @@ db.sqlite3
 *.pyc
 __pycache__/
 media/
-static/
+staticfiles/
 .env
 academy.egg-info/
