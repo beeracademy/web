@@ -1,8 +1,8 @@
-.vscode/
-db.sqlite3
+/.vscode/
+/.env
+/db.sqlite3
+/media/
+/static/
+/academy.egg-info/
 *.pyc
 __pycache__/
-media/
-staticfiles/
-.env
-academy.egg-info/
