@@ -51,12 +51,12 @@
 <div class="container">
 	<div class="row">
 		{% for ranking in rankings %}
-		<div class="card col-md-2 m-auto">
+		<div class="card col-md-2 ml-auto mr-auto">
 			<div class="card-body text-center">
-				<p class="card-title">{{ ranking.name }} rank</p>
+				<p class="card-title mb-2">{{ ranking.name }}</p>
 				<h4 class="card-text">{% spaceless %}
 					{% if ranking.rank %}
-						<a href="{{ ranking.url }}">{{ ranking.rank }}</a>
+						<a href="{{ ranking.url }}">#{{ ranking.rank }}</a>
 					{% else %}
 						-
 					{% endif %}
