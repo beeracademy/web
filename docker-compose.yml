@@ -45,7 +45,7 @@ services:
       - db
 
   db:
-    image: postgres
+    image: postgres:11
 
   media:
     image: nginx:alpine
