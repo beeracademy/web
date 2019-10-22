@@ -164,7 +164,10 @@ class RankedFacecardsView(viewsets.ViewSet):
         for ranking, (suit, _) in zip(RANKINGS, Card.SUITS):
             qs = ranking.get_qs(season)
 
-            for ps, value in zip(qs.all(), Card.FACE_CARD_VALUES):
+            for ps, value in zip(
+                qs.exclude(user__image="")[: len(Card.FACE_CARD_VALUES)],
+                Card.FACE_CARD_VALUES,
+            ):
                 user = ps.user
                 facecards[f"{suit}-{value}"] = {
                     "user_id": user.id,
