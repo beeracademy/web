@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from django.db.models import F, Case, When, Value, IntegerField, DateTimeField
+from django.db.models import Case, When, Value, IntegerField, DateTimeField, Count
 from django.core.files import File
 from django.contrib import messages
 from django.contrib.auth import update_session_auth_hash
@@ -215,7 +215,11 @@ class PlayerListView(PaginatedListView):
 
     def get_queryset(self):
         query = self.request.GET.get("query", "")
-        return User.objects.filter(username__icontains=query)
+        return (
+            User.objects.filter(username__icontains=query)
+            .annotate(total_games=Count("gameplayer"))
+            .order_by("-total_games")
+        )
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
