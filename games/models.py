@@ -547,6 +547,8 @@ class Card(models.Model):
         ("I", "Heineken"),
     ]
 
+    FACE_CARD_VALUES = [13, 12, 11]
+
     game = models.ForeignKey("Game", on_delete=models.CASCADE, related_name="cards")
     index = models.PositiveSmallIntegerField()
     value = models.SmallIntegerField(choices=VALUES)

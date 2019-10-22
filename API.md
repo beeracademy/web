@@ -95,3 +95,24 @@ If a user with that username exists, but the password was wrong, the response is
 ```javascript
 {}
 ```
+
+## Get list of ranked users for face cards
+
+### Request
+```javascript
+// GET /api/ranked_cards/
+{}
+```
+
+### Response
+```javascript
+{
+  "{suit}-{value}": { // example: S-12
+    "user_id": int,
+    "user_username": string,
+    "user_image": string,
+    "ranking_name": string,
+    "ranking_value": string,
+  },
+}
+```

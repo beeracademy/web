@@ -5,7 +5,8 @@ from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
-from .models import User, Game, Card, Chug, PlayerStat, GamePlayer
+from .models import User, Game, Card, Chug, PlayerStat, GamePlayer, Season
+from .ranking import RANKINGS
 from .facebook import post_to_page
 from .serializers import (
     UserSerializer,
@@ -151,3 +152,26 @@ class GameViewSet(viewsets.ReadOnlyModelViewSet):
         update_game(game, serializer.validated_data)
 
         return Response({})
+
+
+class RankedFacecardsView(viewsets.ViewSet):
+    permission_classes = (IsAuthenticatedOrReadOnly,)
+
+    def list(self, request):
+        season = Season.current_season()
+
+        facecards = {}
+        for ranking, (suit, _) in zip(RANKINGS, Card.SUITS):
+            qs = ranking.get_qs(season)
+
+            for ps, value in zip(qs.all(), Card.FACE_CARD_VALUES):
+                user = ps.user
+                facecards[f"{suit}-{value}"] = {
+                    "user_id": user.id,
+                    "user_username": user.username,
+                    "user_image": user.image_url(),
+                    "ranking_name": ranking.name,
+                    "ranking_value": ranking.get_value(ps),
+                }
+
+        return Response(facecards)

@@ -17,13 +17,14 @@ from django.contrib import admin
 from django.conf import settings
 from django.urls import path, include
 from rest_framework import routers
-from games.views import UserViewSet, GameViewSet, CustomAuthToken
+from games.views import UserViewSet, GameViewSet, CustomAuthToken, RankedFacecardsView
 import debug_toolbar
 
 
 router = routers.DefaultRouter()
 router.register("users", UserViewSet)
 router.register("games", GameViewSet)
+router.register("ranked_cards", RankedFacecardsView, base_name="ranked_cards")
 
 
 urlpatterns = [
