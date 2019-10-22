@@ -421,7 +421,7 @@ class Game(models.Model):
         if not self.end_datetime:
             return "Live"
 
-        return self.end_datetime.strftime("%B %d, %Y %H:%M")
+        return timezone.localtime(self.end_datetime).strftime("%B %d, %Y %H:%M")
 
     def ordered_gameplayers(self):
         return self.gameplayer_set.order_by("position")
