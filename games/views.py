@@ -120,11 +120,7 @@ class GameViewSet(viewsets.ReadOnlyModelViewSet):
     pagination_class = OneResultSetPagination
 
     def retrieve(self, request, pk=None):
-        try:
-            game = Game.objects.get(id=pk)
-        except Game.DoesNotExist:
-            raise serializers.ValidationError("Game doesn't exist")
-
+        game = get_object_or_404(Game, pk=pk)
         return Response(GameSerializerWithPlayerStats(game).data)
 
     def create(self, request):
@@ -141,11 +137,7 @@ class GameViewSet(viewsets.ReadOnlyModelViewSet):
 
     @action(detail=True, methods=["post"], permission_classes=[PartOfGame])
     def update_state(self, request, pk=None):
-        try:
-            game = Game.objects.get(id=pk)
-        except Game.DoesNotExist:
-            raise serializers.ValidationError("Game doesn't exist")
-
+        game = get_object_or_404(Game, pk=pk)
         self.check_object_permissions(request, game)
 
         serializer = GameSerializer(game, data=request.data)
