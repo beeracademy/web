@@ -141,6 +141,7 @@ If a user with that username exists, but the password was wrong, the response is
         "worst_game_sips": int?,
         "total_chugs": int,
         "fastest_chug": int?,
+        "fastest_chug_duration_ms": int?,
         "average_chug_time_seconds": float?,
     },
     ...

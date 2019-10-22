@@ -271,5 +271,10 @@ class PlayerStatSerializer(serializers.ModelSerializer):
             "worst_game_sips",
             "total_chugs",
             "fastest_chug",
+            "fastest_chug_duration_ms",
             "average_chug_time_seconds",
         ]
+
+    fastest_chug_duration_ms = serializers.IntegerField(
+        required=False, source="fastest_chug.duration_in_milliseconds"
+    )
