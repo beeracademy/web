@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from rest_framework.authtoken.models import Token
-from .models import User, Game, Card, GamePlayer
+from .models import User, Game, Card, GamePlayer, PlayerStat
 from .seed import is_seed_valid_for_players
 import datetime
 
@@ -255,3 +255,21 @@ class GameSerializerWithPlayerStats(GameSerializer):
             l.append(stats)
 
         return l
+
+
+class PlayerStatSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PlayerStat
+        fields = [
+            "season_number",
+            "total_games",
+            "total_time_played_seconds",
+            "total_sips",
+            "best_game",
+            "worst_game",
+            "best_game_sips",
+            "worst_game_sips",
+            "total_chugs",
+            "fastest_chug",
+            "average_chug_time_seconds",
+        ]

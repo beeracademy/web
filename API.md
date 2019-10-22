@@ -116,3 +116,33 @@ If a user with that username exists, but the password was wrong, the response is
   },
 }
 ```
+
+# Player stats
+
+## Get stats for a user
+
+### Request
+```javascript
+// GET /api/stats/<user_id>/
+{}
+```
+
+### Response
+```javascript
+[
+    {
+        "season_number": int,
+        "total_games": int,
+        "total_time_played_seconds": float,
+        "total_sips": int,
+        "best_game": int,
+        "worst_game": int,
+        "best_game_sips": int?,
+        "worst_game_sips": int?,
+        "total_chugs": int,
+        "fastest_chug": int?,
+        "average_chug_time_seconds": float?,
+    },
+    ...
+]
+```

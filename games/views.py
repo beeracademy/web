@@ -1,3 +1,4 @@
+from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, serializers
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.authtoken.views import ObtainAuthToken
@@ -13,6 +14,7 @@ from .serializers import (
     GameSerializer,
     GameSerializerWithPlayerStats,
     CreateGameSerializer,
+    PlayerStatSerializer,
 )
 
 
@@ -178,3 +180,13 @@ class RankedFacecardsView(viewsets.ViewSet):
                 }
 
         return Response(facecards)
+
+
+class PlayerStatViewSet(viewsets.ViewSet):
+    permission_classes = (IsAuthenticatedOrReadOnly,)
+
+    def retrieve(self, request, pk=None):
+        user = get_object_or_404(User, pk=pk)
+        stats = PlayerStat.objects.filter(user=user)
+        serializer = PlayerStatSerializer(stats, many=True)
+        return Response(serializer.data)
