@@ -25,7 +25,7 @@ function formatDuration(ms, seconds_decimals) {
     var round_constant = Math.pow(10, seconds_decimals);
 
     var total_seconds = Math.floor(ms / 1000 * round_constant) / round_constant;
-    var seconds = (total_seconds % 60).toFixed(second_decimals);
+    var seconds = (total_seconds % 60).toFixed(seconds_decimals);
     var total_minutes = Math.floor(total_seconds / 60);
     var minutes = total_minutes % 60;
     var total_hours = Math.floor(total_minutes / 60);
