@@ -257,26 +257,34 @@ class Command(BaseCommand):
                     cards_l[7].save()
                     cards_l[8].drawn_datetime += datetime.timedelta(seconds=15)
                     cards_l[8].save()
-                elif game.id == 1294:
-                    # This was played while a DST transition happened
-                    print(f"Manually fixing {game.id}")
 
-                    after_dst = False
-                    prev_dt = None
-                    for c in cards:
-                        if (
-                            prev_dt is not None
-                            and c.drawn_datetime > prev_dt + datetime.timedelta(hours=1)
-                        ):
-                            after_dst = True
-                        prev_dt = c.drawn_datetime
+            # Game 1294 doesn't have bad_card_order, but still needs fixing
+            if game.id == 1294:
+                # This was played while a DST transition happened
+                print(f"Manually fixing {game.id}")
 
-                        if after_dst:
-                            c.drawn_datetime -= datetime.timedelta(hours=1)
-                            c.save()
+                after_dst = False
+                prev_dt = None
+                for c in cards:
+                    if (
+                        prev_dt is not None
+                        and c.drawn_datetime > prev_dt + datetime.timedelta(hours=1)
+                    ):
+                        after_dst = True
+                    prev_dt = c.drawn_datetime
 
-                first_card.refresh_from_db()
-                last_card.refresh_from_db()
+                    if after_dst:
+                        c.drawn_datetime -= datetime.timedelta(hours=1)
+                        c.save()
+
+                if after_dst:
+                    game.end_datetime -= datetime.timedelta(hours=1)
+                    game.save()
+                else:
+                    print("Didn't need fixing...")
+
+            first_card.refresh_from_db()
+            last_card.refresh_from_db()
 
             if (
                 first_card.drawn_datetime < game.start_datetime
