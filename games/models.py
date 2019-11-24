@@ -170,8 +170,14 @@ class PlayerStat(models.Model):
         return hours_played / HOURS_PER_ECTS
 
     @property
-    def approx_money_spent(self):
-        AVERAGE_BEER_PRICE_DKK = 10
+    def approx_money_spent_tk(self):
+        AVERAGE_BEER_PRICE_DKK = 250 / 30
+        cost = self.total_beers * AVERAGE_BEER_PRICE_DKK
+        return f"{int(cost)} DKK"
+
+    @property
+    def approx_money_spent_føtex(self):
+        AVERAGE_BEER_PRICE_DKK = 105 / 30  # Klaus' estimate
         cost = self.total_beers * AVERAGE_BEER_PRICE_DKK
         return f"{int(cost)} DKK"
 

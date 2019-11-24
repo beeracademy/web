@@ -88,8 +88,12 @@
 						(~ {{ stats.approx_ects|floatformat:1 }} ECTS)</td>
 				</tr>
 				<tr>
-					<th>Estimated money spent</th>
-					<td>{{ stats.approx_money_spent|intcomma }}</td>
+					<th>Estimated money spent (TÅGEKAMMERET)</th>
+					<td>{{ stats.approx_money_spent_tk|intcomma }}</td>
+				</tr>
+				<tr>
+					<th>Estimated money spent (FøTeX)</th>
+					<td>{{ stats.approx_money_spent_føtex|intcomma }}</td>
 				</tr>
 			</tbody>
 		</table>
