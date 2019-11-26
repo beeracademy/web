@@ -50,33 +50,41 @@ def get_ranking_url(ranking, user, season):
 
 
 def get_recent_players(n):
-    recent_players = set()
+    recent_players = {}
     for game in Game.objects.order_by("-end_datetime"):
         for p in game.players.all():
-            if p.image:
-                recent_players.add(p)
+            if p in recent_players or not p.image:
+                continue
+
+            recent_players[
+                p
+            ] = f"For playing game on {game.end_datetime.date()} with {game.players_str()}"
 
         if len(recent_players) >= n:
             break
 
-    recent_players = random.sample(list(recent_players), min(n, len(recent_players)))
+    recent_players = random.sample(recent_players.items(), min(n, len(recent_players)))
     random.shuffle(recent_players)
     return recent_players
 
 
 def get_bad_chuggers(n, max_chugs=50):
-    bad_chuggers = set()
+    bad_chuggers = {}
     for chug in Chug.objects.filter(duration_in_milliseconds__gte=20 * 1000).order_by(
         "-card__drawn_datetime"
     )[:max_chugs]:
         u = chug.card.get_user()
-        if u.image:
-            bad_chuggers.add(u)
+        if u in bad_chuggers or not u.image:
+            continue
+
+        bad_chuggers[
+            u
+        ] = f"For chugging an ace in {chug.duration_in_milliseconds / 1000} seconds on {chug.card.game.end_datetime.date()}"
 
         if len(bad_chuggers) >= n:
             break
 
-    bad_chuggers = random.sample(list(bad_chuggers), min(n, len(bad_chuggers)))
+    bad_chuggers = random.sample(bad_chuggers.items(), min(n, len(bad_chuggers)))
     random.shuffle(bad_chuggers)
     return bad_chuggers
 

@@ -73,8 +73,8 @@
 <hr>
 
 <div class="row">
-    {% for user in recent_players %}
-    <div class="col-6 col-lg-3 py-2">
+    {% for user, reason in recent_players %}
+    <div class="col-6 col-lg-3 py-2" title="{{ reason }}">
         <a href="/players/{{ user.id }}/"><img src="{{ user.image_url }}"
                 class="img-fluid mx-auto d-block bottom-shadow rounded"></a>
         <div class="card-username">{{ user.username }}</div>
@@ -89,8 +89,8 @@
 <hr>
 
 <div class="row">
-    {% for user in wall_of_shame_players %}
-    <div class="col-6 col-lg-3 py-2">
+    {% for user, reason in wall_of_shame_players %}
+    <div class="col-6 col-lg-3 py-2" title="{{ reason }}">
         <a href="/players/{{ user.id }}/"><img src="{{ user.image_url }}" class="img-fluid mx-auto d-block rounded"></a>
         <div class="card-username">{{ user.username }}</div>
     </div>
