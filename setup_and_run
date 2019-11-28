@@ -1,4 +1,4 @@
 #!/bin/sh
 ./manage.py collectstatic --noinput &&
 ./manage.py migrate --noinput &&
-exec gunicorn --bind 0.0.0.0 --workers 4 academy.wsgi:application
+exec gunicorn --bind 0.0.0.0 --workers 4 --timeout 120 academy.wsgi:application
