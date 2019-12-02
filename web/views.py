@@ -51,9 +51,7 @@ def get_ranking_url(ranking, user, season):
 
 def get_recent_players(n, min_sample_size=10):
     recent_players = {}
-    for game in Game.objects.order_by(
-            F("end_datetime").desc(nulls_last=True)
-        ):
+    for game in Game.objects.order_by(F("end_datetime").desc(nulls_last=True)):
         for p in game.players.all():
             if p in recent_players or not p.image:
                 continue
