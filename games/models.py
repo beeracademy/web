@@ -328,7 +328,7 @@ class Game(models.Model):
     """
     There are 4 kinds of games:
 
-    - Unfinished games:
+    - Unfinished/DNF games:
         - end_datetime          == None
         - start_datetime        != None
         - cards__drawn_datetime != None
