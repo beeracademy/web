@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from django.db.models import Case, When, Value, IntegerField, DateTimeField, Count
+from django.db.models import Case, When, Value, IntegerField, DateTimeField, Count, F
 from django.core.files import File
 from django.contrib import messages
 from django.contrib.auth import update_session_auth_hash
@@ -49,18 +49,20 @@ def get_ranking_url(ranking, user, season):
     )
 
 
-def get_recent_players(n):
+def get_recent_players(n, min_sample_size=10):
     recent_players = {}
-    for game in Game.objects.order_by("-end_datetime"):
+    for game in Game.objects.order_by(
+            F("end_datetime").desc(nulls_last=True)
+        ):
         for p in game.players.all():
             if p in recent_players or not p.image:
                 continue
 
             recent_players[
                 p
-            ] = f"For playing game on {game.end_datetime.date()} with {game.players_str()}"
+            ] = f"For playing game on {game.date} with {game.players_str()}"
 
-        if len(recent_players) >= n:
+        if len(recent_players) >= min_sample_size:
             break
 
     recent_players = random.sample(recent_players.items(), min(n, len(recent_players)))
@@ -68,20 +70,20 @@ def get_recent_players(n):
     return recent_players
 
 
-def get_bad_chuggers(n, max_chugs=50):
+def get_bad_chuggers(n, min_sample_size=10):
     bad_chuggers = {}
     for chug in Chug.objects.filter(duration_in_milliseconds__gte=20 * 1000).order_by(
-        "-card__drawn_datetime"
-    )[:max_chugs]:
+        F("card__drawn_datetime").desc(nulls_last=True)
+    ):
         u = chug.card.get_user()
         if u in bad_chuggers or not u.image:
             continue
 
         bad_chuggers[
             u
-        ] = f"For chugging an ace in {chug.duration_in_milliseconds / 1000} seconds on {chug.card.game.end_datetime.date()}"
+        ] = f"For chugging an ace in {chug.duration_in_milliseconds / 1000} seconds on {chug.card.game.date}"
 
-        if len(bad_chuggers) >= n:
+        if len(bad_chuggers) >= min_sample_size:
             break
 
     bad_chuggers = random.sample(bad_chuggers.items(), min(n, len(bad_chuggers)))

@@ -364,8 +364,7 @@ class Game(models.Model):
     dnf = models.BooleanField(default=False)
 
     def __str__(self):
-        datetime = self.end_datetime or self.start_datetime
-        return f"{datetime}: {self.players_str()}"
+        return f"{self.datetime}: {self.players_str()}"
 
     @property
     def is_completed(self):
@@ -378,6 +377,14 @@ class Game(models.Model):
     @property
     def is_live(self):
         return not self.is_completed and not self.dnf
+
+    @property
+    def datetime(self):
+        return self.end_datetime or self.start_datetime
+
+    @property
+    def date(self):
+        return self.datetime.date()
 
     def get_last_activity_time(self):
         if self.end_datetime:
