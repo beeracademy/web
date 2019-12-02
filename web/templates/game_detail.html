@@ -175,7 +175,11 @@
             $("#game_end_datetime").text(formatDate(end_datetime));
         } else {
             if (game_data.dnf) {
-                end_datetime = new Date(game_data.cards[game_data.cards.length - 1].drawn_datetime);
+                if (game_data.cards.length === 0) {
+                    end_datetime = new Date(game_data.start_datetime);
+                } else {
+                    end_datetime = new Date(game_data.cards[game_data.cards.length - 1].drawn_datetime);
+                }
                 $("#game_end_datetime").text("DNF");
             } else {
                 end_datetime = Date.now();
