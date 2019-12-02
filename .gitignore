@@ -4,5 +4,6 @@
 /media/
 /static/
 /academy.egg-info/
+/db_data/
 *.pyc
 __pycache__/

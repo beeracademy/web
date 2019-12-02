@@ -46,6 +46,8 @@ services:
 
   db:
     image: postgres:11
+    volumes:
+      - ./db_data:/var/lib/postgresql/data
 
   media:
     image: nginx:alpine
