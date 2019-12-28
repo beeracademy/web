@@ -44,6 +44,7 @@ django-debug-toolbar = "^2.0"
 facebook-sdk = "^3.1"
 celery = "^4.3"
 django-celery-beat = "^1.5"
+django-constance = {version = "^2.5", extras = ["database"]}
 
 [tool.poetry.dev-dependencies]
 

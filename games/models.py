@@ -221,9 +221,12 @@ class User(AbstractUser):
                 self.image.name = expected_image_name
                 super().save()
 
-            image = Image.open(expected_image_path)
-            thumb = image.resize(self.IMAGE_SIZE)
-            thumb.save(expected_image_path)
+            try:
+                image = Image.open(expected_image_path)
+                thumb = image.resize(self.IMAGE_SIZE)
+                thumb.save(expected_image_path)
+            except FileNotFoundError:
+                pass
         else:
             try:
                 os.remove(expected_image_path)

@@ -16,7 +16,7 @@
 		<style>
 		#banner {
 			width: 100%;
-			background-color: #0094c4;
+			background-color: {{ config.BANNER_COLOR }};
 			display: flex;
 			justify-content: center;
 			align-items: center;
@@ -25,6 +25,7 @@
 			padding: 1em;
 			text-align: center;
 		}
+		{% if config.BANNER_BLINK %}
 		#banner a {
 			color: #000;
 			animation: blinker 2s linear infinite;
@@ -34,6 +35,7 @@
 				color: white;
 			}
 		}
+		{% endif %}
 		</style>
 
 		{% block styles %}{% endblock %}
@@ -70,11 +72,13 @@
 				</div>
 			</nav>
 
+			{% if config.BANNER_ENABLED %}
 			<div id="banner">
-					<a href="https://dropud.nu/">
-						Velkommen til de nye russer. Held og lykke med jeres første spil!
-					</a>
+				<a href="{{ config.BANNER_URL }}">
+					{{ config.BANNER_TEXT }}
+				</a>
 			</div>
+			{% endif %}
 
 			<main class="container">
 				{% bootstrap_messages %}

@@ -30,6 +30,8 @@ INSTALLED_APPS = [
     "django.contrib.humanize",
     "django_extensions",
     "debug_toolbar",
+    "constance",
+    "constance.backends.database",
     "rest_framework",
     "rest_framework.authtoken",
     "bootstrap4",
@@ -64,6 +66,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "constance.context_processors.config",
                 "academy.context_processors.constants",
                 "games.context_processors.seasons",
             ]
@@ -151,3 +154,12 @@ REST_FRAMEWORK = {
 }
 
 DEBUG_TOOLBAR_CONFIG = {"SHOW_TOOLBAR_CALLBACK": "academy.debug_toolbar.show_toolbar"}
+
+CONSTANCE_BACKEND = "constance.backends.database.DatabaseBackend"
+CONSTANCE_CONFIG = {
+    "BANNER_ENABLED": (False, "Show banner", bool),
+    "BANNER_TEXT": ("", "Banner text", str),
+    "BANNER_URL": ("https://dropdu.nu/", "Banner URL", str),
+    "BANNER_COLOR": ("#0094c4", "Banner color", str),
+    "BANNER_BLINK": (False, "Should banner text blink?", bool),
+}
