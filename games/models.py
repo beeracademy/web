@@ -22,18 +22,26 @@ def get_user_image_name(user, filename=None):
     return f"user_images/{user.id}.png"
 
 
+def q_between(key, lower, upper):
+    return Q(**{f"{key}__gte": lower, f"{key}__lte": upper})
+
+
 def filter_season(qs, season, key=None, should_include_live=False):
     if key:
         key += "__"
     else:
         key = ""
-    key += "end_datetime"
 
-    q = Q(**{f"{key}__gte": season.start_datetime, f"{key}__lte": season.end_datetime})
+    end_key = key + "end_datetime"
+
+    q = q_between(end_key, season.start_datetime, season.end_datetime)
+    q |= Q(**{f"{key}dnf": True}) & q_between(
+        f"{key}start_datetime", season.start_datetime, season.end_datetime
+    )
 
     includes_live = season == all_time_season or Season.current_season() == season
     if includes_live and should_include_live:
-        q |= Q(**{f"{key}__isnull": True})
+        q |= Q(**{f"{end_key}__isnull": True, f"{key}dnf": False})
 
     return qs.filter(q)
 
