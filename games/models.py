@@ -425,7 +425,7 @@ class Game(models.Model):
             return "?"
 
         duration = self.get_duration()
-        if not duration:
+        if duration == None:
             duration = timezone.now() - self.start_datetime
 
         return datetime.timedelta(seconds=round(duration.total_seconds()))
