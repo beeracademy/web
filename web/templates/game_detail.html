@@ -442,6 +442,9 @@
         $.get("/api/games/" + game_id + "/", function (game_data) {
             if (hasNewData(last_game_data, game_data)) {
                 updatePage(game_data);
+            } else {
+                // Always update game duration of a live game
+                updateGameInfo(game_data);
             }
             if (!game_data.end_datetime && !game_data.dnf) {
                 setTimeout(updateData, updateInterval);
@@ -454,7 +457,7 @@
     var game_data = JSON.parse(document.getElementById("game_data").textContent);
     updatePage(game_data);
 
-    if (!game_data.end_datetime) {
+    if (!game_data.end_datetime && !game_data.dnf) {
         setTimeout(updateData, updateInterval);
     }
 </script>
