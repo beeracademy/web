@@ -1,9 +1,10 @@
-/.vscode/
 /.env
 /db.sqlite3
 /media/
 /static/
 /academy.egg-info/
 /db_data/
+/dump/profilepictures/
+/dump/tables/
 *.pyc
 __pycache__/
