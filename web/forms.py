@@ -60,3 +60,5 @@ class UserSettingsForm(forms.ModelForm):
         password = self.cleaned_data["new_password"]
         if password:
             validate_password(password, self.instance)
+
+        return password

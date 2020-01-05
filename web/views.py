@@ -320,8 +320,8 @@ class UserSettingsView(LoginRequiredMixin, UpdateView):
         messages.success(self.request, "Profile updated")
 
         if form.cleaned_data["new_password"]:
-            messages.success(self.request, "Password changed")
             self.object.set_password(form.cleaned_data["new_password"])
+            self.object.save()
             update_session_auth_hash(self.request, self.request.user)
 
         image_io = form.cleaned_data["image_io"]
