@@ -9,5 +9,7 @@
 /db_data/
 /dump/profilepictures/
 /dump/tables/
+/svelte/node_modules/
+/svelte/static/svelte/
 *.pyc
 __pycache__/
