@@ -40,7 +40,7 @@
 
 		{% block styles %}{% endblock %}
 	</head>
-	<body>
+	<body class="{% if user.is_staff %}staff-user{% endif %}">
 		<div class="wrapper">
 
 			<nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">

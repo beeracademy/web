@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     "rest_framework.authtoken",
     "bootstrap4",
     "django_celery_beat",
+    "svelte",
     "games",
     "web",
 ]

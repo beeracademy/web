@@ -8,7 +8,7 @@ import datetime
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ["id", "username", "is_superuser", "image", "password"]
+        fields = ["id", "username", "is_superuser", "image_url", "password"]
         extra_kwargs = {"password": {"write_only": True}}
 
     def create(self, validated_data):
@@ -90,6 +90,7 @@ class GameSerializer(serializers.ModelSerializer):
             "seed",
             "player_ids",
             "player_names",
+            "sips_per_beer",
         ]
 
     start_datetime = serializers.DateTimeField(required=True)

@@ -28,3 +28,13 @@ To start the server locally run:
 ```sh
 poetry run ./manage.py runserver
 ```
+
+## Compiling Svelte components
+
+Some views uses [Svelte](https://svelte.dev/) components, which needs to be compiled.
+To do this, run the following:
+```sh
+cd svelte
+npm install
+npx rollup -c
+```
