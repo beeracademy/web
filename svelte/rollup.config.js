@@ -3,6 +3,7 @@ import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import livereload from 'rollup-plugin-livereload';
 import { terser } from 'rollup-plugin-terser';
+import babel from 'rollup-plugin-babel';
 import fs from 'fs';
 
 const production = !process.env.ROLLUP_WATCH;
@@ -34,6 +35,17 @@ fs.readdirSync('src').map(fname => {
 				css: css => {
 					css.write(`${outputDir}/${base}.css`);
 				}
+			}),
+
+			babel({
+				extensions: ['.js', '.mjs', '.html', '.svelte'],
+				include: ['src/**', 'node_modules/svelte/**'],
+				presets: [
+					["@babel/env", {
+						useBuiltIns: 'usage',
+						corejs: 3,
+					}],
+				],
 			}),
 
 			// If you have external dependencies installed from
