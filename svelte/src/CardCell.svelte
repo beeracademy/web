@@ -1,3 +1,5 @@
+<svelte:options immutable/>
+
 <script context="module">
 	import { card_constants } from "./globals.js";
 </script>
@@ -7,10 +9,11 @@
 
 	import ColoredSuit from "./ColoredSuit.svelte";
 
-	let cardName, symbol, color;
+	let valueName, suitName;
 
 	if (card) {
-		cardName = `${card_constants.value_names[card.value]} of ${card_constants.suit_names[card.suit]}`;
+		valueName = card_constants.value_names[card.value];
+		suitName = card_constants.suit_names[card.suit];
 	}
 </script>
 
@@ -22,7 +25,7 @@
 </style>
 
 {#if card}
-<td title={cardName}>
+<td title="{valueName} of {suitName}">
 	<span class="symbol">
 		<ColoredSuit card={card}/>
 	</span>

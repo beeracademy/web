@@ -7,7 +7,8 @@
 
 	import ColoredSuit from "./ColoredSuit.svelte";
 
-	const {card, player} = chug;
+	const player = chug.player;
+	$: card = chug.card;
 </script>
 
 <style>
@@ -29,11 +30,17 @@
 				</a>
 			</li>
 			<li class="list-group-item">
-				{window.formatDuration(card.chug_duration_ms, 3)}
+				{#if card.chug_duration_ms}
+					{window.formatDuration(card.chug_duration_ms, 3)}
+				{:else}
+					Not done
+				{/if}
 			</li>
+			{#if card.chug_id}
 			<li class="list-group-item staff-only">
 				<a class="btn btn-primary text-light" href="/admin/games/chug/{card.chug_id}" style="width: 100%;">Edit</a>
 			</li>
+			{/if}
 		</ul>
 	</div>
 </div>

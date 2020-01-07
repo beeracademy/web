@@ -19,7 +19,6 @@
 	updateData();
 
 	let duration = null;
-	let chugs;
 	$: {
 		let end_datetime;
 		if (game_data.end_datetime) {
@@ -39,21 +38,23 @@
 			const start_datetime = new Date(game_data.start_datetime);
 			duration = end_datetime - start_datetime;
 		}
+	}
 
+	let chugs;
+	$: {
 		chugs = [];
 		for (let i = 0; i < game_data.cards.length; i++) {
 			const card = game_data.cards[i];
-			const duration = card.chug_duration_ms;
-			if (duration) {
+			if (card.value === 14) {
 				chugs.push({
 					card: card,
 					player: ordered_gameplayers[i % ordered_gameplayers.length].user,
 				});
 			}
 		}
-
-		game_data.playerCount = ordered_gameplayers.length;
 	}
+
+	$: game_data, game_data.playerCount = ordered_gameplayers.length;
 </script>
 
 <style>
