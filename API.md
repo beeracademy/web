@@ -72,9 +72,9 @@ If a user with that username exists, but the password was wrong, the response is
   "start_datetime": datetime_string,
   "official": bool,
   "seed": int[],
-  "cards": card[],               // see below
-  "end_datime": datetime_string, // only at end of game
-  "description": string,         // only at end of game
+  "cards": card[],                 // see below
+  "end_datetime": datetime_string, // only at end of game
+  "description": string,           // only at end of game
 }
 ```
 
