@@ -13,16 +13,20 @@
 {% endblock %}
 
 {% block thead %}
-<tr>
+<tr class="academy-table">
+	<th scope="col"></th>
 	<th scope="col">Username</th>
-	<th scope="col">Games Played in {{ current_season }}</th>
-	<th scope="col">Total Games Played</th>
+	<th scope="col">Games in {{ current_season }}</th>
+	<th scope="col">Total Games</th>
 </tr>
 {% endblock %}
 
 {% block tbody %}
 {% for user in object_list %}
-<tr data-href="/players/{{ user.id }}/">
+<tr data-href="/players/{{ user.id }}/" class="academy-table">
+	<td>
+		<div class="round-image" style="background-image: url({{ user.image_url }});"></div>
+	</td>
 	<td>{{ user.username }}</td>
 	<td>{{ user.current_season_game_count }}</td>
 	<td>{{ user.total_game_count }}</td>

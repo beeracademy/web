@@ -99,3 +99,45 @@ tr.in-game a {
 .rounder {
     border-radius: 5px;
 }
+
+.round-image {
+    height: 48px;
+    width: 48px;
+    border-radius: 100%;
+    background-size: contain;
+    background-position: center;
+    margin-left: auto;
+    margin-right: auto;
+    background-color: #f0f0f0;
+}
+
+.academy-table th {
+    border: none;
+    height: 48px;
+    font-size: 100;
+}
+
+.academy-table.slim th {
+    height: 28px;
+}
+
+.academy-table td {
+    border: none;
+    border-bottom: 2px solid #dee2e6;
+    height: 48px;
+    line-height: 48px;
+}
+
+.academy-table.slim td {
+    height: 28px;
+    line-height: 28px;
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: inherit;
+
+}
+
+.text-cetner {
+    text-align: center;
+}
