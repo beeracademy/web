@@ -71,7 +71,7 @@ def get_recent_players(n, min_sample_size=10):
 def get_bad_chuggers(n, min_sample_size=10):
     bad_chuggers = {}
     for chug in Chug.objects.filter(duration_in_milliseconds__gte=20 * 1000).order_by(
-        F("card__drawn_datetime").desc(nulls_last=True)
+        F("card__game__start_datetime").desc(nulls_last=True)
     ):
         u = chug.card.get_user()
         if u in bad_chuggers or not u.image:

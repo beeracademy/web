@@ -1,6 +1,7 @@
 from django.test import TestCase, Client
 from rest_framework.test import APIClient
 from games.models import User, Game, Card, GamePlayer, Chug
+from games.utils import get_milliseconds
 from django.utils import timezone
 from copy import deepcopy
 import datetime
@@ -42,13 +43,14 @@ class ApiTest(TestCase):
 
     def get_game_data(self, cards_drawn, include_chug=True):
         game_state = deepcopy(self.final_game_data)
-        del game_state["end_datetime"]
+        game_state["has_ended"] = False
         del game_state["description"]
 
         game_state["cards"] = game_state["cards"][:cards_drawn]
         if not include_chug:
             try:
-                game_state["cards"][-1]["chug_duration_ms"]
+                del game_state["cards"][-1]["chug_start_start_delta_ms"]
+                del game_state["cards"][-1]["chug_end_start_delta_ms"]
             except (IndexError, KeyError):
                 pass
 
@@ -64,7 +66,7 @@ class ApiTest(TestCase):
         self.assert_ok(r)
 
         self.game_id = r.data["id"]
-        self.game_start = r.data["start_datetime"]
+        self.game_start = datetime.datetime.fromisoformat(r.data["start_datetime"])
 
         self.final_game_data = {
             "start_datetime": self.game_start,
@@ -73,16 +75,31 @@ class ApiTest(TestCase):
             "cards": [],
             "player_ids": [self.u1.id, self.u2.id],
             "player_names": [self.u1.username, self.u2.username],
+            "has_ended": True,
         }
 
-        for value, suit in Card.get_ordered_cards_for_players(self.PLAYER_COUNT):
-            self.final_game_data["cards"].append(
-                {"value": value, "suit": suit, "drawn_datetime": timezone.now()}
-            )
-            if value == 14:
-                self.final_game_data["cards"][-1]["chug_duration_ms"] = 1234
+        delta = 0
 
-        self.final_game_data["end_datetime"] = timezone.now()
+        for value, suit in Card.get_ordered_cards_for_players(self.PLAYER_COUNT):
+            delta += 1
+            card_data = {
+                "value": value,
+                "suit": suit,
+                "start_delta_ms": get_milliseconds(timezone.now() - self.game_start)
+                + delta,
+            }
+            self.final_game_data["cards"].append(card_data)
+
+            if value == Chug.VALUE:
+                delta += 1
+                card_data["chug_start_start_delta_ms"] = (
+                    get_milliseconds(timezone.now() - self.game_start) + delta
+                )
+                delta += 1
+                card_data["chug_end_start_delta_ms"] = (
+                    get_milliseconds(timezone.now() - self.game_start) + delta
+                )
+
         self.final_game_data["description"] = "foo"
 
     def set_token(self, token):
@@ -167,15 +184,15 @@ class ApiTest(TestCase):
         self.set_token(self.t1)
 
         game_data = self.get_game_data(5)
-        game_data["end_datetime"] = timezone.now()
         game_data["description"] = "!"
+        game_data["has_ended"] = True
         self.update_game(game_data, 400)
 
     def test_end_game_early_missing_chug(self):
         self.set_token(self.t1)
 
         game_data = self.final_game_data
-        del game_data["cards"][-1]["chug_duration_ms"]
+        del game_data["cards"][-1]["chug_end_start_delta_ms"]
 
         self.update_game(game_data, 400)
 
@@ -196,9 +213,9 @@ class ApiTest(TestCase):
     def test_send_different_start_time(self):
         self.set_token(self.t1)
         game_data = self.get_game_data(10)
-        game_data["start_datetime"] = datetime.datetime.fromisoformat(
-            game_data["start_datetime"]
-        ) - datetime.timedelta(seconds=1)
+        game_data["start_datetime"] = game_data["start_datetime"] - datetime.timedelta(
+            seconds=1
+        )
         self.update_game(game_data, 400)
 
     def test_send_different_official(self):
@@ -210,15 +227,9 @@ class ApiTest(TestCase):
     def test_send_decreasing_times(self):
         self.set_token(self.t1)
         game_data = self.get_game_data(17)
-        game_data["cards"][14]["drawn_datetime"] = game_data["cards"][2][
-            "drawn_datetime"
+        game_data["cards"][14]["start_delta_ms"] = game_data["cards"][2][
+            "start_delta_ms"
         ]
-        self.update_game(game_data, 400)
-
-    def test_wrong_end_datetime(self):
-        self.set_token(self.t1)
-        game_data = self.final_game_data
-        game_data["end_datetime"] = game_data["cards"][-2]["drawn_datetime"]
         self.update_game(game_data, 400)
 
 
@@ -237,7 +248,9 @@ class GameViewTest(TestCase):
                 index=i,
                 value=value,
                 suit=suit,
-                drawn_datetime=timezone.now(),
+                start_delta_ms=get_milliseconds(
+                    timezone.now() - self.game.start_datetime
+                ),
             )
             if value == 14:
                 Chug.objects.create(card=card, duration_in_milliseconds=12345)
@@ -263,14 +276,14 @@ class GameViewTest(TestCase):
 
     def test_game_without_card_times(self):
         for c in self.game.ordered_cards():
-            c.drawn_datetime = None
+            c.start_delta_ms = None
             c.save()
 
         self.assert_can_render_pages()
 
     def test_game_without_start_time_and_card_times(self):
         for c in self.game.ordered_cards():
-            c.drawn_datetime = None
+            c.start_delta_ms = None
             c.save()
 
         self.game.start_datetime = None

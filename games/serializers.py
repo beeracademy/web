@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from rest_framework.authtoken.models import Token
-from .models import User, Game, Card, GamePlayer, PlayerStat
+from .models import User, Game, Card, GamePlayer, PlayerStat, Chug
 from .seed import is_seed_valid_for_players
 import datetime
 
@@ -49,30 +49,60 @@ class CreateGameSerializer(serializers.Serializer):
         return game
 
 
+CHUG_FIELDS = ["chug_start_start_delta_ms", "chug_end_start_delta_ms"]
+STORED_CHUG_FIELDS = ["chug_start_start_delta_ms", "chug_duration_ms"]
+
+
 class CardSerializer(serializers.ModelSerializer):
     class Meta:
         model = Card
-        fields = ["value", "suit", "drawn_datetime", "chug_duration_ms", "chug_id"]
+        fields = [
+            "value",
+            "suit",
+            "start_delta_ms",
+            "chug_start_start_delta_ms",
+            "chug_end_start_delta_ms",
+            "chug_duration_ms",
+            "chug_id",
+        ]
 
-    drawn_datetime = serializers.DateTimeField()
+    start_delta_ms = serializers.IntegerField()
+    chug_start_start_delta_ms = serializers.IntegerField(
+        required=False, source="chug.start_start_delta_ms"
+    )
+    chug_end_start_delta_ms = serializers.IntegerField(required=False)
     chug_duration_ms = serializers.IntegerField(
-        required=False, source="chug.duration_in_milliseconds"
+        read_only=True, source="chug.duration_in_milliseconds"
     )
     chug_id = serializers.IntegerField(read_only=True, source="chug.id")
 
-    def validate_chug_duration_ms(self, value):
-        if value < 0:
-            raise serializers.ValidationError("Chug duration must be positive")
-
-        return value
-
     def validate(self, data):
-        if data["value"] != 14 and data.get("chug_duration_ms"):
+        chug_start = data.get("chug", {}).get("start_start_delta_ms")
+        if chug_start:
+            data["chug_start_start_delta_ms"] = chug_start
+
+        if data["value"] != Chug.VALUE:
+            for f in CHUG_FIELDS:
+                if f in data:
+                    raise serializers.ValidationError(
+                        {f: f"Chug data on non-ace: {data['value']} {data['suit']}"}
+                    )
+
+        if (
+            "chug_end_start_delta_ms" in data
+            and "chug_start_start_delta_ms" not in data
+        ):
             raise serializers.ValidationError(
                 {
-                    "chug_duration_ms": f"Chug data on non-ace: {data['value']} {data['suit']}"
+                    "chug_start_start_delta_ms": "Must be provided, when chug_end_start_delta_ms is given"
                 }
             )
+
+        if "chug_end_start_delta_ms" in data:
+            data["chug_duration_ms"] = (
+                data["chug_end_start_delta_ms"] - data["chug_start_start_delta_ms"]
+            )
+
         return data
 
 
@@ -91,6 +121,7 @@ class GameSerializer(serializers.ModelSerializer):
             "player_ids",
             "player_names",
             "sips_per_beer",
+            "has_ended",
         ]
 
     start_datetime = serializers.DateTimeField(required=True)
@@ -101,6 +132,7 @@ class GameSerializer(serializers.ModelSerializer):
         child=serializers.IntegerField(), write_only=True
     )
     player_names = serializers.ListField(child=serializers.CharField(), write_only=True)
+    has_ended = serializers.BooleanField(required=True)
 
     def validate(self, data):
         DEFAULT = object()
@@ -125,12 +157,17 @@ class GameSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({"non_field_errors": "Game has finished"})
 
         check_field("start_datetime")
-        check_field("end_datetime")
         check_field("official")
         check_field("description", "")
 
         cards = self.instance.ordered_cards()
         new_cards = data["cards"]
+
+        ended = data["has_ended"]
+        if not ended and data.get("description") != None:
+            raise serializers.ValidationError(
+                {"description": "Can't set description before game has ended"}
+            )
 
         previous_cards = len(cards)
 
@@ -167,66 +204,93 @@ class GameSerializer(serializers.ModelSerializer):
                 {"cards": "More cards than expected for the game"}
             )
 
-        final_update = "end_datetime" in data
-
-        if final_update and len(new_cards) < len(seed_cards):
+        if ended and len(new_cards) < len(seed_cards):
             raise serializers.ValidationError(
                 {"cards": "Can't end game before drawing every card"}
             )
 
-        increasing_datetimes = [
-            data["start_datetime"],
-            *(d["drawn_datetime"] for d in new_cards),
-        ]
-        end_dt = data.get("end_datetime")
-        if end_dt:
-            increasing_datetimes.append(end_dt)
+        increasing_deltas = []
+        for card_data in new_cards:
+            increasing_deltas.append(card_data["start_delta_ms"])
 
-        previous_dt = None
-        extra_time = datetime.timedelta()
-        for dt in increasing_datetimes:
-            dt += extra_time
-            if previous_dt and dt < previous_dt:
+            for f in CHUG_FIELDS:
+                if f in card_data:
+                    increasing_deltas.append(card_data[f])
+
+        previous_delta = None
+        extra_time = 0
+        for delta in increasing_deltas:
+            delta += extra_time
+            if previous_delta and delta < previous_delta:
                 if self.context.get("fix_times"):
-                    time_increase = previous_dt - dt + datetime.timedelta(seconds=13)
-                    print(f"Moving time forward by {time_increase}")
+                    time_increase = previous_delta - delta + 13 * 1000
+                    print(f"Moving time forward by {time_increase} ms")
                     extra_time += time_increase
-                    dt += time_increase
+                    delta += time_increase
                 else:
                     raise serializers.ValidationError(
                         {"cards": "Card times are not increasing"}
                     )
 
-            previous_dt = dt
+            previous_delta = delta
 
         for i, card_data in enumerate(new_cards):
-            if card_data["value"] == 14 and "chug" not in card_data:
-                if i != len(new_cards) - 1 or final_update:
+            if card_data["value"] == 14 and "chug_end_start_delta_ms" not in card_data:
+                if i != len(new_cards) - 1 or ended:
                     raise serializers.ValidationError(
                         {"cards": f"Card {i} has missing chug data"}
                     )
 
+        if ended:
+            last_card = new_cards[-1]
+            if hasattr(self, "chug"):
+                end_start_delta_ms = (
+                    last_card["start_start_delta_ms"]
+                    + last_card["chug.duration_in_milliseconds"]
+                )
+            else:
+                end_start_delta_ms = last_card["start_delta_ms"]
+
+            data["end_datetime"] = data["start_datetime"] + datetime.timedelta(
+                milliseconds=end_start_delta_ms
+            )
+
         for i, (card, card_data) in enumerate(zip(cards, new_cards)):
-            if (card.value, card.suit, card.drawn_datetime) != (
+            if (card.value, card.suit, card.start_delta_ms) != (
                 card_data["value"],
                 card_data["suit"],
-                card_data["drawn_datetime"],
+                card_data["start_delta_ms"],
             ):
                 raise serializers.ValidationError(
                     {"cards": f"Card {i} has different data than server"}
                 )
 
             chug = getattr(card, "chug", None)
-            chug_data = card_data.get("chug", {}).get("duration_in_milliseconds")
-            if (chug and chug_data and chug.duration_in_milliseconds != chug_data) or (
-                chug and not chug_data
-            ):
-                raise serializers.ValidationError(
-                    {"cards": f"Card {i} has different chug data than server"}
-                )
+            if chug:
+                chug_data = {k: getattr(chug, k, None) for k in STORED_CHUG_FIELDS}
+                new_chug_data = {k: card_data.get(k) for k in STORED_CHUG_FIELDS}
+                if not chug_data:
+                    raise serializers.ValidationError(
+                        {"cards": f"Card {i} has missing chug data"}
+                    )
 
-            if not chug and chug_data:
-                assert i == len(cards) - 1
+                for f in STORED_CHUG_FIELDS:
+                    if chug_data[f] and not new_chug_data[f]:
+                        raise serializers.ValidationError(
+                            {"cards": f"Card {i} has missing chug_data"}
+                        )
+
+                    if (
+                        chug_data[f]
+                        and new_chug_data[f]
+                        and chug_data[f] != new_chug_data
+                    ):
+                        raise serializers.ValidationError(
+                            {"cards": f"Card {i} has different chug data than server"}
+                        )
+
+                if not chug and chug_data:
+                    assert i == len(cards) - 1
 
         for i, (seed_card, card_data) in enumerate(
             zip(seed_cards[previous_cards:], new_cards[previous_cards:])

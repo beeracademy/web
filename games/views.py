@@ -65,6 +65,17 @@ def update_game(game, data):
         if key in data:
             setattr(game, key, data[key])
 
+    def update_chug(card, card_data):
+        chug = card_data.get("chug")
+        if chug:
+            Chug.objects.update_or_create(
+                id=getattr(getattr(card, "chug", None), "id", -1),
+                defaults={
+                    "card": card,
+                    **{k: v for k, v in chug.items() if k in chug_fields},
+                },
+            )
+
     game_already_ended = game.has_ended
 
     if game.players.count() == 0:
@@ -81,26 +92,24 @@ def update_game(game, data):
     cards = game.ordered_cards()
     new_cards = data["cards"]
 
+    chug_fields = {"start_start_delta_ms", "duration_in_milliseconds"}
+
     last_card = cards.last()
     previous_cards = cards.count()
     if previous_cards > 0:
         last_card_data = new_cards[previous_cards - 1]
-        chug_data = last_card_data.get("chug", {}).get("duration_in_milliseconds")
-        if chug_data and not hasattr(last_card, "chug"):
-            Chug.objects.create(card=last_card, duration_in_milliseconds=chug_data)
+        update_chug(last_card, last_card_data)
 
     for i, card_data in enumerate(new_cards[previous_cards:]):
         card = Card.objects.create(
             game=game,
             value=card_data["value"],
             suit=card_data["suit"],
-            drawn_datetime=card_data["drawn_datetime"],
+            start_delta_ms=card_data["start_delta_ms"],
             index=previous_cards + i,
         )
 
-        chug_data = card_data.get("chug", {}).get("duration_in_milliseconds")
-        if chug_data:
-            Chug.objects.create(card=card, duration_in_milliseconds=chug_data)
+        update_chug(card, card_data)
 
     game.save()
 

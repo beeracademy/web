@@ -72,9 +72,9 @@ If a user with that username exists, but the password was wrong, the response is
   "start_datetime": datetime_string,
   "official": bool,
   "seed": int[],
-  "cards": card[],                 // see below
-  "end_datetime": datetime_string, // only at end of game
-  "description": string,           // only at end of game
+  "cards": card[], // see below
+  "has_ended": bool,
+  "description": string, // only at end of game
 }
 ```
 
@@ -83,11 +83,15 @@ If a user with that username exists, but the password was wrong, the response is
 {
   "value": int,
   "suit": string,
-  "drawn_datetime": datetime_string,
+  "start_delta_ms": int,
+
+  // Should only be given if value == 14 and
+  // player has started chugging:
+  "chug_start_start_delta_ms": int,
 
   // Should only be given if value == 14 and
   // player has finished chugging:
-  "chug_duration_ms": int,
+  "chug_end_start_delta_ms": int,
 }
 ```
 

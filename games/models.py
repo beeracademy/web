@@ -136,11 +136,15 @@ class PlayerStat(models.Model):
             if i % game.players.count() == player_index:
                 game_sips += c.value
                 if hasattr(c, "chug"):
-                    chug_time = c.chug.duration
                     self.total_chugs += 1
-                    total_chug_time += chug_time.total_seconds()
-                    if not self.fastest_chug or chug_time < self.fastest_chug.duration:
-                        self.fastest_chug = c.chug
+                    chug_time = c.chug.duration
+                    if chug_time:
+                        total_chug_time += chug_time.total_seconds()
+                        if (
+                            not self.fastest_chug
+                            or chug_time < self.fastest_chug.duration
+                        ):
+                            self.fastest_chug = c.chug
 
         self.total_sips += game_sips
 
@@ -363,7 +367,7 @@ class Game(models.Model):
         - example: 119
 
     This means that if start_datetime is missing,
-    then so are this card draw times.
+    then so are the card draw times.
     """
 
     players = models.ManyToManyField(User, through="GamePlayer", related_name="games")
@@ -577,7 +581,7 @@ class Card(models.Model):
     index = models.PositiveSmallIntegerField()
     value = models.SmallIntegerField(choices=VALUES)
     suit = models.CharField(max_length=1, choices=SUITS)
-    drawn_datetime = models.DateTimeField(blank=True, null=True)
+    start_delta_ms = models.PositiveIntegerField(blank=True, null=True)
 
     @classmethod
     def get_ordered_cards_for_players(cls, player_count):
@@ -590,6 +594,27 @@ class Card(models.Model):
         cards = list(cls.get_ordered_cards_for_players(player_count))
         shuffle_with_seed(cards, seed)
         return cards
+
+    @property
+    def drawn_datetime(self):
+        if self.game.start_datetime and self.start_delta_ms:
+            return self.game.start_datetime + datetime.timedelta(
+                milliseconds=self.start_delta_ms
+            )
+
+        return None
+
+    def get_finish_start_delta_ms(self):
+        if self.value == Chug.VALUE:
+            if hasattr(self, "chug"):
+                if self.chug.duration_in_milliseconds:
+                    return (
+                        self.start_start_delta_ms + self.chug.duration_in_milliseconds
+                    )
+
+            return None
+
+        return self.start_delta_ms
 
     def __str__(self):
         return f"{self.value} {self.suit}"
@@ -627,14 +652,21 @@ class Chug(models.Model):
     VALUE = 14
 
     card = models.OneToOneField("Card", on_delete=models.CASCADE, related_name="chug")
-    duration_in_milliseconds = models.PositiveIntegerField()
+    start_start_delta_ms = models.PositiveIntegerField(blank=True, null=True)
+    duration_in_milliseconds = models.PositiveIntegerField(blank=True, null=True)
 
     @property
     def duration(self):
+        if not self.duration_in_milliseconds:
+            return None
+
         return datetime.timedelta(milliseconds=self.duration_in_milliseconds)
 
     def duration_str(self):
-        return str(self.duration)
+        if self.duration:
+            return str(self.duration)
+        else:
+            return "Not done"
 
     def __str__(self):
         return f"{self.card.get_user()}: {self.card} ({self.duration_str()})"
