@@ -6,11 +6,6 @@ from copy import deepcopy
 import datetime
 
 
-class FailingTest(TestCase):
-    def test_fail(self):
-        self.assertEqual(1, 2)
-
-
 class ApiTest(TestCase):
     PLAYER_COUNT = 2
     TOTAL_CARDS = PLAYER_COUNT * 13
