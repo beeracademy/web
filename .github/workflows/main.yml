@@ -8,19 +8,22 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
-    - uses: actions/checkout@master
-    - name: Publish to Registry
+    - name: Build image
+      run: docker build -t beeracademy/web .
+
+    - name: Run tests
+      run: docker run --env DJANGO_SETTINGS_MODULE=academy.settings.development beeracademy/web ./manage.py test
+
+    - name: Publish image to Docker Hub
       uses: elgohr/Publish-Docker-Github-Action@master
       with:
         name: beeracademy/web
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-    - name: Call webhook
+
+    - name: Deploy image to production
       uses: joelwmale/webhook-action@master
       env:
         WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
