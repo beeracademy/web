@@ -11,6 +11,7 @@ urlpatterns = [
     path("players/<int:pk>/", views.PlayerDetailView.as_view(), name="player_detail"),
     path("ranking/", views.RankingView.as_view(), name="ranking"),
     path("settings/", views.UserSettingsView.as_view(), name="settings"),
+    path("stats/", views.StatsView.as_view(), name="stats"),
     path("login/", views.MyLoginView.as_view(), name="login"),
     path("logout/", views.MyLogoutView.as_view(), name="logout"),
     path(

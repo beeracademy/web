@@ -1,9 +1,9 @@
 from django.core.management.base import BaseCommand
-from games.models import PlayerStat
+from games.models import recalculate_all_stats
 
 
 class Command(BaseCommand):
-    help = "Updates cached player stats"
+    help = "Updates cached stats"
 
     def handle(self, *args, **options):
-        PlayerStat.recalculate_all()
+        recalculate_all_stats()

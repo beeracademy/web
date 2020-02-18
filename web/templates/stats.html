@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block pagetitle %}Overall game stats{% endblock %}
+
+{% block styles %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.bundle.min.js" integrity="sha256-xKeoJ50pzbUGkpQxDYHD7o7hxe0LaOGeguUidbq6vis=" crossorigin="anonymous"></script>
+{% endblock %}
+
+{% block content %}
+
+<h2>Overall game stats</h2>
+
+<hr>
+
+<h3>Sips distribution</h3>
+
+<canvas id="sips_canvas" style="width: 100%; height: 500px;"></canvas>
+
+<h3>Chugs distribution</h3>
+
+<canvas id="chugs_canvas" style="width: 100%; height: 500px;"></canvas>
+
+{{ sips_data|json_script:"sips_data" }}
+{{ chugs_data|json_script:"chugs_data" }}
+
+<script>
+	var charts = [{
+		data: "sips_data",
+		canvas: "sips_canvas",
+	}, {
+		data: "chugs_data",
+		canvas: "chugs_canvas",
+	}];
+
+	for (var i = 0; i < charts.length; i++) {
+		var data = JSON.parse(document.getElementById(charts[i].data).textContent);
+
+		var options = {
+			type: "bar",
+			data: {
+				labels: data.xs,
+				datasets: [{
+					backgroundColor: "#777",
+					data: data.ys,
+				}],
+			},
+			options: {
+				legend: {
+					display: false,
+				},
+			},
+		};
+
+		var ctx = document.getElementById(charts[i].canvas).getContext("2d");
+		chart = new Chart(ctx, options);
+	}
+</script>
+
+{% endblock %}

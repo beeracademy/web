@@ -1,7 +1,7 @@
 import os
 import pytz
 from django.db import models
-from django.db.models import Q
+from django.db.models import F, Q, Count
 from django.contrib.auth.models import AbstractUser, UserManager
 from django.contrib.staticfiles.templatetags.staticfiles import static
 from django.utils import timezone
@@ -44,6 +44,60 @@ def filter_season(qs, season, key=None, should_include_live=False):
         q |= Q(**{f"{end_key}__isnull": True, f"{key}dnf": False})
 
     return qs.filter(q)
+
+
+def recalculate_all_stats():
+    PlayerStat.recalculate_all()
+    GamePlayerStat.recalculate_all()
+
+
+def update_stats_on_game_finished(game):
+    print("Updating player stats...")
+    PlayerStat.update_on_game_finished(game)
+    print("Updating game player stats...")
+    GamePlayerStat.update_on_game_finished(game)
+
+
+class GamePlayerStat(models.Model):
+    gameplayer = models.OneToOneField("GamePlayer", on_delete=models.CASCADE)
+    value_sum = models.PositiveIntegerField()
+    chugs = models.PositiveIntegerField()
+
+    @classmethod
+    def recalculate_all(cls):
+        GamePlayerStat.objects.all().delete()
+        for game in tqdm(Game.objects.all()):
+            cls.update_on_game_finished(game)
+
+    @classmethod
+    def update_on_game_finished(cls, game):
+        if not game.is_completed:
+            return
+
+        stats = [
+            GamePlayerStat.objects.create(gameplayer=gp, value_sum=0, chugs=0)
+            for gp in game.ordered_gameplayers()
+        ]
+
+        for round_cards in game.cards_by_round():
+            for i, c in enumerate(round_cards):
+                stats[i].value_sum += c.value
+                stats[i].chugs += c.value == Chug.VALUE
+
+        for s in stats:
+            s.save()
+
+    @classmethod
+    def get_distribution(cls, field):
+        return cls.objects.all().values(value=F(field)).annotate(Count("value")).order_by(field)
+
+    @classmethod
+    def get_sips_distribution(cls):
+        return cls.get_distribution('value_sum')
+
+    @classmethod
+    def get_chugs_distribution(cls):
+        return cls.get_distribution('chugs')
 
 
 class PlayerStat(models.Model):

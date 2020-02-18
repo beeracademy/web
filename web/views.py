@@ -13,7 +13,7 @@ from django.contrib.auth.views import (
 )
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.utils import timezone
-from django.views.generic import DetailView, ListView, UpdateView
+from django.views.generic import DetailView, ListView, UpdateView, TemplateView
 from django.core.paginator import Paginator
 from games.models import (
     User,
@@ -24,6 +24,7 @@ from games.models import (
     all_time_season,
     filter_season,
     Chug,
+    GamePlayerStat,
 )
 from games.ranking import RANKINGS, get_ranking_from_key
 from games.serializers import GameSerializerWithPlayerStats, UserSerializer
@@ -382,5 +383,31 @@ class RankingView(PaginatedListView):
             context["user_rank_url"] = get_ranking_url(
                 ranking, self.request.user, season
             )
+
+        return context
+
+
+class StatsView(TemplateView):
+    template_name = "stats.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        stat_types = {
+            "sips_data": GamePlayerStat.get_sips_distribution(),
+            "chugs_data": GamePlayerStat.get_chugs_distribution(),
+        }
+
+        for name, stats in stat_types.items():
+            xs = []
+            ys = []
+            for stat in stats:
+                xs.append(stat["value"])
+                ys.append(stat["value__count"])
+
+            context[name] = {
+                "xs": xs,
+                "ys": ys,
+            }
 
         return context

@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand, CommandError
-from games.models import User, Game, Card, Chug, GamePlayer, PlayerStat
+from games.models import User, Game, Card, Chug, GamePlayer, update_stats_on_game_finished
 from django.db import transaction
 import datetime
 import argparse
@@ -166,6 +166,6 @@ class Command(BaseCommand):
                     f"Wrong number of chugs: {chugs_count}, but expected {player_count}"
                 )
 
-            PlayerStat.update_on_game_finished(game)
+            update_stats_on_game_finished(game)
 
         print(f"Successfully imported game. Id: {game.id}")

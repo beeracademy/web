@@ -6,7 +6,16 @@ from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
-from .models import User, Game, Card, Chug, PlayerStat, GamePlayer, Season
+from .models import (
+    User,
+    Game,
+    Card,
+    Chug,
+    PlayerStat,
+    GamePlayer,
+    Season,
+    update_stats_on_game_finished,
+)
 from .ranking import RANKINGS
 from .facebook import post_to_page
 from .serializers import (
@@ -105,7 +114,7 @@ def update_game(game, data):
     game.save()
 
     if game.has_ended and not game_already_ended:
-        PlayerStat.update_on_game_finished(game)
+        update_stats_on_game_finished(game)
 
 
 class OneResultSetPagination(PageNumberPagination):
