@@ -1,5 +1,12 @@
 from django.core.management.base import BaseCommand, CommandError
-from games.models import User, Game, Card, Chug, GamePlayer, update_stats_on_game_finished
+from games.models import (
+    User,
+    Game,
+    Card,
+    Chug,
+    GamePlayer,
+    update_stats_on_game_finished,
+)
 from django.db import transaction
 import datetime
 import argparse

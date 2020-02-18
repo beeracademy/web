@@ -88,16 +88,21 @@ class GamePlayerStat(models.Model):
             s.save()
 
     @classmethod
-    def get_distribution(cls, field):
-        return cls.objects.all().values(value=F(field)).annotate(Count("value")).order_by(field)
+    def get_distribution(cls, field, season):
+        return (
+            filter_season(cls.objects, season, "gameplayer__game")
+            .values(value=F(field))
+            .annotate(Count("value"))
+            .order_by(field)
+        )
 
     @classmethod
-    def get_sips_distribution(cls):
-        return cls.get_distribution('value_sum')
+    def get_sips_distribution(cls, season):
+        return cls.get_distribution("value_sum", season)
 
     @classmethod
-    def get_chugs_distribution(cls):
-        return cls.get_distribution('chugs')
+    def get_chugs_distribution(cls, season):
+        return cls.get_distribution("chugs", season)
 
 
 class PlayerStat(models.Model):

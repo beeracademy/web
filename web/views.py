@@ -392,10 +392,12 @@ class StatsView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        season = get_season(self.request)
+        context["season"] = season
 
         stat_types = {
-            "sips_data": GamePlayerStat.get_sips_distribution(),
-            "chugs_data": GamePlayerStat.get_chugs_distribution(),
+            "sips_data": GamePlayerStat.get_sips_distribution(season),
+            "chugs_data": GamePlayerStat.get_chugs_distribution(season),
         }
 
         for name, stats in stat_types.items():
