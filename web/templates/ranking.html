@@ -12,9 +12,9 @@
 </h2>
 
 <ul class="nav nav-tabs">
-	{% for name, url in ranking_tabs %}
+	{% for name, url in ranking_chooser.urls %}
 	<li class="nav-item">
-		<a class="nav-link{% if name == ranking.name %} active{% endif %}" href="{{ url }}">
+		<a class="nav-link{% if name == ranking_chooser.current_str %} active{% endif %}" href="{{ url }}">
 			{{ name }}
 		</a>
 	</li>
@@ -38,7 +38,7 @@
 <tr class="academy-table">
 	<th scope="col">#</th>
 	<th scope="col">Username</th>
-	<th scope="col">{{ ranking.name }}</th>
+	<th scope="col">{{ ranking.current_str }}</th>
 </tr>
 {% endblock %}
 

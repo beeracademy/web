@@ -1,7 +1,7 @@
 import os
 import pytz
 from django.db import models
-from django.db.models import F, Q, Count
+from django.db.models import F, Q, Count, Subquery
 from django.contrib.auth.models import AbstractUser, UserManager
 from django.contrib.staticfiles.templatetags.staticfiles import static
 from django.utils import timezone
@@ -88,21 +88,27 @@ class GamePlayerStat(models.Model):
             s.save()
 
     @classmethod
-    def get_distribution(cls, field, season):
+    def get_distribution(cls, field, season, player_count):
+        qs = filter_season(cls.objects, season, "gameplayer__game")
+        if player_count != None:
+            qs = qs.annotate(player_count=Count("gameplayer__game__gameplayer")).filter(
+                player_count=player_count
+            )
+
         return (
-            filter_season(cls.objects, season, "gameplayer__game")
+            GamePlayerStat.objects.filter(id__in=Subquery(qs.values("id")))
             .values(value=F(field))
             .annotate(Count("value"))
             .order_by(field)
         )
 
     @classmethod
-    def get_sips_distribution(cls, season):
-        return cls.get_distribution("value_sum", season)
+    def get_sips_distribution(cls, season, player_count):
+        return cls.get_distribution("value_sum", season, player_count)
 
     @classmethod
-    def get_chugs_distribution(cls, season):
-        return cls.get_distribution("chugs", season)
+    def get_chugs_distribution(cls, season, player_count):
+        return cls.get_distribution("chugs", season, player_count)
 
 
 class PlayerStat(models.Model):

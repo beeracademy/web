@@ -20,15 +20,13 @@ from games.models import (
     Game,
     GamePlayer,
     Card,
-    Season,
-    all_time_season,
     filter_season,
     Chug,
     GamePlayerStat,
 )
 from games.ranking import RANKINGS, get_ranking_from_key
 from games.serializers import GameSerializerWithPlayerStats, UserSerializer
-from .utils import updated_query_url
+from .utils import updated_query_url, SeasonChooser, RankingChooser, PlayerCountChooser
 from .forms import UserSettingsForm
 import datetime
 from urllib.parse import urlencode
@@ -166,7 +164,7 @@ class GameListView(PaginatedListView):
     template_name = "game_list.html"
 
     def get_queryset(self):
-        season = get_season(self.request)
+        season = SeasonChooser(self.request).current
         qs = filter_season(Game.objects, season, should_include_live=True)
 
         query = self.request.GET.get("query", "")
@@ -194,8 +192,6 @@ class GameListView(PaginatedListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        season = get_season(self.request)
-        context["season"] = season
         context["query"] = self.request.GET.get("query", "")
         return context
 
@@ -237,14 +233,6 @@ class PlayerListView(PaginatedListView):
         return context
 
 
-def get_season(request):
-    season_number = request.GET.get("season")
-    if Season.is_valid_season_number(season_number):
-        return Season(int(season_number))
-    else:
-        return all_time_season
-
-
 class PlayerDetailView(DetailView):
     model = User
     template_name = "player_detail.html"
@@ -254,8 +242,7 @@ class PlayerDetailView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        season = get_season(self.request)
-        context["season"] = season
+        season = SeasonChooser(self.request).current
         context["stats"] = self.object.stats_for_season(season)
 
         context["rankings"] = []
@@ -274,7 +261,6 @@ class PlayerDetailView(DetailView):
                 games_played[g.end_datetime.date()] += 1
 
         HEATMAP_WEEKS = 53
-        context["heatmap_data"] = {"labels": [""] * HEATMAP_WEEKS, "datasets": []}
 
         today = timezone.now().date()
         weekday = today.weekday()
@@ -290,19 +276,30 @@ class PlayerDetailView(DetailView):
         ]
         DAY_NAMES = DAY_NAMES[weekday + 1 :] + DAY_NAMES[: weekday + 1]
 
+        series = []
+        dates = []
+        categories = []
         for d in DAY_NAMES:
-            context["heatmap_data"]["datasets"].append({"label": d, "data": []})
+            series.append({"name": d, "data": []})
+            dates.append([])
 
         date = today - datetime.timedelta(days=HEATMAP_WEEKS * 7 - 1)
         for i in range(HEATMAP_WEEKS * 7):
-            if i % 7 == 0 and date.day <= 7:
-                week = i // 7
-                context["heatmap_data"]["labels"][week] = date.strftime("%b")
+            if i % 7 == 0:
+                if date.day <= 7:
+                    categories.append(date.strftime("%b"))
+                else:
+                    categories.append("")
 
-            context["heatmap_data"]["datasets"][i % 7]["data"].append(
-                games_played[date]
-            )
+            series[i % 7]["data"].append(games_played[date])
+            dates[i % 7].append(date)
             date += datetime.timedelta(days=1)
+
+        context["heatmap_data"] = {
+            "series": series,
+            "categories": categories,
+            "dates": dates,
+        }
 
         return context
 
@@ -346,30 +343,16 @@ class RankingView(PaginatedListView):
         return get_ranking_from_key(ranking_type) or RANKINGS[0]
 
     def get_queryset(self):
-        season = get_season(self.request)
+        season = SeasonChooser(self.request).current
         ranking = self.get_ranking()
         return ranking.get_qs(season)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        season = get_season(self.request)
-        context["season"] = season
 
-        ranking_urls = []
-        for ranking in RANKINGS:
-            ranking_urls.append(
-                (
-                    ranking.name,
-                    updated_query_url(
-                        self.request, {"type": ranking.key, "page": None}
-                    ),
-                )
-            )
-
-        context["ranking_tabs"] = ranking_urls
-
-        ranking = self.get_ranking()
-        context["ranking"] = {"name": ranking.name}
+        ranking_chooser = RankingChooser(self.request)
+        context["ranking_chooser"] = ranking_chooser
+        ranking = ranking_chooser.current
 
         object_list = context["object_list"]
         start_index = object_list.start_index()
@@ -379,6 +362,7 @@ class RankingView(PaginatedListView):
             o.game = ranking.get_game(o)
 
         if self.request.user.is_authenticated:
+            season = SeasonChooser(self.request).current
             context["user_rank"] = ranking.get_rank(self.request.user, season)
             context["user_rank_url"] = get_ranking_url(
                 ranking, self.request.user, season
@@ -392,20 +376,25 @@ class StatsView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        season = get_season(self.request)
-        context["season"] = season
+        season = SeasonChooser(self.request).current
+
+        chooser = PlayerCountChooser(self.request)
+        context["player_count_chooser"] = chooser
+        player_count = chooser.current
 
         stat_types = {
-            "sips_data": GamePlayerStat.get_sips_distribution(season),
-            "chugs_data": GamePlayerStat.get_chugs_distribution(season),
+            "sips_data": GamePlayerStat.get_sips_distribution(season, player_count),
+            "chugs_data": GamePlayerStat.get_chugs_distribution(season, player_count),
         }
 
         for name, stats in stat_types.items():
             xs = []
             ys = []
-            for stat in stats:
-                xs.append(stat["value"])
-                ys.append(stat["value__count"])
+            if stats.exists():
+                d = {s["value"]: s["value__count"] for s in stats}
+                for x in range(stats.first()["value"], stats.last()["value"] + 1):
+                    xs.append(x)
+                    ys.append(d.get(x, 0))
 
             context[name] = {
                 "xs": xs,
