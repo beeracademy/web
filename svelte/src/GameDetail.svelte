@@ -28,7 +28,7 @@
 				if (game_data.cards.length === 0) {
 					end_datetime = new Date(game_data.start_datetime);
 				} else {
-					end_datetime = new Date(game_data.cards.length[game_data.cards.length - 1].drawn_datetime);
+					end_datetime = new Date(game_data.cards[game_data.cards.length - 1].drawn_datetime);
 				}
 			} else {
 				end_datetime = Date.now();
