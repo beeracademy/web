@@ -166,3 +166,7 @@ CONSTANCE_CONFIG = {
     "BANNER_COLOR": ("#0094c4", "Banner color", str),
     "BANNER_BLINK": (False, "Should banner text blink?", bool),
 }
+
+from dotenv import load_dotenv
+
+load_dotenv()
