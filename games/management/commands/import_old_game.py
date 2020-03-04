@@ -1,16 +1,18 @@
+import argparse
+import datetime
+
+import pytz
 from django.core.management.base import BaseCommand, CommandError
+from django.db import transaction
+
 from games.models import (
-    User,
-    Game,
     Card,
     Chug,
+    Game,
     GamePlayer,
+    User,
     update_stats_on_game_finished,
 )
-from django.db import transaction
-import datetime
-import argparse
-import pytz
 
 
 class Command(BaseCommand):

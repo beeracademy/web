@@ -1,15 +1,17 @@
+import datetime
 import os
+
 import pytz
-from django.db import models
-from django.db.models import F, Q, Count, Subquery
 from django.contrib.auth.models import AbstractUser, UserManager
 from django.contrib.staticfiles.templatetags.staticfiles import static
+from django.db import models
+from django.db.models import Count, F, Q, Subquery
+from django.urls import reverse
 from django.utils import timezone
 from django.utils.html import mark_safe
-from django.urls import reverse
-import datetime
-from tqdm import tqdm
 from PIL import Image
+from tqdm import tqdm
+
 from .seed import shuffle_with_seed
 
 

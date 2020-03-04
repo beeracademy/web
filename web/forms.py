@@ -1,13 +1,14 @@
-from django import forms
-from django.contrib.auth.password_validation import (
-    validate_password,
-    get_default_password_validators,
-)
-from games.models import User
 import base64
 from io import BytesIO
+
+from django import forms
+from django.contrib.auth.password_validation import (
+    get_default_password_validators,
+    validate_password,
+)
 from PIL import Image
 
+from games.models import User
 
 validators_help_text = "<br>".join(
     [v.get_help_text() for v in get_default_password_validators()]

@@ -1,12 +1,14 @@
-from django.core.management.base import BaseCommand
-from django.core.files import File
-from django.db.utils import IntegrityError
 import csv
 import datetime
 from collections import Counter
+
 import pytz
+from django.core.files import File
+from django.core.management.base import BaseCommand
+from django.db.utils import IntegrityError
 from tqdm import tqdm
-from games.models import User, Game, Card, Chug, GamePlayer
+
+from games.models import Card, Chug, Game, GamePlayer, User
 
 
 class Command(BaseCommand):

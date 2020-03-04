@@ -1,6 +1,8 @@
 import datetime
-from django.utils import timezone
+
 from celery import shared_task
+from django.utils import timezone
+
 from .models import Game, recalculate_all_stats
 
 

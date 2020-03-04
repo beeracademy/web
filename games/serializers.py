@@ -1,12 +1,15 @@
-from rest_framework import serializers
-from rest_framework.authtoken.models import Token
-from django.utils.html import format_html
-from django.urls import reverse
-from .models import User, Game, Card, GamePlayer, PlayerStat
-from .seed import is_seed_valid_for_players
 import datetime
 import re
 from urllib.parse import urlencode
+
+from django.urls import reverse
+from django.utils.html import format_html
+
+from rest_framework import serializers
+from rest_framework.authtoken.models import Token
+
+from .models import Card, Game, GamePlayer, PlayerStat, User
+from .seed import is_seed_valid_for_players
 
 
 class UserSerializer(serializers.ModelSerializer):

@@ -1,9 +1,11 @@
-from django.test import TestCase, Client
-from rest_framework.test import APIClient
-from games.models import User, Game, Card, GamePlayer, Chug
-from django.utils import timezone
-from copy import deepcopy
 import datetime
+from copy import deepcopy
+
+from django.test import Client, TestCase
+from django.utils import timezone
+
+from games.models import Card, Chug, Game, GamePlayer, User
+from rest_framework.test import APIClient
 
 
 class ApiTest(TestCase):

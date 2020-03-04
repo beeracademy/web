@@ -1,5 +1,6 @@
-from .models import Season
 from web.utils import SeasonChooser
+
+from .models import Season
 
 
 def seasons(request):

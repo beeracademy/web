@@ -1,38 +1,41 @@
-from django.shortcuts import render
-from django.db.models import Case, When, Value, IntegerField, DateTimeField, Count, F
-from django.core.files import File
+import datetime
+import random
+import re
+from collections import Counter
+from urllib.parse import urlencode
+
 from django.contrib import messages
 from django.contrib.auth import update_session_auth_hash
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import (
     LoginView,
     LogoutView,
-    PasswordResetView,
-    PasswordResetDoneView,
-    PasswordResetConfirmView,
     PasswordResetCompleteView,
+    PasswordResetConfirmView,
+    PasswordResetDoneView,
+    PasswordResetView,
 )
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.utils import timezone
-from django.views.generic import DetailView, ListView, UpdateView, TemplateView
+from django.core.files import File
 from django.core.paginator import Paginator
+from django.db.models import Case, Count, DateTimeField, F, IntegerField, Value, When
+from django.shortcuts import render
+from django.utils import timezone
+from django.views.generic import DetailView, ListView, TemplateView, UpdateView
+
 from games.models import (
-    User,
+    Card,
+    Chug,
     Game,
     GamePlayer,
-    Card,
-    filter_season,
-    Chug,
     GamePlayerStat,
+    User,
+    filter_season,
 )
 from games.ranking import RANKINGS, get_ranking_from_key
 from games.serializers import GameSerializerWithPlayerStats, UserSerializer
-from .utils import updated_query_url, SeasonChooser, RankingChooser, PlayerCountChooser
+
 from .forms import UserSettingsForm
-import datetime
-from urllib.parse import urlencode
-from collections import Counter
-import random
-import re
+from .utils import PlayerCountChooser, RankingChooser, SeasonChooser, updated_query_url
 
 RANKING_PAGE_LIMIT = 15
 

@@ -1,11 +1,13 @@
+import json
+
 from django import forms
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.views.generic import CreateView
-from .models import User, Game, Card, Chug, GamePlayer
+
+from .models import Card, Chug, Game, GamePlayer, User
 from .serializers import GameSerializer
 from .views import update_game
-import json
 
 
 @admin.register(User)

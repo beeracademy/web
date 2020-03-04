@@ -1,8 +1,8 @@
 from django.contrib.auth.password_validation import (
-    UserAttributeSimilarityValidator,
-    MinimumLengthValidator,
     CommonPasswordValidator,
+    MinimumLengthValidator,
     NumericPasswordValidator,
+    UserAttributeSimilarityValidator,
 )
 
 

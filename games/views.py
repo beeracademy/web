@@ -1,29 +1,31 @@
 from django.shortcuts import get_object_or_404
-from rest_framework import viewsets, serializers
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
-from rest_framework.authtoken.views import ObtainAuthToken
+
+from rest_framework import serializers, viewsets
 from rest_framework.authtoken.models import Token
-from rest_framework.response import Response
+from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.response import Response
+
+from .facebook import post_to_page
 from .models import (
-    User,
-    Game,
     Card,
     Chug,
-    PlayerStat,
+    Game,
     GamePlayer,
+    PlayerStat,
     Season,
+    User,
     update_stats_on_game_finished,
 )
 from .ranking import RANKINGS
-from .facebook import post_to_page
 from .serializers import (
-    UserSerializer,
+    CreateGameSerializer,
     GameSerializer,
     GameSerializerWithPlayerStats,
-    CreateGameSerializer,
     PlayerStatSerializer,
+    UserSerializer,
 )
 
 
