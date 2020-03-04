@@ -1,6 +1,6 @@
 # Academy Web Server
 
-![Build and Deploy](https://github.com/beeracademy/web/workflows/Build%20and%20Deploy/badge.svg?branch=master)
+[![Build and Deploy](https://github.com/beeracademy/web/workflows/Build%20and%20Deploy/badge.svg?branch=master)](https://github.com/beeracademy/web/actions)
 
 Frontend and api server for Academy.
 
