@@ -1,4 +1,5 @@
 from .base import *
+import sys
 import os
 
 ALLOWED_HOSTS = ["*"]
@@ -12,4 +13,5 @@ PLAY_URL = "http://localhost:4200"
 
 AUTOLOGIN_USERNAME = os.environ.get("AUTOLOGIN_USERNAME")
 
-MIDDLEWARE += ["academy.autologin.AutologinMiddleware"]
+if sys.argv[1:2] != ["test"]:
+    MIDDLEWARE += ["academy.autologin.AutologinMiddleware"]
