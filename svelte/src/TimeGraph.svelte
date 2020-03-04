@@ -103,6 +103,8 @@
 
     chart = new window.ApexCharts(container, options);
     chart.render();
+
+    updateChart();
   });
 
   $: game_data, updateChart();
