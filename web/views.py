@@ -172,10 +172,16 @@ class GameListView(PaginatedListView):
         qs = filter_season(Game.objects, season, should_include_live=True)
 
         query = self.request.GET.get("query", "")
-        usernames = re.split(r"[\s,]", query)
-        for username in usernames:
-            if username != "":
-                qs = qs.filter(players__username__icontains=username.strip())
+        parts = re.split(r"[\s,]", query)
+        for part in parts:
+            part = part.strip()
+            if part != "":
+                if part[0] == "#":
+                    # Filter by hashtag in description
+                    qs = qs.filter(description__icontains=part)
+                else:
+                    # Filter by username
+                    qs = qs.filter(players__username__icontains=part)
 
         # First show live games (but not dnf games),
         # then show all other games sorted by
