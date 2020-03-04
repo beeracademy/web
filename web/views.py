@@ -18,7 +18,16 @@ from django.contrib.auth.views import (
 )
 from django.core.files import File
 from django.core.paginator import Paginator
-from django.db.models import Case, Count, DateTimeField, F, IntegerField, Value, When
+from django.db.models import (
+    Case,
+    Count,
+    DateTimeField,
+    F,
+    IntegerField,
+    Sum,
+    Value,
+    When,
+)
 from django.shortcuts import render
 from django.utils import timezone
 from django.views.generic import DetailView, ListView, TemplateView, UpdateView
@@ -30,6 +39,7 @@ from games.models import (
     Game,
     GamePlayer,
     GamePlayerStat,
+    PlayerStat,
     User,
     filter_season,
 )
@@ -445,6 +455,27 @@ class StatsView(TemplateView):
         chooser = PlayerCountChooser(self.request)
         context["player_count_chooser"] = chooser
         player_count = chooser.current
+
+        games = filter_season(Game.objects, season)
+        if player_count != None:
+            games = games.annotate(player_count=Count("gameplayer")).filter(
+                player_count=player_count
+            )
+
+        total_sips = games.aggregate(sips=Sum("cards__value"))["sips"] or 0
+
+        playerstats = PlayerStat.objects.filter(season_number=season.number)
+        total_seconds = playerstats.aggregate(
+            seconds=Sum("total_time_played_seconds")
+        )["seconds"]
+
+        context["game_stats"] = {
+            "total_games": games.count(),
+            "total_dnf": games.filter(dnf=True).count(),
+            "total_sips": total_sips,
+            "total_beers": total_sips / 14,
+            "total_time_played": str(datetime.timedelta(seconds=round(total_seconds))),
+        }
 
         stat_types = {
             "sips_data": (
