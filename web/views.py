@@ -2,6 +2,7 @@ import datetime
 import random
 import re
 from collections import Counter
+from math import sqrt
 from urllib.parse import urlencode
 
 from django.contrib import messages
@@ -21,6 +22,7 @@ from django.db.models import Case, Count, DateTimeField, F, IntegerField, Value,
 from django.shortcuts import render
 from django.utils import timezone
 from django.views.generic import DetailView, ListView, TemplateView, UpdateView
+from scipy.stats import hypergeom, norm
 
 from games.models import (
     Card,
@@ -384,8 +386,57 @@ class RankingView(PaginatedListView):
         return context
 
 
+SIPS_MEAN = sum(range(2, 14 + 1))
+CARD_MEAN = SIPS_MEAN / 13
+SIPS_VAR = sum((CARD_MEAN - i) ** 2 for i in range(2, 14 + 1))
+
+
 class StatsView(TemplateView):
     template_name = "stats.html"
+
+    @classmethod
+    def sips_count_distribution(cls, player_count):
+        """
+        Approximate probability of getting exactly x sips.
+
+        Approximated using a normal distribution where the mean is known,
+        but the variance is estimated using a finite population correction.
+
+        Futhermore a continuity correction is used.
+
+        See https://math.stackexchange.com/a/1300566/19750
+        """
+        mean = SIPS_MEAN + 0.5
+        total_cards = 13 * player_count
+        fpc = (total_cards - 13) / (total_cards - 1)
+        var = SIPS_VAR * fpc
+        return norm(mean, sqrt(var)).pdf, f"N({mean}, {var:.2f})"
+
+    @classmethod
+    def chug_count_distribution(cls, player_count):
+        # Exact probability
+        N = 13 * player_count
+        K = player_count
+        n = 13
+        rv = hypergeom(N, K, n)
+        return rv.pmf, f"HyperGeometric({N}, {K}, {n})"
+
+    @classmethod
+    def combined_distribution(cls, season, dist_f):
+        ds = []
+        ws = []
+        for player_count in range(2, 6 + 1):
+            ds.append(dist_f(player_count))
+            ws.append(
+                GamePlayerStat.get_stats_with_player_count(season, player_count).count()
+            )
+
+        total_ws = sum(ws)
+
+        return (
+            lambda x: sum(d[0](x) * w / total_ws for d, w in zip(ds, ws)),
+            "\n" + " + \n".join(f"{w / total_ws:.2f} * {d[1]}" for d, w in zip(ds, ws)),
+        )
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -396,22 +447,40 @@ class StatsView(TemplateView):
         player_count = chooser.current
 
         stat_types = {
-            "sips_data": GamePlayerStat.get_sips_distribution(season, player_count),
-            "chugs_data": GamePlayerStat.get_chugs_distribution(season, player_count),
+            "sips_data": (
+                GamePlayerStat.get_sips_distribution(season, player_count),
+                self.sips_count_distribution,
+            ),
+            "chugs_data": (
+                GamePlayerStat.get_chugs_distribution(season, player_count),
+                self.chug_count_distribution,
+            ),
         }
 
-        for name, stats in stat_types.items():
+        for name, (stats, prob_f) in stat_types.items():
             xs = []
             ys = []
+            probs = []
             if stats.exists():
                 d = {s["value"]: s["value__count"] for s in stats}
+                if player_count == None:
+                    dist, dist_str = self.combined_distribution(season, prob_f)
+                else:
+                    dist, dist_str = prob_f(player_count)
+
                 for x in range(stats.first()["value"], stats.last()["value"] + 1):
                     xs.append(x)
                     ys.append(d.get(x, 0))
 
+                    probs.append(dist(x))
+
             context[name] = {
                 "xs": xs,
                 "ys": ys,
+                "total_ys": sum(ys),
+                "probs": probs,
+                "probs_exact": name == "chugs_data",
+                "dist_str": dist_str,
             }
 
         return context

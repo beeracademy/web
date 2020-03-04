@@ -90,15 +90,22 @@ class GamePlayerStat(models.Model):
             s.save()
 
     @classmethod
-    def get_distribution(cls, field, season, player_count):
+    def get_stats_with_player_count(cls, season, player_count):
         qs = filter_season(cls.objects, season, "gameplayer__game")
         if player_count != None:
             qs = qs.annotate(player_count=Count("gameplayer__game__gameplayer")).filter(
                 player_count=player_count
             )
 
+        return qs
+
+    @classmethod
+    def get_distribution(cls, field, season, player_count):
+        sq = Subquery(
+            cls.get_stats_with_player_count(season, player_count).values("id")
+        )
         return (
-            GamePlayerStat.objects.filter(id__in=Subquery(qs.values("id")))
+            GamePlayerStat.objects.filter(id__in=sq)
             .values(value=F(field))
             .annotate(Count("value"))
             .order_by(field)

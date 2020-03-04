@@ -14,11 +14,17 @@
 
 <hr>
 
-<h3>Sips distribution</h3>
+<h3>Sips distribution ({{ sips_data.total_ys }} data points)</h3>
+
+Approximate distribution:
+<span style="white-space: pre;">{{ sips_data.dist_str }}</span>
 
 <div id="sips_chart"></div>
 
-<h3>Chugs distribution</h3>
+<h3>Chugs distribution ({{ chugs_data.total_ys }} data points)</h3>
+
+Exact distribution:
+<span style="white-space: pre;">{{ chugs_data.dist_str }}</span>
 
 <div id="chugs_chart"></div>
 
@@ -88,34 +94,27 @@
 			},
 			tooltip: {
 				enabledOnSeries: [0],
+				y: {
+					formatter: (function(data) {
+						return function(val, d) {
+							return val + " (" + (val / data.total_ys * 100).toFixed(2) + " %,"
+								+ " expected: " + (data.probs[d.dataPointIndex] * 100).toFixed(2) + " %"
+								+ (data.probs_exact? "": " approx.") +")";
+						};
+					})(data),
+				},
 			},
 		};
 
-		if (charts[i].data === "sips_data") {
-			var mu = 104; // Correct mean, not estimated
-			var sigma_sq = 0;
-
-			var N = 0;
-			for (var j = 0; j < data.xs.length; j++) {
-				N += data.ys[j];
-				sigma_sq += Math.pow(data.xs[j] - mu, 2) * data.ys[j];
+		if (charts[i].data === "sips_data" && data.probs.length !== 0) {
+			var expected = [];
+			for (var j = 0; j < data.probs.length; j++) {
+				expected.push(data.probs[j] * data.total_ys);
 			}
-
-			sigma_sq /= N;
-			var sigma = Math.sqrt(sigma_sq);
-
-			var min_x = data.xs[0];
-			var max_x = data.xs[data.xs.length - 1];
-
-			var f_data = [];
-			for (var x = min_x; x <= max_x; x++) {
-				f_data.push(normal_distribution(mu, sigma, x) * N);
-			}
-
 			options.series.push({
 				type: "line",
-				name: "Normal distribution fit N(" + mu + ", " + sigma_sq.toFixed(2) + ")",
-				data: f_data,
+				name: "Expected occurences",
+				data: expected,
 			});
 		}
 

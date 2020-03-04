@@ -52,6 +52,7 @@ facebook-sdk = "^3.1"
 celery = "^4.3"
 django-celery-beat = "^1.5"
 django-constance = {version = "^2.5", extras = ["database"]}
+scipy = "^1.4.1"
 
 [tool.poetry.dev-dependencies]
 
