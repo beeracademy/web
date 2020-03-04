@@ -63,7 +63,7 @@
 	}
 </style>
 
-<p class="description">{game_data.description}</p>
+<p class="description">{@html game_data.description_html}</p>
 
 <table class="table">
 <thead>

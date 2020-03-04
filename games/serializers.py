@@ -1,8 +1,12 @@
 from rest_framework import serializers
 from rest_framework.authtoken.models import Token
+from django.utils.html import format_html
+from django.urls import reverse
 from .models import User, Game, Card, GamePlayer, PlayerStat
 from .seed import is_seed_valid_for_players
 import datetime
+import re
+from urllib.parse import urlencode
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -91,6 +95,7 @@ class GameSerializer(serializers.ModelSerializer):
             "player_ids",
             "player_names",
             "sips_per_beer",
+            "description_html",
         ]
 
     start_datetime = serializers.DateTimeField(required=True)
@@ -101,6 +106,17 @@ class GameSerializer(serializers.ModelSerializer):
         child=serializers.IntegerField(), write_only=True
     )
     player_names = serializers.ListField(child=serializers.CharField(), write_only=True)
+    description_html = serializers.SerializerMethodField()
+
+    hashtag_re = re.compile(r"#([^# ]+)")
+
+    def get_description_html(self, obj):
+        def hashtag_link(m):
+            s = m.group()
+            url = reverse("game_list") + "?" + urlencode({"query": s})
+            return format_html("<a href='{}'>{}</a>", url, s)
+
+        return self.hashtag_re.sub(hashtag_link, obj.description)
 
     def validate(self, data):
         DEFAULT = object()
