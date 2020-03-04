@@ -24,7 +24,7 @@ class ChooserData:
         return str(value)
 
     def to_query_str(self, value):
-        return self.to_str(value)
+        raise NotImplementedError
 
     def from_str(self, value):
         raise NotImplementedError
@@ -104,3 +104,9 @@ class PlayerCountChooser(ChooserData):
             return "All games"
 
         return f"{value} player games"
+
+    def to_query_str(self, value):
+        if value == None:
+            return None
+
+        return value
