@@ -72,7 +72,8 @@ fs.readdirSync('src').map(fname => {
 			production && terser()
 		],
 		watch: {
-			clearScreen: false
+			clearScreen: false,
+			chokidar: false,
 		}
 	});
 });
