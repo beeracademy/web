@@ -46,7 +46,10 @@
 {% for user_ranking in object_list %}
 <tr class="academy-table slim" data-href="/players/{{ user_ranking.user.id }}/"{% if user_ranking.user == user %} class="table-primary"{% endif %}>
 	<td>{{ user_ranking.rank }}</td>
-	<td>{{ user_ranking.user.username }}</td>
+	<td>
+		<div class="round-image" style="display: inline-block; background-image: url({{ user_ranking.user.image_url }});"></div>
+		<div style="display: inline-block; vertical-align: top; padding-top: 12px; padding-left: 12px;">{{ user_ranking.user.username }}</div>
+	</td>
 	<td>{% include "utils/link.html" with text=user_ranking.value prefix="/games" id=user_ranking.game.id %}</td>
 </tr>
 {% endfor %}
