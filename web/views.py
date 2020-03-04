@@ -142,7 +142,11 @@ class PaginatedListView(ListView):
         object_list = paginator.get_page(page)
         context["object_list"] = object_list
 
-        page_url = lambda page: updated_query_url(self.request, {"page": page})
+        def page_url(page):
+            if page == 1:
+                return self.request.path
+
+            return updated_query_url(self.request, {"page": page})
 
         # We want to preserve other query parameters, when changing pages
         context["paginator_first_url"] = page_url(1)

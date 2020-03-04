@@ -10,12 +10,20 @@ def updated_query_url(request, updates):
                 del query[k]
         else:
             query[k] = v
-    return request.path + "?" + query.urlencode()
+
+    url = request.path
+    q = query.urlencode()
+    if q:
+        url += "?" + q
+
+    return url
 
 
 class ChooserData:
     key = None
     reset_keys = []
+    # The first value should be the default
+    values = []
 
     def __init__(self, request):
         self.request = request
@@ -45,7 +53,7 @@ class ChooserData:
                 updated_query_url(
                     self.request,
                     {
-                        self.key: self.to_query_str(v),
+                        self.key: None if v == self.values[0] else self.to_query_str(v),
                         **{k: None for k in self.reset_keys},
                     },
                 ),
