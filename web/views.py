@@ -461,6 +461,7 @@ class StatsView(TemplateView):
             xs = []
             ys = []
             probs = []
+            dist_str = None
             if stats.exists():
                 d = {s["value"]: s["value__count"] for s in stats}
                 if player_count == None:
