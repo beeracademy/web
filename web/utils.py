@@ -1,5 +1,11 @@
+import datetime
+
 from games.models import Season, all_time_season
 from games.ranking import RANKINGS, get_ranking_from_key
+
+
+def round_timedelta(td):
+    return datetime.timedelta(days=td.days, seconds=td.seconds)
 
 
 def updated_query_url(request, updates):

@@ -22,6 +22,8 @@ from django.db.models import (
     Case,
     Count,
     DateTimeField,
+    DurationField,
+    ExpressionWrapper,
     F,
     IntegerField,
     Sum,
@@ -39,7 +41,6 @@ from games.models import (
     Game,
     GamePlayer,
     GamePlayerStat,
-    PlayerStat,
     User,
     filter_season,
 )
@@ -47,7 +48,13 @@ from games.ranking import RANKINGS, get_ranking_from_key
 from games.serializers import GameSerializerWithPlayerStats, UserSerializer
 
 from .forms import UserSettingsForm
-from .utils import PlayerCountChooser, RankingChooser, SeasonChooser, updated_query_url
+from .utils import (
+    PlayerCountChooser,
+    RankingChooser,
+    SeasonChooser,
+    round_timedelta,
+    updated_query_url,
+)
 
 RANKING_PAGE_LIMIT = 15
 
@@ -462,19 +469,25 @@ class StatsView(TemplateView):
                 player_count=player_count
             )
 
-        total_sips = games.aggregate(sips=Sum("cards__value"))["sips"] or 0
+        total_sips = (
+            Card.objects.filter(game__id__in=games).aggregate(total_sips=Sum("value"))[
+                "total_sips"
+            ]
+            or 0
+        )
 
-        playerstats = PlayerStat.objects.filter(season_number=season.number)
-        total_seconds = playerstats.aggregate(
-            seconds=Sum("total_time_played_seconds")
-        )["seconds"]
+        total_duration = games.annotate(
+            duration=ExpressionWrapper(
+                F("end_datetime") - F("start_datetime"), DurationField()
+            )
+        ).aggregate(total_duration=Sum("duration"))["total_duration"]
 
         context["game_stats"] = {
             "total_games": games.count(),
             "total_dnf": games.filter(dnf=True).count(),
             "total_sips": total_sips,
             "total_beers": total_sips / 14,
-            "total_time_played": str(datetime.timedelta(seconds=round(total_seconds))),
+            "total_duration": str(round_timedelta(total_duration)),
         }
 
         stat_types = {
