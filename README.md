@@ -6,7 +6,7 @@ Frontend and api server for Academy.
 
 ## Installation
 
-Install Python 3.7 and [Poetry](https://poetry.eustace.io/).
+Install Python 3.8 and [Poetry](https://poetry.eustace.io/).
 
 To install the python dependencies run:
 
