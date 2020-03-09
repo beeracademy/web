@@ -30,8 +30,8 @@ from rest_framework import routers
 router = routers.DefaultRouter()
 router.register("users", UserViewSet)
 router.register("games", GameViewSet)
-router.register("ranked_cards", RankedFacecardsView, base_name="ranked_cards")
-router.register("stats", PlayerStatViewSet, base_name="stats")
+router.register("ranked_cards", RankedFacecardsView, basename="ranked_cards")
+router.register("stats", PlayerStatViewSet, basename="stats")
 
 
 urlpatterns = [
