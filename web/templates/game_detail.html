@@ -62,7 +62,9 @@
 
 {% block scripts %}
 <script>
-    var socket = new WebSocket("ws://" + window.location.host + "/ws/chat/{{ object.id }}/");
+    var scheme = window.location.protocol === "https:"? "wss": "ws";
+
+    var socket = new WebSocket(scheme + "://" + window.location.host + "/ws/chat/{{ object.id }}/");
 
     var container = document.querySelector("#chat-container");
     var log = document.querySelector("#chat-log");
