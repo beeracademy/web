@@ -1,5 +1,5 @@
 [tool.black]
-target-version = ['py37']
+target-version = ['py38']
 exclude = '''
 
 (
@@ -33,7 +33,7 @@ description = ""
 authors = []
 
 [tool.poetry.dependencies]
-python = "^3.7"
+python = "^3.8"
 django = "~3.0"
 django-extensions = "*"
 ipython = "*"

@@ -5,7 +5,7 @@ COPY /svelte .
 RUN npm install
 RUN npx rollup -c
 
-FROM python:3.7
+FROM python:3.8
 
 RUN pip install --no-cache-dir poetry
 RUN poetry config virtualenvs.create false
