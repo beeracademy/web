@@ -31,6 +31,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django.contrib.humanize",
     "django_extensions",
+    "channels",
     "debug_toolbar",
     "constance",
     "constance.backends.database",
@@ -39,6 +40,7 @@ INSTALLED_APPS = [
     "bootstrap4",
     "django_celery_beat",
     "svelte",
+    "chat",
     "games",
     "web",
 ]
@@ -77,8 +79,11 @@ TEMPLATES = [
     }
 ]
 
-WSGI_APPLICATION = "academy.wsgi.application"
+ASGI_APPLICATION = "academy.routing.application"
 
+CHANNEL_LAYERS = {
+    "default": {"BACKEND": "channels.layers.InMemoryChannelLayer",},
+}
 
 # Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases

@@ -20,6 +20,7 @@ services:
       - media
       - celery
       - celery-beat
+      - redis
 
   celery:
     image: *app
@@ -27,7 +28,7 @@ services:
     volumes:
       - ./.env:/app/.env
     depends_on:
-      - rabbitmq
+      - redis
       - db
 
   celery-beat:
@@ -36,7 +37,7 @@ services:
     volumes:
       - ./.env:/app/.env
     depends_on:
-      - rabbitmq
+      - redis
       - db
 
   db:
@@ -57,8 +58,8 @@ services:
         - traefik.http.routers.media-academy-beer.tls.certResolver=le
         - traefik.http.services.media-academy-beer.loadbalancer.server.port=80
 
-  rabbitmq:
-    image: rabbitmq
+  redis:
+    image: redis:alpine
 
 networks:
   traefik:

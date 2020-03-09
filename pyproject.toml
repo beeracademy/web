@@ -43,16 +43,17 @@ djangorestframework = "*"
 django-filter = "*"
 tqdm = "*"
 django-bootstrap4 = "*"
-gunicorn = "*"
 python-dotenv = "*"
 whitenoise = "*"
 psycopg2 = "*"
 django-debug-toolbar = "*"
 facebook-sdk = "*"
-celery = "*"
+celery = {extras = ["redis"], version = "*"}
 django-celery-beat = "*"
 django-constance = {version = "*", extras = ["database"]}
 scipy = "*"
+channels = "*"
+channels_redis = "*"
 
 [tool.poetry.dev-dependencies]
 

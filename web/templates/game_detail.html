@@ -9,12 +9,37 @@
 .card-img-top {
     width: {{ IMAGE_WIDTH }}px;
 }
+#chat-container {
+    position: fixed;
+    right: 3em;
+    z-index: 100;
+}
+#chat-log, #chat-input {
+    width: 20em;
+}
+#chat-log {
+    height: 10em;
+}
+#chat-minimize {
+    position: fixed;
+    right: 3.5em;
+    cursor: pointer;
+}
+#chat-container.minimized #chat-log, #chat-container.minimized #chat-input {
+    display: none;
+}
 </style>
 
 {% svelte_include "GameDetail" %}
 {% endblock %}
 
 {% block content %}
+
+<div id="chat-container">
+    <i id="chat-minimize" class="fas fa-window-minimize"></i>
+    <textarea id="chat-log" disabled>Connecting to chat...</textarea><br>
+    <input id="chat-input" type="text" disabled{% if not user.is_authenticated %} placeholder="Login to chat"{% endif %}><br>
+</div>
 
 <h2>
     Game
@@ -33,4 +58,79 @@
 {{ ordered_gameplayers|json_script:"ordered_gameplayers" }}
 {{ card_constants|json_script:"card_constants" }}
 
+{% endblock %}
+
+{% block scripts %}
+<script>
+    var socket = new WebSocket("ws://" + window.location.host + "/ws/chat/{{ object.id }}/");
+
+    var container = document.querySelector("#chat-container");
+    var log = document.querySelector("#chat-log");
+    var input = document.querySelector("#chat-input");
+    var minimize = document.querySelector("#chat-minimize");
+
+    socket.addEventListener("open", function (e) {
+        {% if user.is_authenticated %}
+        input.disabled = false;
+        {% endif %}
+        log.value = "";
+    });
+
+    socket.addEventListener("close", function(e) {
+        log.value += "Chat socket closed unexpectedly!\n";
+        input.disabled = true;
+    });
+
+    socket.addEventListener("error", function(e) {
+        log.value += "Got an error from the chat socket!\n";
+        input.disabled = true;
+    });
+
+    socket.addEventListener("message", function (e) {
+        var data = JSON.parse(e.data);
+
+        var username = data["username"];
+        if (!username) {
+            username = "Guest";
+        }
+
+        var message = null;
+        switch (data["event"]) {
+            case "message":
+                message = username + ": " + data["message"];
+                break;
+            case "connect":
+                message = username + " has connected.";
+                break;
+            case "disconnect":
+                message = username + " has disconnected.";
+                break;
+        }
+
+        if (message) {
+            var d = new Date(data["datetime"]);
+            var time = moment(d).format("HH:mm:ss");
+            log.value += time + " " + message + "\n";
+        } else {
+            console.error("Unknown message received:");
+            console.error(data);
+        }
+    });
+
+    input.addEventListener("keyup", function(e) {
+        if (e.keyCode === 13) {
+            socket.send(JSON.stringify({
+                "message": input.value,
+            }));
+
+            input.value = "";
+        }
+    });
+
+    minimize.addEventListener("click", function(e) {
+        container.classList.toggle("minimized");
+        minimize.classList.toggle("fa-window-minimize");
+        minimize.classList.toggle("fa-comments");
+    });
+</script>
 {% endblock %}
