@@ -141,3 +141,23 @@ tr.in-game a {
 .text-cetner {
     text-align: center;
 }
+
+.achievements {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+}
+
+.achievements img {
+    margin: 12px;
+    height: 90px;
+    width: 90px;
+    opacity: 0.2;
+}
+
+.achievements img.active {
+    opacity: 1;
+}
+svg:hover {
+  }
+  

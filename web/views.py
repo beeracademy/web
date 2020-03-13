@@ -22,8 +22,6 @@ from django.db.models import (
     Case,
     Count,
     DateTimeField,
-    DurationField,
-    ExpressionWrapper,
     F,
     IntegerField,
     Sum,
@@ -35,6 +33,7 @@ from django.utils import timezone
 from django.views.generic import DetailView, ListView, TemplateView, UpdateView
 from scipy.stats import hypergeom, norm
 
+from games.achievements import ACHIEVEMENTS
 from games.models import (
     Card,
     Chug,
@@ -277,6 +276,17 @@ class PlayerDetailView(DetailView):
         season = SeasonChooser(self.request).current
         context["stats"] = self.object.stats_for_season(season)
 
+        context["achievements"] = []
+        for achievement in ACHIEVEMENTS:
+            context["achievements"].append(
+                {
+                    "achieved": achievement.has_achieved(self.object),
+                    "name": achievement.name,
+                    "description": achievement.description,
+                    "icon_url": f"/static/achievements/{achievement.icon}.svg",
+                }
+            )
+
         context["rankings"] = []
         for ranking in RANKINGS:
             context["rankings"].append(
@@ -476,11 +486,9 @@ class StatsView(TemplateView):
             or 0
         )
 
-        total_duration = games.annotate(
-            duration=ExpressionWrapper(
-                F("end_datetime") - F("start_datetime"), DurationField()
-            )
-        ).aggregate(total_duration=Sum("duration"))["total_duration"]
+        total_duration = Game.add_durations(games).aggregate(
+            total_duration=Sum("duration")
+        )["total_duration"]
 
         context["game_stats"] = {
             "total_games": games.count(),

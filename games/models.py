@@ -4,7 +4,7 @@ import os
 import pytz
 from django.contrib.auth.models import AbstractUser, UserManager
 from django.db import models
-from django.db.models import Count, F, Q, Subquery
+from django.db.models import Count, DurationField, ExpressionWrapper, F, Q, Subquery
 from django.templatetags.static import static
 from django.urls import reverse
 from django.utils import timezone
@@ -447,6 +447,14 @@ class Game(models.Model):
     description = models.CharField(max_length=1000, blank=True)
     official = models.BooleanField(default=True)
     dnf = models.BooleanField(default=False)
+
+    @staticmethod
+    def add_durations(qs):
+        return qs.annotate(
+            duration=ExpressionWrapper(
+                F("end_datetime") - F("start_datetime"), DurationField()
+            )
+        )
 
     def __str__(self):
         return f"{self.datetime}: {self.players_str()}"
