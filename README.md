@@ -34,6 +34,6 @@ Some views uses [Svelte](https://svelte.dev/) components, which needs to be comp
 To do this, run the following:
 ```sh
 cd svelte
-npm install
-npx rollup -c
+yarn install
+yarn build
 ```

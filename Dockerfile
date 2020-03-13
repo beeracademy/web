@@ -2,8 +2,7 @@ FROM node:12-alpine as builder
 
 COPY /svelte .
 
-RUN npm install
-RUN npx rollup -c
+RUN yarn install && yarn build
 
 FROM python:3.8
 
