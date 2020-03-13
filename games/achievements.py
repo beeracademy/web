@@ -81,7 +81,10 @@ class DanishDSTAchievement(Achievement):
 
     @staticmethod
     def get_transition_times():
-        return pytz.timezone("Europe/Copenhagen")._utc_transition_times[1:]
+        return map(
+            pytz.utc.localize,
+            pytz.timezone("Europe/Copenhagen")._utc_transition_times[1:],
+        )
 
     def has_achieved(user):
         query = Q()
