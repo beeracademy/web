@@ -49,5 +49,8 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         )
 
     async def chat_event(self, event):
+        # Make a copy as we can't remove type from the received event or dispatching will fail
+        event = dict(event)
+
         del event["type"]
         await self.send_json(event)
