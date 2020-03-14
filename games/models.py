@@ -48,6 +48,26 @@ def filter_season(qs, season, key=None, should_include_live=False):
     return qs.filter(q)
 
 
+def filter_player_count(qs, player_count, key=None):
+    if player_count == None:
+        return qs
+
+    if key:
+        key += "__"
+    else:
+        key = ""
+
+    gameplayer_key = key + "gameplayer"
+
+    return qs.annotate(player_count=Count(gameplayer_key)).filter(
+        player_count=player_count
+    )
+
+
+def filter_season_and_player_count(qs, season, player_count, key=None):
+    return filter_player_count(filter_season(qs, season, key), player_count, key)
+
+
 def recalculate_all_stats():
     PlayerStat.recalculate_all()
     GamePlayerStat.recalculate_all()
@@ -91,13 +111,9 @@ class GamePlayerStat(models.Model):
 
     @classmethod
     def get_stats_with_player_count(cls, season, player_count):
-        qs = filter_season(cls.objects, season, "gameplayer__game")
-        if player_count != None:
-            qs = qs.annotate(player_count=Count("gameplayer__game__gameplayer")).filter(
-                player_count=player_count
-            )
-
-        return qs
+        return filter_season_and_player_count(
+            cls.objects, season, player_count, "gameplayer__game"
+        )
 
     @classmethod
     def get_distribution(cls, field, season, player_count):

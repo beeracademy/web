@@ -35,14 +35,20 @@
 	</tbody>
 </table>
 
-<h3>Sips distribution ({{ sips_data.total_ys }} data points)</h3>
+<h3>Sips distribution ({{ sips_data.total_ys|intcomma }} data points)</h3>
 
 Approximate distribution:
 <span style="white-space: pre;">{{ sips_data.dist_str }}</span>
 
 <div id="sips_chart"></div>
 
-<h3>Chugs distribution ({{ chugs_data.total_ys }} data points)</h3>
+<h3>Game duration distribution ({{ game_stats.total_games|intcomma }} data points)</h3>
+
+Only shows finished games with duration less than {{ duration_data.max_hours }} hours.
+
+<div id="duration_chart"></div>
+
+<h3>Chugs distribution ({{ chugs_data.total_ys|intcomma }} data points)</h3>
 
 Exact distribution:
 <span style="white-space: pre;">{{ chugs_data.dist_str }}</span>
@@ -54,8 +60,43 @@ Exact distribution:
 {% block scripts %}
 {{ sips_data|json_script:"sips_data" }}
 {{ chugs_data|json_script:"chugs_data" }}
+{{ duration_data|json_script:"duration_data" }}
 
 <script>
+	function barchart_options() {
+		return {
+			chart: {
+				height: 500,
+			},
+			plotOptions: {
+				bar: {
+					columnWidth: "90%",
+				},
+			},
+			dataLabels: {
+				enabled: false,
+			},
+			stroke: {
+				show: true,
+				width: 2,
+				colors: ["transparent"],
+			},
+			series: [{
+				type: "bar",
+				name: "Occurences",
+			}],
+			yaxis: {
+				title: {
+					text: "Occurences",
+				},
+				decimalsInFloat: 0,
+			},
+			tooltip: {
+				enabledOnSeries: [0],
+			},
+		};
+	}
+
 	var charts = [{
 		data: "sips_data",
 		chart: "sips_chart",
@@ -79,52 +120,23 @@ Exact distribution:
 			continue;
 		}
 
-		var options = {
-			chart: {
-				height: 500,
+		var options = barchart_options();
+		options.xaxis = {
+			title: {
+				text: charts[i].name + " for one player in one game",
 			},
-			plotOptions: {
-				bar: {
-					columnWidth: "90%",
-				},
-			},
-			dataLabels: {
-				enabled: false,
-			},
-			stroke: {
-				show: true,
-				width: 2,
-				colors: ["transparent"],
-			},
-			xaxis: {
-				title: {
-					text: charts[i].name + " for one player in one game",
-				},
-				categories: data.xs,
-			},
-			series: [{
-				type: "bar",
-				name: "Occurences",
-				data: data.ys,
-			}],
-			yaxis: {
-				title: {
-					text: "Occurences",
-				},
-				decimalsInFloat: 0,
-			},
-			tooltip: {
-				enabledOnSeries: [0],
-				y: {
-					formatter: (function(data) {
-						return function(val, d) {
-							return val + " (" + (val / data.total_ys * 100).toFixed(2) + " %,"
-								+ " expected: " + (data.probs[d.dataPointIndex] * 100).toFixed(2) + " %"
-								+ (data.probs_exact? "": " approx.") +")";
-						};
-					})(data),
-				},
-			},
+			categories: data.xs,
+		};
+		options.series[0].data = data.ys;
+
+		options.tooltip.y = {
+			formatter: (function(data) {
+				return function(val, d) {
+					return val + " (" + (val / data.total_ys * 100).toFixed(2) + " %,"
+						+ " expected: " + (data.probs[d.dataPointIndex] * 100).toFixed(2) + " %"
+						+ (data.probs_exact? "": " approx.") +")";
+				};
+			})(data),
 		};
 
 		if (charts[i].data === "sips_data" && data.probs.length !== 0) {
@@ -142,5 +154,27 @@ Exact distribution:
 		var chart = new ApexCharts(chart_el, options);
 		chart.render();
 	}
+
+
+	var duration_data = JSON.parse(document.getElementById("duration_data").textContent);
+	var duration_chart_el = document.getElementById("duration_chart");
+	var duration_options = barchart_options();
+	duration_options.xaxis = {
+		title: {
+			text: "Game duration",
+		},
+		categories: duration_data.xs,
+	};
+	duration_options.series[0].data = duration_data.ys;
+	duration_options.tooltip.y = {
+		formatter: (function(data) {
+			return function(val, d) {
+				return val + " (" + (val / data.total_ys * 100).toFixed(2) + " %)";
+			};
+		})(data),
+	};
+
+	var duration_chart = new ApexCharts(duration_chart_el, duration_options);
+	duration_chart.render();
 </script>
 {% endblock %}

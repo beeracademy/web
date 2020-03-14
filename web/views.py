@@ -42,6 +42,7 @@ from games.models import (
     GamePlayerStat,
     User,
     filter_season,
+    filter_season_and_player_count,
 )
 from games.ranking import RANKINGS, get_ranking_from_key
 from games.serializers import GameSerializerWithPlayerStats, UserSerializer
@@ -473,11 +474,7 @@ class StatsView(TemplateView):
         context["player_count_chooser"] = chooser
         player_count = chooser.current
 
-        games = filter_season(Game.objects, season)
-        if player_count != None:
-            games = games.annotate(player_count=Count("gameplayer")).filter(
-                player_count=player_count
-            )
+        games = filter_season_and_player_count(Game.objects, season, player_count)
 
         total_sips = (
             Card.objects.filter(game__id__in=games).aggregate(total_sips=Sum("value"))[
@@ -486,9 +483,11 @@ class StatsView(TemplateView):
             or 0
         )
 
-        total_duration = Game.add_durations(games).aggregate(
-            total_duration=Sum("duration")
-        )["total_duration"]
+        games_with_durations = Game.add_durations(games)
+
+        total_duration = games_with_durations.aggregate(total_duration=Sum("duration"))[
+            "total_duration"
+        ]
 
         context["game_stats"] = {
             "total_games": games.count(),
@@ -516,16 +515,18 @@ class StatsView(TemplateView):
             dist_str = None
             if stats.exists():
                 d = {s["value"]: s["value__count"] for s in stats}
-                if player_count == None:
-                    dist, dist_str = self.combined_distribution(season, prob_f)
-                else:
-                    dist, dist_str = prob_f(player_count)
+                if prob_f:
+                    if player_count == None:
+                        dist, dist_str = self.combined_distribution(season, prob_f)
+                    else:
+                        dist, dist_str = prob_f(player_count)
 
                 for x in range(stats.first()["value"], stats.last()["value"] + 1):
                     xs.append(x)
                     ys.append(d.get(x, 0))
 
-                    probs.append(dist(x))
+                    if dist:
+                        probs.append(dist(x))
 
             context[name] = {
                 "xs": xs,
@@ -535,5 +536,26 @@ class StatsView(TemplateView):
                 "probs_exact": name == "chugs_data",
                 "dist_str": dist_str,
             }
+
+        MAX_HOURS = 4
+        BUCKETS = 60
+
+        max_duration = datetime.timedelta(hours=MAX_HOURS)
+        game_durations = games_with_durations.filter(
+            dnf=False, duration__lte=max_duration,
+        ).values("duration")
+        bucket_span = max_duration / BUCKETS
+        occurrences = Counter()
+        for d in game_durations:
+            duration = d["duration"]
+            x = int(duration / bucket_span)
+            occurrences[x] += 1
+
+        context["duration_data"] = {
+            "bucket_span_seconds": bucket_span.total_seconds(),
+            "max_hours": MAX_HOURS,
+            "xs": [str((i + 1) * bucket_span) for i in range(BUCKETS)],
+            "ys": [occurrences[i] for i in range(BUCKETS)],
+        }
 
         return context
