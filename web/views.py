@@ -49,6 +49,7 @@ from games.serializers import GameSerializerWithPlayerStats, UserSerializer
 
 from .forms import UserSettingsForm
 from .utils import (
+    GameOrder,
     PlayerCountChooser,
     RankingChooser,
     SeasonChooser,
@@ -189,6 +190,10 @@ class GameListView(PaginatedListView):
     model = Game
     template_name = "game_list.html"
 
+    def get(self, request):
+        self.order = GameOrder(request)
+        return super().get(request)
+
     def get_queryset(self):
         season = SeasonChooser(self.request).current
         qs = filter_season(Game.objects, season, should_include_live=True)
@@ -205,26 +210,42 @@ class GameListView(PaginatedListView):
                     # Filter by username
                     qs = qs.filter(players__username__icontains=part)
 
-        # First show live games (but not dnf games),
-        # then show all other games sorted by
-        # end_datetime if it is not null,
-        # otherwise use start_datetime instead
-        return qs.distinct().order_by(
-            Case(
-                When(end_datetime__isnull=True, dnf=False, then=Value(0)),
-                default=Value(1),
-                output_field=IntegerField(),
-            ),
-            Case(
-                When(end_datetime__isnull=True, then="start_datetime"),
-                default="end_datetime",
-                output_field=DateTimeField(),
-            ).desc(),
-        )
+        qs = qs.distinct()
+
+        if self.order.current_column == "end_datetime":
+            # First show live games (but not dnf games),
+            # then show all other games sorted by
+            # end_datetime if it is not null,
+            # otherwise use start_datetime instead
+            qs = qs.order_by(
+                Case(
+                    When(end_datetime__isnull=True, dnf=False, then=Value(0)),
+                    default=Value(1),
+                    output_field=IntegerField(),
+                ),
+                Case(
+                    When(end_datetime__isnull=True, then="start_datetime"),
+                    default="end_datetime",
+                    output_field=DateTimeField(),
+                ).desc(),
+            )
+            if self.order.reverse:
+                qs = qs.reverse()
+        elif self.order.current_column == "duration":
+            qs = Game.add_durations(qs)
+
+            # Always show games with unknown duration last
+            if self.order.reverse:
+                qs = qs.order_by(F("duration").desc(nulls_last=True))
+            else:
+                qs = qs.order_by(F("duration").asc(nulls_last=True))
+
+        return qs
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["query"] = self.request.GET.get("query", "")
+        context["order"] = self.order
         return context
 
 

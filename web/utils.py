@@ -124,3 +124,56 @@ class PlayerCountChooser(ChooserData):
             return None
 
         return value
+
+
+class SortOrder:
+    key = "order"
+    columns = []
+
+    def __init__(self, request):
+        self.request = request
+
+        self.current_column = request.GET.get(self.key, "")
+        self.reverse = False
+        if self.current_column.startswith("-"):
+            self.reverse = True
+            self.current_column = self.current_column[1:]
+
+        for c in self.columns:
+            if c == self.current_column:
+                break
+        else:
+            self.reverse = False
+            self.current_column = self.columns[0]
+
+    def sort_icon(self, column):
+        if column != self.current_column:
+            return "fa-sort"
+
+        if self.reverse:
+            return "fa-sort-up"
+        else:
+            return "fa-sort-down"
+
+    def next_value(self, column):
+        if column != self.current_column:
+            return column
+
+        if not self.reverse:
+            return "-" + column
+
+        return column
+
+    def __getitem__(self, column):
+        next_value = self.next_value(column)
+        if next_value == self.columns[0]:
+            next_value = None
+
+        return {
+            "url": updated_query_url(self.request, {self.key: next_value}),
+            "sort_icon": self.sort_icon(column),
+        }
+
+
+class GameOrder(SortOrder):
+    columns = ["end_datetime", "duration"]

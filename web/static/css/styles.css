@@ -58,6 +58,11 @@ a:hover {
     color: #9b0615;
 }
 
+a.nolink {
+    color: unset;
+    text-decoration: unset;
+}
+
 tr.live {
     background-color: #bd2130 !important;
     color: #fff;
@@ -158,6 +163,3 @@ tr.in-game a {
 .achievements img.active {
     opacity: 1;
 }
-svg:hover {
-  }
-  

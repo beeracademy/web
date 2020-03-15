@@ -22,8 +22,8 @@
 <tr class="academy-table">
 	<th scope="col">Players</th>
 	<th scope="col">Season</th>
-	<th scope="col">End time</th>
-	<th scope="col" class="text-right">Duration</th>
+	{% include "sort_col.html" with name="End datetime" column=order.end_datetime %}
+	{% include "sort_col.html" with name="Duration" column=order.duration %}
 </tr>
 {% endblock %}
 
