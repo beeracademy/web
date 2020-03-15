@@ -402,14 +402,14 @@ class RankingView(PaginatedListView):
     template_name = "ranking.html"
     page_limit = RANKING_PAGE_LIMIT
 
-    def get_ranking(self):
-        ranking_type = self.request.GET.get("type")
-        return get_ranking_from_key(ranking_type) or RANKINGS[0]
+    def get(self, request):
+        self.season = SeasonChooser(request).current
+        return super().get(request)
 
     def get_queryset(self):
-        season = SeasonChooser(self.request).current
-        ranking = self.get_ranking()
-        return ranking.get_qs(season)
+        ranking_type = self.request.GET.get("type")
+        ranking = get_ranking_from_key(ranking_type) or RANKINGS[0]
+        return ranking.get_qs(self.season)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -426,10 +426,9 @@ class RankingView(PaginatedListView):
             o.game = ranking.get_game(o)
 
         if self.request.user.is_authenticated:
-            season = SeasonChooser(self.request).current
-            context["user_rank"] = ranking.get_rank(self.request.user, season)
+            context["user_rank"] = ranking.get_rank(self.request.user, self.season)
             context["user_rank_url"] = get_ranking_url(
-                ranking, self.request.user, season
+                ranking, self.request.user, self.season
             )
 
         return context
