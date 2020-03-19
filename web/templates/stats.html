@@ -50,6 +50,33 @@ Only shows finished games with duration less than {{ duration_data.max_hours }} 
 
 <h3>Chugs distribution ({{ chugs_data.total_ys|intcomma }} data points)</h3>
 
+<table class="table table-bordered table-striped table-sm">
+	<thead>
+		{% for v in chug_table_header %}
+			<th>{{ v }}</th>
+		{% endfor %}
+	</thead>
+	<tbody>
+		{% for row in chug_table %}
+			<tr>
+				{% for v in row %}
+					{% if forloop.first %}
+						<th>{{ v }}</th>
+					{% else %}
+						<td>
+							{% if v %}
+								{{ v|floatformat:4 }}&nbsp;%
+							{% else %}
+								-
+							{% endif %}
+						</td>
+					{% endif %}
+				{% endfor %}
+			</tr>
+		{% endfor %}
+	</tbody>
+</table>
+
 Exact distribution:
 <span style="white-space: pre;">{{ chugs_data.dist_str }}</span>
 

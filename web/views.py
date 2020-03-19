@@ -579,4 +579,13 @@ class StatsView(TemplateView):
             "ys": [occurrences[i] for i in range(BUCKETS)],
         }
 
+        context["chug_table_header"] = ["Players\xa0\\\xa0Chugs", *range(6 + 1)]
+        context["chug_table"] = []
+        for pcount in range(2, 6 + 1):
+            row = [pcount]
+            context["chug_table"].append(row)
+            dist, _ = self.chug_count_distribution(pcount)
+            for chugs in range(6 + 1):
+                row.append(dist(chugs) * 100 if chugs <= pcount else None)
+
         return context
