@@ -58,3 +58,10 @@ class GameViewTest(TestCase):
         self.game.start_datetime = None
         self.game.save()
         self.assert_can_render_pages()
+
+
+class StatsViewTest(TestCase):
+    def test_with_no_games(self):
+        client = Client()
+        r = client.get(f"/stats/")
+        self.assertEqual(r.status_code, 200)
