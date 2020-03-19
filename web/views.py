@@ -572,6 +572,7 @@ class StatsView(TemplateView):
             occurrences[x] += 1
 
         context["duration_data"] = {
+            "games": game_durations.count(),
             "bucket_span_seconds": bucket_span.total_seconds(),
             "max_hours": MAX_HOURS,
             "xs": [str((i + 1) * bucket_span) for i in range(BUCKETS)],

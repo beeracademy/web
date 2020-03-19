@@ -42,7 +42,7 @@ Approximate distribution:
 
 <div id="sips_chart"></div>
 
-<h3>Game duration distribution ({{ game_stats.total_games|intcomma }} data points)</h3>
+<h3>Game duration distribution ({{ duration_data.games|intcomma }} data points)</h3>
 
 Only shows finished games with duration less than {{ duration_data.max_hours }} hours.
 
@@ -158,23 +158,27 @@ Exact distribution:
 
 	var duration_data = JSON.parse(document.getElementById("duration_data").textContent);
 	var duration_chart_el = document.getElementById("duration_chart");
-	var duration_options = barchart_options();
-	duration_options.xaxis = {
-		title: {
-			text: "Game duration",
-		},
-		categories: duration_data.xs,
-	};
-	duration_options.series[0].data = duration_data.ys;
-	duration_options.tooltip.y = {
-		formatter: (function(data) {
-			return function(val, d) {
-				return val + " (" + (val / data.total_ys * 100).toFixed(2) + " %)";
-			};
-		})(data),
-	};
+	if (duration_data.games === 0) {
+		duration_chart_el.textContent = "No data";
+	} else {
+		var duration_options = barchart_options();
+		duration_options.xaxis = {
+			title: {
+				text: "Game duration",
+			},
+			categories: duration_data.xs,
+		};
+		duration_options.series[0].data = duration_data.ys;
+		duration_options.tooltip.y = {
+			formatter: (function(data) {
+				return function(val, d) {
+					return val + " (" + (val / data.total_ys * 100).toFixed(2) + " %)";
+				};
+			})(data),
+		};
 
-	var duration_chart = new ApexCharts(duration_chart_el, duration_options);
-	duration_chart.render();
+		var duration_chart = new ApexCharts(duration_chart_el, duration_options);
+		duration_chart.render();
+	}
 </script>
 {% endblock %}
