@@ -25,6 +25,7 @@
     .game-wrapper .game {
         flex: 1;
         padding: 0px 48px;
+        margin: 0px 5px;
         overflow-y: auto;
         overflow-x: hidden;
     }
@@ -37,6 +38,8 @@
 
     .game-wrapper .players {
         padding: 16px;
+        overflow-y: auto;
+        border-right: 1px solid #dededf;
     }
 
     .game-wrapper .chat {
@@ -66,7 +69,7 @@
     }
 
     .game-wrapper .chat .messages .message.info-message {
-        color: grey;
+        color: #666;
     }
 
     .game-wrapper .chat .messages .message {
@@ -91,17 +94,36 @@
     }
 
     @media only screen and (max-width: 600px) {
-        .chat {
+        .chat, .players {
             display: none !important;
         }
 
         .game {
             padding: 15px !important;
+            margin: 0px;
         }
     }
+
+    @media only screen and (min-width: 600px) {
+        .game::-webkit-scrollbar, .players::-webkit-scrollbar {
+            width: 10px;
+        }
+    
+        .game::-webkit-scrollbar-track, .players::-webkit-scrollbar-track {
+         background: transparent;
+        }
+    
+        .game::-webkit-scrollbar-thumb, .players::-webkit-scrollbar-thumb {
+            background-color: #646a7217;
+        }
+    }
+
+
 </style>
 
 {% svelte_include "GameDetail" %}
+{% svelte_include "Players" %}
+
 {% endblock %}
 
 {% block body %}
@@ -113,26 +135,40 @@
 {{ card_constants|json_script:"card_constants" }}
 
 <div class="game-wrapper">
+
     <div class="players">
-        hej
+        <div id="svelte-players">
+        </div>
     </div>
 
     <div class="game">
-        <h2>
-            Game
-            {% if user.is_staff %}
-            <a class="btn btn-primary float-right text-light col-md-auto" href="/admin/games/game/{{ object.id }}/change/">Edit</a>
-            <br><br class="d-lg-none">
-            {% endif %}
-        </h2>
+        <div class="container">
+
+            <h2>
+                Meta
+                {% if user.is_staff %}
+                <a class="btn btn-primary float-right text-light col-md-auto" href="/admin/games/game/{{ object.id }}/change/">Edit</a>
+                <br><br class="d-lg-none">
+                {% endif %}
+            </h2>
         
-        <hr>
-        
-        <div id="svelte-game_detail">
+            <hr>
+
+            <!--
+                <div class="">
+                    <h2>Players</h2>
+                    
+                    <div id="svelte-players" class="row" style="display: flex;">
+                    </div>
+                    
+                    <hr>
+                </div>
+            -->
+            
+            <div id="svelte-game_detail">
+            </div>
         </div>
-        
     </div>
-    
     
     <div class="chat">
         <div class="info">

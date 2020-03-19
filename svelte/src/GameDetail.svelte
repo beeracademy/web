@@ -1,7 +1,6 @@
 <script>
 	import CardCell from "./CardCell.svelte";
 	import Chug from "./Chug.svelte";
-	import PlayerStats from "./PlayerStats.svelte";
 	import SipsGraph from "./SipsGraph.svelte";
 	import TimeGraph from "./TimeGraph.svelte";
 
@@ -104,33 +103,6 @@
 </tbody>
 </table>
 
-<h2>Players</h2>
-
-<hr>
-
-<div class="container">
-<div class="row justify-content-md-center">
-{#each ordered_gameplayers as gp, i}
-<div class="col-md-auto">
-	<div class="card">
-		<a href="/players/{gp.user.id}/" style="margin: auto; display: flex; justify-content: center; align-items: center;">
-			{#if gp.dnf}
-			<div class="dnf-img-text">DNF</div>
-			{/if}
-			<img class="card-img-top" src="{gp.user.image_url}" alt="Card image cap">
-		</a>
-		<ul class="list-group list-group-flush">
-			<li class="list-group-item">
-				<a href="/players/{gp.user.id}/" class:dnf="{gp.dnf}">{gp.user.username}</a>
-			</li>
-			<PlayerStats player_stats={game_data.player_stats[i]} sips_per_beer={game_data.sips_per_beer}/>
-		</ul>
-	</div>
-</div>
-{/each}
-</div>
-</div>
-
 <h2>Chugs</h2>
 
 <hr>
@@ -167,6 +139,11 @@
 		{/each}
 	</tbody>
 </table>
+
+<h2>Graphs</h2>
+
+<hr>
+
 <br>
 <br>
 <SipsGraph game_data={game_data} ordered_gameplayers={ordered_gameplayers}/>

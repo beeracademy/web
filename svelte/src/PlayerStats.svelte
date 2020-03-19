@@ -14,9 +14,21 @@
 	const round2 = n => Math.round(n, 2);
 </script>
 
-<li class="list-group-item">Total sips: <span>{format(ps.total_sips)}</span></li>
-<li class="list-group-item">Sips per turn: <span>{format(ps.sips_per_turn, round2)}</span></li>
-<li class="list-group-item">Total beers: <span>{format(ps.full_beers)}</span> <sup><span>{format(ps.extra_sips)}</span></sup>&frasl;<sub>{sips_per_beer}</sub></li>
-<li class="list-group-item">Total time: <span>{format(ps.total_time, window.formatDuration)}</span></li>
-<li class="list-group-item">Time per round: <span>{format(ps.time_per_turn, window.formatDuration)}</span></li>
-<li class="list-group-item">Time per sip: <span>{format(ps.time_per_sip, window.formatDuration)}</span></li>
+<div style="margin: 6px 0px; border-bottom: 1px solid #eee; display: flex;">
+	<b>Total sips</b><span style="margin-left: auto;">{format(ps.total_sips)}</span>
+</div>
+<div style="margin: 6px 0px; border-bottom: 1px solid #eee; display: flex;">
+	<b>Total beers</b><span style="margin-left: auto;">{format(ps.full_beers)}</span>
+	<div style="margin-left: 6px;">
+		<sup><span>{format(ps.extra_sips)}</span></sup>&frasl;<sub>{sips_per_beer}</sub>
+	</div>
+</div>
+<div style="margin: 6px 0px; border-bottom: 1px solid #eee; display: flex;">
+	<b>Total time</b><span style="margin-left: auto;">{format(ps.total_time, window.formatDuration)}</span>
+</div>
+<div style="margin: 6px 0px; border-bottom: 1px solid #eee; display: flex;">
+	<b>Time per round</b><span style="margin-left: auto;">{format(ps.time_per_turn, window.formatDuration)}</span>
+</div>
+<div style="margin: 6px 0px; border-bottom: 1px solid #eee; display: flex;">
+	<b>Time per sip</b><span style="margin-left: auto;">{format(ps.time_per_sip, window.formatDuration)}</span>
+</div>
