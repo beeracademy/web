@@ -29,11 +29,18 @@
         overflow-x: hidden;
     }
 
-    .game-wrapper .chat {
+    .game-wrapper .chat, .game-wrapper .players {
         width: 340px;
-        border-left: 1px solid #dededf;
         display: flex;
         flex-direction: column;
+    }
+
+    .game-wrapper .players {
+        padding: 16px;
+    }
+
+    .game-wrapper .chat {
+        border-left: 1px solid #dededf;
     }
 
     .game-wrapper .chat .info {
@@ -101,7 +108,15 @@
 
 {% include "nav.html" %}
 
+{{ game_data|json_script:"game_data" }}
+{{ ordered_gameplayers|json_script:"ordered_gameplayers" }}
+{{ card_constants|json_script:"card_constants" }}
+
 <div class="game-wrapper">
+    <div class="players">
+        hej
+    </div>
+
     <div class="game">
         <h2>
             Game
@@ -116,9 +131,6 @@
         <div id="svelte-game_detail">
         </div>
         
-        {{ game_data|json_script:"game_data" }}
-        {{ ordered_gameplayers|json_script:"ordered_gameplayers" }}
-        {{ card_constants|json_script:"card_constants" }}
     </div>
     
     
@@ -128,7 +140,7 @@
         </div>
         <div class="messages" id="chat-messages">
         </div>
-        <input id="chat-input" type="text" disabled{% if not user.is_authenticated %} placeholder="Login to chat"{% else %} placeholder="Send a message"{% endif %}>
+        <input id="chat-input" autocomplete="off" type="text" disabled{% if not user.is_authenticated %} placeholder="Login to chat"{% else %} placeholder="Send a message"{% endif %}>
     </div>
 </div>
  
@@ -145,17 +157,15 @@
         {% if user.is_authenticated %}
         input.disabled = false;
         {% endif %}
-        log.value = "";
-        {% endblock %}
     });
 
     socket.addEventListener("close", function(e) {
-        log.value += "Chat socket closed unexpectedly!\n";
+        console.error("Chat socket closed unexpectedly!");
         input.disabled = true;
     });
 
     socket.addEventListener("error", function(e) {
-        log.value += "Got an error from the chat socket!\n";
+        console.error("Got an error from the chat socket!");
         input.disabled = true;
     });
 
@@ -223,4 +233,5 @@
     }
 </script>
 
+{% endblock %}
 {% endblock %}
