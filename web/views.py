@@ -507,7 +507,7 @@ class StatsView(TemplateView):
 
         total_duration = games_with_durations.aggregate(total_duration=Sum("duration"))[
             "total_duration"
-        ]
+        ] or datetime.timedelta(0)
 
         context["game_stats"] = {
             "total_games": games.count(),
