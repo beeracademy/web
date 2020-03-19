@@ -6,77 +6,147 @@
 
 {% block styles %}
 <style>
-.card-img-top {
-    width: {{ IMAGE_WIDTH }}px;
-}
-#chat-container {
-    position: fixed;
-    right: 3em;
-    z-index: 100;
-}
-#chat-log, #chat-input {
-    width: 20em;
-}
-#chat-log {
-    height: 10em;
-}
-#chat-minimize {
-    position: fixed;
-    right: 3.5em;
-    cursor: pointer;
-}
-#chat-container.minimized #chat-log, #chat-container.minimized #chat-input {
-    display: none;
-}
+    body {
+        display: flex;
+        flex-direction: column;
+    }
+
+    nav {
+        margin-bottom: 0px !important;
+        flex-grow: 0;
+    }
+
+    .game-wrapper {
+        display: flex;
+        flex: 1;
+        overflow: hidden;
+    }
+
+    .game-wrapper .game {
+        flex: 1;
+        padding: 0px 48px;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+    .game-wrapper .chat {
+        width: 340px;
+        border-left: 1px solid #dededf;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .game-wrapper .chat .info {
+        height: 64px;
+        border-bottom: 1px solid #dededf;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 1.5em;
+        color: #666;
+        text-transform: uppercase;
+
+    }
+
+    .game-wrapper .chat .messages {
+        display: flex;
+        flex: 1;
+        padding: 16px;
+        justify-content: flex-end;
+        flex-direction: column;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+    .game-wrapper .chat .messages .message.info-message {
+        color: grey;
+    }
+
+    .game-wrapper .chat .messages .message {
+        margin: 4px 8px;
+    }
+
+    .game-wrapper .chat .messages .message:not(.info-message) b {
+        color: #bd2130;
+    }
+
+    .game-wrapper .chat input {
+        margin: 16px;
+        padding: 8px;
+        border: none;
+        border-radius: 5px;
+        background-color: #f2f2f2;
+        outline-color: #bd2130;
+    }
+
+    .card-img-top {
+        width: {{ IMAGE_WIDTH }}px;
+    }
+
+    @media only screen and (max-width: 600px) {
+        .chat {
+            display: none !important;
+        }
+
+        .game {
+            padding: 15px !important;
+        }
+    }
 </style>
 
 {% svelte_include "GameDetail" %}
 {% endblock %}
 
-{% block content %}
+{% block body %}
 
-<div id="chat-container">
-    <i id="chat-minimize" class="fas fa-window-minimize"></i>
-    <textarea id="chat-log" disabled>Connecting to chat...
-</textarea><br>
-    <input id="chat-input" type="text" disabled{% if not user.is_authenticated %} placeholder="Login to chat"{% endif %}><br>
+{% include "nav.html" %}
+
+<div class="game-wrapper">
+    <div class="game">
+        <h2>
+            Game
+            {% if user.is_staff %}
+            <a class="btn btn-primary float-right text-light col-md-auto" href="/admin/games/game/{{ object.id }}/change/">Edit</a>
+            <br><br class="d-lg-none">
+            {% endif %}
+        </h2>
+        
+        <hr>
+        
+        <div id="svelte-game_detail">
+        </div>
+        
+        {{ game_data|json_script:"game_data" }}
+        {{ ordered_gameplayers|json_script:"ordered_gameplayers" }}
+        {{ card_constants|json_script:"card_constants" }}
+    </div>
+    
+    
+    <div class="chat">
+        <div class="info">
+            Chat
+        </div>
+        <div class="messages" id="chat-messages">
+        </div>
+        <input id="chat-input" type="text" disabled{% if not user.is_authenticated %} placeholder="Login to chat"{% else %} placeholder="Send a message"{% endif %}>
+    </div>
 </div>
-
-<h2>
-    Game
-	{% if user.is_staff %}
-		<a class="btn btn-primary float-right text-light col-md-auto" href="/admin/games/game/{{ object.id }}/change/">Edit</a>
-		<br><br class="d-lg-none">
-	{% endif %}
-</h2>
-
-<hr>
-
-<div id="svelte-game_detail">
-</div>
-
-{{ game_data|json_script:"game_data" }}
-{{ ordered_gameplayers|json_script:"ordered_gameplayers" }}
-{{ card_constants|json_script:"card_constants" }}
-
-{% endblock %}
-
+ 
 {% block scripts %}
 <script>
     var scheme = window.location.protocol === "https:"? "wss": "ws";
 
     var socket = new WebSocket(scheme + "://" + window.location.host + "/ws/chat/{{ object.id }}/");
 
-    var container = document.querySelector("#chat-container");
-    var log = document.querySelector("#chat-log");
+    var messages = document.querySelector("#chat-messages");
     var input = document.querySelector("#chat-input");
-    var minimize = document.querySelector("#chat-minimize");
 
     socket.addEventListener("open", function (e) {
         {% if user.is_authenticated %}
         input.disabled = false;
         {% endif %}
         log.value = "";
+        {% endblock %}
     });
 
     socket.addEventListener("close", function(e) {
@@ -98,22 +168,26 @@
         }
 
         var message = null;
+        var isInfo = false;
         switch (data["event"]) {
             case "message":
-                message = username + ": " + data["message"];
+                message = data["message"];
                 break;
             case "connect":
-                message = username + " has connected.";
+                message = "connected";
+                isInfo = true;
                 break;
             case "disconnect":
-                message = username + " has disconnected.";
+                message = " disconnected";
+                isInfo = true;
                 break;
         }
 
         if (message) {
             var d = new Date(data["datetime"]);
             var time = moment(d).format("HH:mm:ss");
-            log.value += time + " " + message + "\n";
+
+            addMessage(username, message, isInfo, time)
         } else {
             console.error("Unknown message received:");
             console.error(data);
@@ -130,10 +204,23 @@
         }
     });
 
-    minimize.addEventListener("click", function(e) {
-        container.classList.toggle("minimized");
-        minimize.classList.toggle("fa-window-minimize");
-        minimize.classList.toggle("fa-comments");
-    });
+    function addMessage(user, msg, isInfo, time) {
+        var elm = document.createElement("div");
+        elm.classList += "message";
+
+        if (isInfo) {
+            elm.classList += " info-message";
+        }
+        
+        var userElm = document.createElement("B");
+        userElm.innerText = user + ": ";
+        elm.appendChild(userElm);
+
+        var textElm = document.createTextNode(msg);
+        elm.appendChild(textElm)
+        
+        messages.appendChild(elm);
+    }
 </script>
+
 {% endblock %}
