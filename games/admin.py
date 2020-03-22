@@ -81,8 +81,11 @@ class UploadForm(forms.ModelForm):
         self.cleaned_data["validated_data"] = s.validated_data
 
     def save(self, commit=True):
-        update_game(self.cleaned_data["game"], self.cleaned_data["validated_data"])
-        return self.cleaned_data["game"]
+        game = self.cleaned_data["game"]
+        game.dnf = False
+        game.save()
+        update_game(game, self.cleaned_data["validated_data"])
+        return game
 
     def save_m2m(self):
         pass
