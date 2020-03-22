@@ -10,8 +10,11 @@
 	async function updateData() {
 		if (game_data.end_datetime || game_data.dnf) return;
 
-		const res = await fetch(`/api/games/${game_data.id}/`);
-		game_data = await res.json();
+		try {
+			const res = await fetch(`/api/games/${game_data.id}/`);
+			game_data = await res.json();
+		} catch(e) {}
+
 		setTimeout(updateData, 1000);
 	}
 
