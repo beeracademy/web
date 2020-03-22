@@ -18,6 +18,23 @@
                 var data = JSON.parse(text);
                 var indented = JSON.stringify(data, null, 2);
                 $("#id_game_log").text(indented);
+
+                if (data.id) {
+                  $.get(location.protocol + "//" + location.host + "/api/games/" + data.id + "/", function(db_data) {
+                    var players = db_data.player_stats.length;
+                    var expected_cards = players * 13;
+                    var info = "Players: " + players + ", cards registered: " + db_data.cards.length + " / " + expected_cards;
+
+                    $("fieldset").prepend(
+                      $("<div>").addClass("form-row").append(
+                        $("<div>").append(
+                          $("<label>").text("Game info in DB:"),
+                          $("<div>").text(info),
+                        )
+                      )
+                    )
+                  });
+                }
               } catch(e) {
                 alert(e);
               }
