@@ -167,7 +167,7 @@ class PaginatedListView(ListView):
 
         def page_url(page):
             if page == 1:
-                return self.request.path
+                page = None
 
             return updated_query_url(self.request, {"page": page})
 
