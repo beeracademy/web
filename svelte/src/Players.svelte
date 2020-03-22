@@ -16,7 +16,7 @@
         <div class="card-body">
         <a href="/players/{gp.user.id}/">
             <div style="display: flex; align-items: center; margin-bottom: 12px;">
-                <div class="round-image" style="background-image: url(/static/user.png); margin-right: 16px;"></div>
+                <div class="round-image" style="background-image: url({gp.user.image_url}); margin-right: 16px;"></div>
                 <div class="username {gp.dnf ? 'dnf' : ''}" style="flex: 1; font-weight: bold; text-align:right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{gp.user.username}</div>
             </div>
         </a>
