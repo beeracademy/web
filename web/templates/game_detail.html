@@ -185,61 +185,67 @@
 <script>
     var scheme = window.location.protocol === "https:"? "wss": "ws";
 
-    var socket = new WebSocket(scheme + "://" + window.location.host + "/ws/chat/{{ object.id }}/");
+    var socket = null;
 
     var messages = document.querySelector("#chat-messages");
     var input = document.querySelector("#chat-input");
 
-    socket.addEventListener("open", function (e) {
-        {% if user.is_authenticated %}
-        input.disabled = false;
-        {% endif %}
-    });
+    startSocket();
 
-    socket.addEventListener("close", function(e) {
-        console.error("Chat socket closed unexpectedly!");
-        input.disabled = true;
-    });
+    function startSocket() {
+        socket = new WebSocket(scheme + "://" + window.location.host + "/ws/chat/{{ object.id }}/");
 
-    socket.addEventListener("error", function(e) {
-        console.error("Got an error from the chat socket!");
-        input.disabled = true;
-    });
+        socket.addEventListener("open", function (e) {
+            {% if user.is_authenticated %}
+            input.disabled = false;
+            {% endif %}
+        });
 
-    socket.addEventListener("message", function (e) {
-        var data = JSON.parse(e.data);
+        socket.addEventListener("close", function(e) {
+            console.error("Chat socket closed unexpectedly!");
+            disconnected();
+        });
 
-        var username = data["username"];
-        if (!username) {
-            username = "Guest";
-        }
+        socket.addEventListener("error", function(e) {
+            console.error("Got an error from the chat socket!");
+            disconnected();
+        });
 
-        var message = null;
-        var isInfo = false;
-        switch (data["event"]) {
-            case "message":
-                message = data["message"];
-                break;
-            case "connect":
-                message = "connected";
-                isInfo = true;
-                break;
-            case "disconnect":
-                message = "disconnected";
-                isInfo = true;
-                break;
-        }
+        socket.addEventListener("message", function (e) {
+            var data = JSON.parse(e.data);
 
-        if (message) {
-            var d = new Date(data["datetime"]);
-            var time = moment(d).format("HH:mm:ss");
+            var username = data["username"];
+            if (!username) {
+                username = "Guest";
+            }
 
-            addMessage(username, message, isInfo, time)
-        } else {
-            console.error("Unknown message received:");
-            console.error(data);
-        }
-    });
+            var message = null;
+            var isInfo = false;
+            switch (data["event"]) {
+                case "message":
+                    message = data["message"];
+                    break;
+                case "connect":
+                    message = "connected";
+                    isInfo = true;
+                    break;
+                case "disconnect":
+                    message = "disconnected";
+                    isInfo = true;
+                    break;
+            }
+
+            if (message) {
+                var d = new Date(data["datetime"]);
+                var time = moment(d).format("HH:mm:ss");
+
+                addMessage(username, message, isInfo, time)
+            } else {
+                console.error("Unknown message received:");
+                console.error(data);
+            }
+        });
+    }
 
     input.addEventListener("keyup", function(e) {
         if (e.keyCode === 13) {
@@ -250,6 +256,11 @@
             input.value = "";
         }
     });
+
+    function disconnected() {
+        input.disabled = true;
+        setTimeout(startSocket, 1000);
+    }
 
     function addMessage(user, msg, isInfo, time) {
         var elm = document.createElement("div");
