@@ -201,7 +201,7 @@ class ApiTest(TestCase):
         game_data["start_datetime"] = datetime.datetime.fromisoformat(
             game_data["start_datetime"]
         ) - datetime.timedelta(seconds=1)
-        self.update_game(game_data, 400)
+        self.update_game(game_data)
 
     def test_send_different_official(self):
         self.set_token(self.t1)

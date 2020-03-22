@@ -101,7 +101,7 @@ class GameSerializer(serializers.ModelSerializer):
             "description_html",
         ]
 
-    start_datetime = serializers.DateTimeField(required=True)
+    start_datetime = serializers.DateTimeField(required=False)
     official = serializers.BooleanField(required=True)
     cards = CardSerializer(many=True)
     seed = serializers.ListField(child=serializers.IntegerField(), write_only=True)
@@ -143,7 +143,6 @@ class GameSerializer(serializers.ModelSerializer):
         if self.instance.has_ended:
             raise serializers.ValidationError({"non_field_errors": "Game has finished"})
 
-        check_field("start_datetime")
         check_field("end_datetime")
         check_field("official")
         check_field("description", "")
@@ -194,7 +193,7 @@ class GameSerializer(serializers.ModelSerializer):
             )
 
         increasing_datetimes = [
-            data["start_datetime"],
+            self.instance.start_datetime,
             *(d["drawn_datetime"] for d in new_cards),
         ]
         end_dt = data.get("end_datetime")

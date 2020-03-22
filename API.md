@@ -69,7 +69,6 @@ If a user with that username exists, but the password was wrong, the response is
 ```javascript
 // POST /api/games/<game_id>/update_state/
 {
-  "start_datetime": datetime_string,
   "official": bool,
   "seed": int[],
   "cards": card[],                 // see below
