@@ -225,7 +225,7 @@
                 isInfo = true;
                 break;
             case "disconnect":
-                message = " disconnected";
+                message = "disconnected";
                 isInfo = true;
                 break;
         }
@@ -260,7 +260,11 @@
         }
         
         var userElm = document.createElement("B");
-        userElm.innerText = user + ": ";
+        userElm.innerText = user;
+        if (!isInfo) {
+            userElm.innerText += ":";
+        }
+        userElm.innerText += " ";
         elm.appendChild(userElm);
 
         var textElm = document.createTextNode(msg);
