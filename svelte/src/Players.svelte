@@ -1,8 +1,8 @@
 <script>
 	import PlayerStats from "./PlayerStats.svelte";
 
-    let game_data = JSON.parse(document.getElementById("game_data").textContent);
-    const ordered_gameplayers = JSON.parse(document.getElementById("ordered_gameplayers").textContent);
+    export let game_data;
+    export let ordered_gameplayers;
 </script>
 
 <style>

@@ -120,9 +120,12 @@
 
 
 </style>
+<script>
+    window.is_authenticated = {{ user.is_authenticated|lower }};
+    window.is_staff = {{ user.is_staff|lower }};
+</script>
 
 {% svelte_include "GameDetail" %}
-{% svelte_include "Players" %}
 
 {% endblock %}
 
@@ -134,155 +137,7 @@
 {{ ordered_gameplayers|json_script:"ordered_gameplayers" }}
 {{ card_constants|json_script:"card_constants" }}
 
-<div class="game-wrapper">
-
-    <div class="players">
-        <div id="svelte-players">
-        </div>
-    </div>
-
-    <div class="game">
-        <div class="container">
-
-            <h2>
-                Meta
-                {% if user.is_staff %}
-                <a class="btn btn-primary float-right text-light col-md-auto" href="/admin/games/game/{{ object.id }}/change/">Edit</a>
-                <br><br class="d-lg-none">
-                {% endif %}
-            </h2>
-        
-            <hr>
-
-            <!--
-                <div class="">
-                    <h2>Players</h2>
-                    
-                    <div id="svelte-players" class="row" style="display: flex;">
-                    </div>
-                    
-                    <hr>
-                </div>
-            -->
-            
-            <div id="svelte-game_detail">
-            </div>
-        </div>
-    </div>
-    
-    <div class="chat">
-        <div class="info">
-            Chat
-        </div>
-        <div class="messages" id="chat-messages">
-        </div>
-        <input id="chat-input" autocomplete="off" type="text" disabled{% if not user.is_authenticated %} placeholder="Login to chat"{% else %} placeholder="Send a message"{% endif %}>
-    </div>
+<div id="svelte-game_detail">
 </div>
  
-{% endblock %}
-{% block scripts %}
-<script>
-    var scheme = window.location.protocol === "https:"? "wss": "ws";
-
-    var socket = null;
-
-    var messages = document.querySelector("#chat-messages");
-    var input = document.querySelector("#chat-input");
-
-    startSocket();
-
-    function startSocket() {
-        socket = new WebSocket(scheme + "://" + window.location.host + "/ws/chat/{{ object.id }}/");
-
-        socket.addEventListener("open", function (e) {
-            {% if user.is_authenticated %}
-            input.disabled = false;
-            {% endif %}
-        });
-
-        socket.addEventListener("close", function(e) {
-            console.error("Chat socket closed unexpectedly!");
-            disconnected();
-        });
-
-        socket.addEventListener("error", function(e) {
-            console.error("Got an error from the chat socket!");
-            disconnected();
-        });
-
-        socket.addEventListener("message", function (e) {
-            var data = JSON.parse(e.data);
-
-            var username = data["username"];
-            if (!username) {
-                username = "Guest";
-            }
-
-            var message = null;
-            var isInfo = false;
-            switch (data["event"]) {
-                case "message":
-                    message = data["message"];
-                    break;
-                case "connect":
-                    message = "connected";
-                    isInfo = true;
-                    break;
-                case "disconnect":
-                    message = "disconnected";
-                    isInfo = true;
-                    break;
-            }
-
-            if (message) {
-                var d = new Date(data["datetime"]);
-                var time = moment(d).format("HH:mm:ss");
-
-                addMessage(username, message, isInfo, time)
-            } else {
-                console.error("Unknown message received:");
-                console.error(data);
-            }
-        });
-    }
-
-    input.addEventListener("keyup", function(e) {
-        if (e.keyCode === 13) {
-            socket.send(JSON.stringify({
-                "message": input.value,
-            }));
-
-            input.value = "";
-        }
-    });
-
-    function disconnected() {
-        input.disabled = true;
-        setTimeout(startSocket, 1000);
-    }
-
-    function addMessage(user, msg, isInfo, time) {
-        var elm = document.createElement("div");
-        elm.classList += "message";
-
-        if (isInfo) {
-            elm.classList += " info-message";
-        }
-        
-        var userElm = document.createElement("B");
-        userElm.innerText = user;
-        if (!isInfo) {
-            userElm.innerText += ":";
-        }
-        userElm.innerText += " ";
-        elm.appendChild(userElm);
-
-        var textElm = document.createTextNode(msg);
-        elm.appendChild(textElm)
-        
-        messages.appendChild(elm);
-    }
-</script>
-
 {% endblock %}
