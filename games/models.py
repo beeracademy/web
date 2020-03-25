@@ -623,6 +623,7 @@ class Game(models.Model):
                 time_per_sip = div_or_none(total_times[i], total_sips[i])
 
             yield {
+                "id": self.players.all()[i].id,
                 "total_sips": total_sips[i],
                 "sips_per_turn": div_or_none(total_sips[i], total_drawn[i]),
                 "full_beers": full_beers,
