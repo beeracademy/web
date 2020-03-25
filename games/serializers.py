@@ -271,6 +271,7 @@ class GameSerializerWithPlayerStats(GameSerializer):
             for k, v in stats.items():
                 if isinstance(v, datetime.timedelta):
                     stats[k] = v.total_seconds() * 1000
+            stats["id"] = obj.id
             l.append(stats)
 
         return l
