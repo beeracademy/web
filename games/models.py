@@ -609,6 +609,7 @@ class Game(models.Model):
             total_times = [None] * n
             total_done = [None] * n
 
+        ordered_players = self.ordered_players()
         for i in range(n):
             full_beers = total_sips[i] // self.sips_per_beer
             extra_sips = total_sips[i] % self.sips_per_beer
@@ -623,7 +624,8 @@ class Game(models.Model):
                 time_per_sip = div_or_none(total_times[i], total_sips[i])
 
             yield {
-                "id": self.ordered_players()[i].id,
+                "id": ordered_players[i].id,
+                "username": ordered_players[i].username,
                 "total_sips": total_sips[i],
                 "sips_per_turn": div_or_none(total_sips[i], total_drawn[i]),
                 "full_beers": full_beers,
