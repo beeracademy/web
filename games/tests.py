@@ -1,14 +1,15 @@
+import concurrent.futures
 import datetime
 from copy import deepcopy
 
-from django.test import TestCase
+from django.test import TransactionTestCase
 from django.utils import timezone
 
 from games.models import Card, Game, User
 from rest_framework.test import APIClient
 
 
-class ApiTest(TestCase):
+class ApiTest(TransactionTestCase):
     PLAYER_COUNT = 2
     TOTAL_CARDS = PLAYER_COUNT * 13
 
@@ -39,7 +40,8 @@ class ApiTest(TestCase):
         r = self.client.post(
             f"/api/games/{self.game_id}/update_state/", game_data, format="json"
         )
-        self.assert_status(r, expected_status)
+        if expected_status:
+            self.assert_status(r, expected_status)
         return r
 
     def get_game_data(self, cards_drawn, include_chug=True):
@@ -222,3 +224,19 @@ class ApiTest(TestCase):
         game_data = self.final_game_data
         game_data["end_datetime"] = game_data["cards"][-2]["drawn_datetime"]
         self.update_game(game_data, 400)
+
+    def test_concurrent_update(self):
+        self.set_token(self.t1)
+        game_data = self.get_game_data(24)
+
+        def send_game_data():
+            return self.update_game(game_data, None)
+
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            f1 = executor.submit(send_game_data)
+            f2 = executor.submit(send_game_data)
+
+            s1 = f1.result().status_code
+            s2 = f2.result().status_code
+
+            self.assertEqual(sorted([s1, s2]), [200, 503], [s1, s2])

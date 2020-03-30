@@ -1,6 +1,8 @@
+from django.db import transaction
+from django.db.utils import IntegrityError, OperationalError
 from django.shortcuts import get_object_or_404
 
-from rest_framework import serializers, viewsets
+from rest_framework import serializers, status, viewsets
 from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.decorators import action
@@ -154,13 +156,19 @@ class GameViewSet(viewsets.ReadOnlyModelViewSet):
         serializer = GameSerializer(game, data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        update_game(game, serializer.validated_data)
+        try:
+            with transaction.atomic():
+                update_game(game, serializer.validated_data)
+        except (OperationalError, IntegrityError):
+            return Response({}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
 
         return Response({})
 
     @action(detail=False, methods=["get"], permission_classes=[])
     def live_games(self, request):
-        return Response(Game.objects.filter(end_datetime__isnull=True, dnf=False).values("id"))
+        return Response(
+            Game.objects.filter(end_datetime__isnull=True, dnf=False).values("id")
+        )
 
 
 class RankedFacecardsView(viewsets.ViewSet):
