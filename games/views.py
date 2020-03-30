@@ -158,6 +158,10 @@ class GameViewSet(viewsets.ReadOnlyModelViewSet):
 
         return Response({})
 
+    @action(detail=False, methods=["get"], permission_classes=[])
+    def live_games(self, request):
+        return Response(Game.objects.filter(end_datetime__isnull=True, dnf=False).values("id"))
+
 
 class RankedFacecardsView(viewsets.ViewSet):
     permission_classes = (IsAuthenticatedOrReadOnly,)
