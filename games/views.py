@@ -131,6 +131,7 @@ class GameViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = GameSerializer
     permission_classes = (CreateOrAuthenticated,)
     pagination_class = OneResultSetPagination
+    lookup_value_regex = "\\d+"
 
     def retrieve(self, request, pk=None):
         game = get_object_or_404(Game, pk=pk)
@@ -199,6 +200,7 @@ class RankedFacecardsView(viewsets.ViewSet):
 
 class PlayerStatViewSet(viewsets.ViewSet):
     permission_classes = (IsAuthenticatedOrReadOnly,)
+    lookup_value_regex = "\\d+"
 
     def retrieve(self, request, pk=None):
         user = get_object_or_404(User, pk=pk)

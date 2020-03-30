@@ -240,3 +240,9 @@ class ApiTest(TransactionTestCase):
             s2 = f2.result().status_code
 
             self.assertLessEqual({s1, s2}, {200, 503}, [s1, s2])
+
+    def test_non_integer_game_id(self):
+        r = self.client.get("/api/games/foo/")
+        self.assertEqual(r.status_code, 404)
+        r = self.client.get("/api/stats/foo/")
+        self.assertEqual(r.status_code, 404)
