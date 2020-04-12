@@ -12,6 +12,7 @@ urlpatterns = [
     path("ranking/", views.RankingView.as_view(), name="ranking"),
     path("settings/", views.UserSettingsView.as_view(), name="settings"),
     path("stats/", views.StatsView.as_view(), name="stats"),
+    path("race/", views.RaceView.as_view(), name="race"),
     path("login/", views.MyLoginView.as_view(), name="login"),
     path("logout/", views.MyLogoutView.as_view(), name="logout"),
     path(

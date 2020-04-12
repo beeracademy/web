@@ -1,0 +1,55 @@
+{% extends "container.html" %}
+
+{% load static %}
+
+{% block pagetitle %}Race{% endblock %}
+
+{% block content %}
+
+<h2 id="date"></h2>
+
+<div id="race_chart"></div>
+
+{% endblock %}
+
+{% block scripts %}
+
+<script src="{% static "/js/race_data.js" %}"></script>
+
+<script>
+	var options = {
+		chart: {
+			type: "bar",
+			height: 350,
+		},
+		plotOptions: {
+			bar: {
+				horizontal: true,
+			},
+		},
+		dataLabels: {
+			enabled: true,
+		},
+		series: [],
+	};
+
+	var chart = new ApexCharts(document.querySelector("#race_chart"), options);
+	chart.render();
+
+	var idx = 0;
+	function renderNext() {
+		chart.updateSeries([{data: race_data[idx][1]}]);
+
+		document.querySelector("#date").innerText = moment(new Date(race_data[idx][0] * 1000)).format("YYYY-MM-DD");
+
+		idx++;
+
+		if (idx < race_data.length) {
+			var diff = race_data[idx][0] - race_data[idx - 1][0];
+			setTimeout(renderNext, diff / 100000);
+		}
+	}
+
+	renderNext();
+</script>
+{% endblock %}

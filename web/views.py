@@ -589,3 +589,7 @@ class StatsView(TemplateView):
                 row.append(dist(chugs) * 100 if chugs <= pcount else None)
 
         return context
+
+
+class RaceView(TemplateView):
+    template_name = "race.html"
