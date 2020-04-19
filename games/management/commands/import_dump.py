@@ -3,12 +3,12 @@ import datetime
 from collections import Counter
 
 import pytz
+
 from django.core.files import File
 from django.core.management.base import BaseCommand
 from django.db.utils import IntegrityError
-from tqdm import tqdm
-
 from games.models import Card, Chug, Game, GamePlayer, User
+from tqdm import tqdm
 
 
 class Command(BaseCommand):

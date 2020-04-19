@@ -3,10 +3,9 @@
 import django.contrib.auth.validators
 import django.db.models.deletion
 import django.utils.timezone
+import games.models
 from django.conf import settings
 from django.db import migrations, models
-
-import games.models
 
 
 class Migration(migrations.Migration):

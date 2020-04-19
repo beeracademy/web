@@ -2,7 +2,6 @@ import argparse
 import json
 
 from django.core.management.base import BaseCommand, CommandError
-
 from games.models import Game
 from games.serializers import GameSerializer
 from games.views import update_game

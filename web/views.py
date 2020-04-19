@@ -31,8 +31,6 @@ from django.db.models import (
 from django.shortcuts import render
 from django.utils import timezone
 from django.views.generic import DetailView, ListView, TemplateView, UpdateView
-from scipy.stats import hypergeom, norm
-
 from games.achievements import ACHIEVEMENTS
 from games.models import (
     Card,
@@ -46,6 +44,7 @@ from games.models import (
 )
 from games.ranking import RANKINGS, get_ranking_from_key
 from games.serializers import GameSerializerWithPlayerStats, UserSerializer
+from scipy.stats import hypergeom, norm
 
 from .forms import UserSettingsForm
 from .utils import (

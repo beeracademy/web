@@ -1,6 +1,5 @@
 from django.test import Client, TestCase
 from django.utils import timezone
-
 from games.models import Card, Chug, Game, GamePlayer, User
 
 

@@ -4,7 +4,6 @@ from urllib.parse import urlencode
 
 from django.urls import reverse
 from django.utils.html import format_html
-
 from rest_framework import serializers
 from rest_framework.authtoken.models import Token
 

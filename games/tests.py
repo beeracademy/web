@@ -4,7 +4,6 @@ from copy import deepcopy
 
 from django.test import TransactionTestCase
 from django.utils import timezone
-
 from games.models import Card, Game, User
 from rest_framework.test import APIClient
 

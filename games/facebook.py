@@ -1,5 +1,4 @@
 from django.conf import settings
-
 from facebook import GraphAPI, GraphAPIError
 
 

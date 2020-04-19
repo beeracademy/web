@@ -1,13 +1,13 @@
 import base64
 from io import BytesIO
 
+from PIL import Image
+
 from django import forms
 from django.contrib.auth.password_validation import (
     get_default_password_validators,
     validate_password,
 )
-from PIL import Image
-
 from games.models import User
 
 validators_help_text = "<br>".join(
