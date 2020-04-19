@@ -82,8 +82,8 @@ def update_stats_on_game_finished(game):
 
 class GamePlayerStat(models.Model):
     gameplayer = models.OneToOneField("GamePlayer", on_delete=models.CASCADE)
-    value_sum = models.PositiveIntegerField()
-    chugs = models.PositiveIntegerField()
+    value_sum = models.PositiveIntegerField(default=0)
+    chugs = models.PositiveIntegerField(default=0)
 
     @classmethod
     def recalculate_all(cls):
@@ -97,7 +97,7 @@ class GamePlayerStat(models.Model):
             return
 
         stats = [
-            GamePlayerStat.objects.create(gameplayer=gp, value_sum=0, chugs=0)
+            GamePlayerStat.objects.get_or_create(gameplayer=gp)[0]
             for gp in game.ordered_gameplayers()
         ]
 

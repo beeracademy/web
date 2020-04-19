@@ -72,7 +72,12 @@ class UploadForm(forms.ModelForm):
         )
 
         s = GameSerializer(
-            game, data=data, context={"fix_times": self.cleaned_data["fix_times"]}
+            game,
+            data=data,
+            context={
+                "fix_times": self.cleaned_data["fix_times"],
+                "ignore_finished": True,
+            },
         )
         if not s.is_valid():
             raise forms.ValidationError(str(s.errors))
