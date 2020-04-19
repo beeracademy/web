@@ -193,7 +193,7 @@ class GameSerializer(serializers.ModelSerializer):
             )
 
         increasing_datetimes = [
-            self.instance.start_datetime,
+            data["start_datetime"],
             *(d["drawn_datetime"] for d in new_cards),
         ]
         end_dt = data.get("end_datetime")
