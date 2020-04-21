@@ -1,10 +1,1 @@
-<div class="dropdown">
-	<button class="btn btn-danger dropdown-toggle col-md-auto" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-	{{ season }}
-	</button>
-	<div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-		{% for season, url in season_urls %}
-		<a class="dropdown-item" href="{{ url }}">{{ season }}</a>
-		{% endfor %}
-	</div>
-</div>
+{% include "chooser.html" with chooser=season_chooser %}

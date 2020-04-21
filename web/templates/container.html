@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% load bootstrap4 %}
+
+{% block body %}
+<div class="wrapper">
+    {% include "nav.html" %}
+
+    <main class="container">
+        {% bootstrap_messages %}
+        {% block content %}{% endblock %}
+    </main>
+    
+    <div class="push"></div>
+</div>
+
+{% include "footer.html" %}
+{% endblock %}

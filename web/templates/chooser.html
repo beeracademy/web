@@ -1,0 +1,10 @@
+<div class="dropdown" style="display: inline-block;">
+	<button class="btn btn-danger dropdown-toggle col-md-auto" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+	{{ chooser.current_str }}
+	</button>
+	<div class="dropdown-menu" aria-labelledby="dropdownMenuButton" style="z-index: 1000000;">
+		{% for str, url in chooser.urls %}
+		<a class="dropdown-item" href="{{ url }}">{{ str }}</a>
+		{% endfor %}
+	</div>
+</div>

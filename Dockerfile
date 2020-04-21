@@ -2,10 +2,9 @@ FROM node:12-alpine as builder
 
 COPY /svelte .
 
-RUN npm install
-RUN npx rollup -c
+RUN yarn install --frozen-lockfile && yarn build
 
-FROM python:3.7
+FROM python:3.8
 
 RUN pip install --no-cache-dir poetry
 RUN poetry config virtualenvs.create false

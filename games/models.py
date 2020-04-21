@@ -1,15 +1,18 @@
+import datetime
 import os
+
 import pytz
-from django.db import models
-from django.db.models import Q
+from PIL import Image
+
 from django.contrib.auth.models import AbstractUser, UserManager
-from django.contrib.staticfiles.templatetags.staticfiles import static
+from django.db import models
+from django.db.models import Count, DurationField, ExpressionWrapper, F, Q, Subquery
+from django.templatetags.static import static
+from django.urls import reverse
 from django.utils import timezone
 from django.utils.html import mark_safe
-from django.urls import reverse
-import datetime
 from tqdm import tqdm
-from PIL import Image
+
 from .seed import shuffle_with_seed
 
 
@@ -44,6 +47,94 @@ def filter_season(qs, season, key=None, should_include_live=False):
         q |= Q(**{f"{end_key}__isnull": True, f"{key}dnf": False})
 
     return qs.filter(q)
+
+
+def filter_player_count(qs, player_count, key=None):
+    if player_count == None:
+        return qs
+
+    if key:
+        key += "__"
+    else:
+        key = ""
+
+    gameplayer_key = key + "gameplayer"
+
+    return qs.annotate(player_count=Count(gameplayer_key)).filter(
+        player_count=player_count
+    )
+
+
+def filter_season_and_player_count(qs, season, player_count, key=None):
+    return filter_player_count(filter_season(qs, season, key), player_count, key)
+
+
+def recalculate_all_stats():
+    PlayerStat.recalculate_all()
+    GamePlayerStat.recalculate_all()
+
+
+def update_stats_on_game_finished(game):
+    print("Updating player stats...")
+    PlayerStat.update_on_game_finished(game)
+    print("Updating game player stats...")
+    GamePlayerStat.update_on_game_finished(game)
+
+
+class GamePlayerStat(models.Model):
+    gameplayer = models.OneToOneField("GamePlayer", on_delete=models.CASCADE)
+    value_sum = models.PositiveIntegerField(default=0)
+    chugs = models.PositiveIntegerField(default=0)
+
+    @classmethod
+    def recalculate_all(cls):
+        GamePlayerStat.objects.all().delete()
+        for game in tqdm(Game.objects.all()):
+            cls.update_on_game_finished(game)
+
+    @classmethod
+    def update_on_game_finished(cls, game):
+        if not game.is_completed:
+            return
+
+        stats = [
+            GamePlayerStat.objects.get_or_create(gameplayer=gp)[0]
+            for gp in game.ordered_gameplayers()
+        ]
+
+        for round_cards in game.cards_by_round():
+            for i, c in enumerate(round_cards):
+                stats[i].value_sum += c.value
+                stats[i].chugs += c.value == Chug.VALUE
+
+        for s in stats:
+            s.save()
+
+    @classmethod
+    def get_stats_with_player_count(cls, season, player_count):
+        return filter_season_and_player_count(
+            cls.objects, season, player_count, "gameplayer__game"
+        )
+
+    @classmethod
+    def get_distribution(cls, field, season, player_count):
+        sq = Subquery(
+            cls.get_stats_with_player_count(season, player_count).values("id")
+        )
+        return (
+            GamePlayerStat.objects.filter(id__in=sq)
+            .values(value=F(field))
+            .annotate(Count("value"))
+            .order_by(field)
+        )
+
+    @classmethod
+    def get_sips_distribution(cls, season, player_count):
+        return cls.get_distribution("value_sum", season, player_count)
+
+    @classmethod
+    def get_chugs_distribution(cls, season, player_count):
+        return cls.get_distribution("chugs", season, player_count)
 
 
 class PlayerStat(models.Model):
@@ -378,6 +469,14 @@ class Game(models.Model):
     official = models.BooleanField(default=True)
     dnf = models.BooleanField(default=False)
 
+    @staticmethod
+    def add_durations(qs):
+        return qs.annotate(
+            duration=ExpressionWrapper(
+                F("end_datetime") - F("start_datetime"), DurationField()
+            )
+        )
+
     def __str__(self):
         return f"{self.datetime}: {self.players_str()}"
 
@@ -515,6 +614,7 @@ class Game(models.Model):
             total_times = [None] * n
             total_done = [None] * n
 
+        ordered_players = self.ordered_players()
         for i in range(n):
             full_beers = total_sips[i] // self.sips_per_beer
             extra_sips = total_sips[i] % self.sips_per_beer
@@ -529,6 +629,8 @@ class Game(models.Model):
                 time_per_sip = div_or_none(total_times[i], total_sips[i])
 
             yield {
+                "id": ordered_players[i].id,
+                "username": ordered_players[i].username,
                 "total_sips": total_sips[i],
                 "sips_per_turn": div_or_none(total_sips[i], total_drawn[i]),
                 "full_beers": full_beers,

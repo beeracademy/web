@@ -1,0 +1,36 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Build image
+      run: docker build -t beeracademy/web .
+
+    - name: Run tests
+      run: docker run --env DJANGO_SETTINGS_MODULE=academy.settings.development beeracademy/web ./manage.py test
+
+    - name: Publish image to Docker Hub
+      run: |
+        echo "$DOCKER_PASSWORD" | docker login --username "$DOCKER_USERNAME" --password-stdin
+        docker push beeracademy/web
+      env:
+        DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+        DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+
+    - name: Deploy image to production
+      run: |
+        for url in $WEBHOOK_URLS; do
+          curl -X POST "$url"
+        done
+      env:
+        WEBHOOK_URLS: ${{ secrets.WEBHOOK_URLS }}

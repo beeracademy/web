@@ -1,20 +1,32 @@
+from django.db import transaction
+from django.db.utils import IntegrityError, OperationalError
 from django.shortcuts import get_object_or_404
-from rest_framework import viewsets, serializers
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
-from rest_framework.authtoken.views import ObtainAuthToken
+from rest_framework import serializers, status, viewsets
 from rest_framework.authtoken.models import Token
-from rest_framework.response import Response
+from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
-from .models import User, Game, Card, Chug, PlayerStat, GamePlayer, Season
-from .ranking import RANKINGS
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.response import Response
+
 from .facebook import post_to_page
+from .models import (
+    Card,
+    Chug,
+    Game,
+    GamePlayer,
+    PlayerStat,
+    Season,
+    User,
+    update_stats_on_game_finished,
+)
+from .ranking import RANKINGS
 from .serializers import (
-    UserSerializer,
+    CreateGameSerializer,
     GameSerializer,
     GameSerializerWithPlayerStats,
-    CreateGameSerializer,
     PlayerStatSerializer,
+    UserSerializer,
 )
 
 
@@ -114,7 +126,7 @@ def update_game(game, data):
     game.save()
 
     if game.has_ended and not game_already_ended:
-        PlayerStat.update_on_game_finished(game)
+        update_stats_on_game_finished(game)
 
 
 class OneResultSetPagination(PageNumberPagination):
@@ -127,6 +139,7 @@ class GameViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = GameSerializer
     permission_classes = (CreateOrAuthenticated,)
     pagination_class = OneResultSetPagination
+    lookup_value_regex = "\\d+"
 
     def retrieve(self, request, pk=None):
         game = get_object_or_404(Game, pk=pk)
@@ -152,9 +165,19 @@ class GameViewSet(viewsets.ReadOnlyModelViewSet):
         serializer = GameSerializer(game, data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        update_game(game, serializer.validated_data)
+        try:
+            with transaction.atomic():
+                update_game(game, serializer.validated_data)
+        except (OperationalError, IntegrityError):
+            return Response({}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
 
         return Response({})
+
+    @action(detail=False, methods=["get"], permission_classes=[])
+    def live_games(self, request):
+        return Response(
+            Game.objects.filter(end_datetime__isnull=True, dnf=False).values("id")
+        )
 
 
 class RankedFacecardsView(viewsets.ViewSet):
@@ -185,6 +208,7 @@ class RankedFacecardsView(viewsets.ViewSet):
 
 class PlayerStatViewSet(viewsets.ViewSet):
     permission_classes = (IsAuthenticatedOrReadOnly,)
+    lookup_value_regex = "\\d+"
 
     def retrieve(self, request, pk=None):
         user = get_object_or_404(User, pk=pk)

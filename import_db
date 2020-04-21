@@ -17,7 +17,7 @@ echo "Dumping and downloading production database..."
 
 fixture=$(mktemp --suffix .json)
 
-ssh academy.beer 'sudo docker exec academy.beer ./manage.py dumpdata --natural-foreign --exclude auth.permission --exclude contenttypes' > "$fixture"
+ssh academy.beer 'sudo docker ps --no-trunc --format "{{.ID}} {{.Names}}" | grep " academy-beer_app" | cut -f1 -d" " | xargs -I + sudo docker exec + ./manage.py dumpdata --natural-foreign --exclude auth.permission --exclude contenttypes' > "$fixture"
 
 echo "Importing production database..."
 echo

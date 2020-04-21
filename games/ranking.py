@@ -1,5 +1,6 @@
-from .models import PlayerStat
 import datetime
+
+from .models import PlayerStat
 
 
 def add_thousand_seperators(value):

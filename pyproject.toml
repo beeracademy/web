@@ -1,5 +1,5 @@
 [tool.black]
-target-version = ['py37']
+target-version = ['py38']
 exclude = '''
 
 (
@@ -19,6 +19,13 @@ exclude = '''
 )
 '''
 
+[tool.isort]
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+use_parentheses = true
+line_length = 88
+
 [tool.poetry]
 name = "academy"
 version = "0.1.0"
@@ -26,25 +33,27 @@ description = ""
 authors = []
 
 [tool.poetry.dependencies]
-python = "^3.7"
-django = "~2.2"
-django-extensions = "^2.2"
-ipython = "^7.7"
-pillow = "^6.1"
-bcrypt = "^3.1"
-djangorestframework = "^3.10"
-django-filter = "^2.2"
-tqdm = "^4.32"
-django-bootstrap4 = "^0.0.8"
-gunicorn = "^19.9"
-python-dotenv = "^0.10.3"
-whitenoise = "^4.1"
-psycopg2 = "^2.8"
-django-debug-toolbar = "^2.0"
-facebook-sdk = "^3.1"
-celery = "^4.3"
-django-celery-beat = "^1.5"
-django-constance = {version = "^2.5", extras = ["database"]}
+python = "^3.8"
+django = "~3.0"
+django-extensions = "*"
+ipython = "*"
+pillow = "*"
+bcrypt = "*"
+djangorestframework = "*"
+django-filter = "*"
+tqdm = "*"
+django-bootstrap4 = "*"
+python-dotenv = "*"
+whitenoise = "*"
+psycopg2 = "*"
+django-debug-toolbar = "*"
+facebook-sdk = "*"
+celery = {extras = ["redis"], version = "*"}
+django-celery-beat = "*"
+django-constance = {version = "*", extras = ["database"]}
+scipy = "*"
+channels = "*"
+channels_redis = "*"
 
 [tool.poetry.dev-dependencies]
 

@@ -1,3 +1,6 @@
+import os
+import sys
+
 from .base import *
 
 ALLOWED_HOSTS = ["*"]
@@ -8,3 +11,8 @@ SECRET_KEY = "finish him!"
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 PLAY_URL = "http://localhost:4200"
+
+AUTOLOGIN_USERNAME = os.environ.get("AUTOLOGIN_USERNAME")
+
+if sys.argv[1:2] != ["test"]:
+    MIDDLEWARE += ["academy.autologin.AutologinMiddleware"]

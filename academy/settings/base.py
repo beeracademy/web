@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 
 import os
 
+from dotenv import load_dotenv
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -29,6 +31,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django.contrib.humanize",
     "django_extensions",
+    "channels",
     "debug_toolbar",
     "constance",
     "constance.backends.database",
@@ -37,6 +40,7 @@ INSTALLED_APPS = [
     "bootstrap4",
     "django_celery_beat",
     "svelte",
+    "chat",
     "games",
     "web",
 ]
@@ -75,8 +79,11 @@ TEMPLATES = [
     }
 ]
 
-WSGI_APPLICATION = "academy.wsgi.application"
+ASGI_APPLICATION = "academy.routing.application"
 
+CHANNEL_LAYERS = {
+    "default": {"BACKEND": "channels.layers.InMemoryChannelLayer",},
+}
 
 # Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
@@ -166,3 +173,6 @@ CONSTANCE_CONFIG = {
     "BANNER_COLOR": ("#0094c4", "Banner color", str),
     "BANNER_BLINK": (False, "Should banner text blink?", bool),
 }
+
+
+load_dotenv()

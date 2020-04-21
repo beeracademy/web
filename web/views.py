@@ -1,39 +1,61 @@
-from django.shortcuts import render
-from django.db.models import Case, When, Value, IntegerField, DateTimeField, Count, F
-from django.core.files import File
+import datetime
+import random
+import re
+from collections import Counter
+from math import sqrt
+from urllib.parse import urlencode
+
+from scipy.stats import hypergeom, norm
+
 from django.contrib import messages
 from django.contrib.auth import update_session_auth_hash
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import (
     LoginView,
     LogoutView,
-    PasswordResetView,
-    PasswordResetDoneView,
-    PasswordResetConfirmView,
     PasswordResetCompleteView,
+    PasswordResetConfirmView,
+    PasswordResetDoneView,
+    PasswordResetView,
 )
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.utils import timezone
-from django.views.generic import DetailView, ListView, UpdateView
+from django.core.files import File
 from django.core.paginator import Paginator
+from django.db.models import (
+    Case,
+    Count,
+    DateTimeField,
+    F,
+    IntegerField,
+    Sum,
+    Value,
+    When,
+)
+from django.shortcuts import render
+from django.utils import timezone
+from django.views.generic import DetailView, ListView, TemplateView, UpdateView
+from games.achievements import ACHIEVEMENTS
 from games.models import (
-    User,
+    Card,
+    Chug,
     Game,
     GamePlayer,
-    Card,
-    Season,
-    all_time_season,
+    GamePlayerStat,
+    User,
     filter_season,
-    Chug,
+    filter_season_and_player_count,
 )
 from games.ranking import RANKINGS, get_ranking_from_key
 from games.serializers import GameSerializerWithPlayerStats, UserSerializer
-from .utils import updated_query_url
+
 from .forms import UserSettingsForm
-import datetime
-from urllib.parse import urlencode
-from collections import Counter
-import random
-import re
+from .utils import (
+    GameOrder,
+    PlayerCountChooser,
+    RankingChooser,
+    SeasonChooser,
+    round_timedelta,
+    updated_query_url,
+)
 
 RANKING_PAGE_LIMIT = 15
 
@@ -143,7 +165,11 @@ class PaginatedListView(ListView):
         object_list = paginator.get_page(page)
         context["object_list"] = object_list
 
-        page_url = lambda page: updated_query_url(self.request, {"page": page})
+        def page_url(page):
+            if page == 1:
+                page = None
+
+            return updated_query_url(self.request, {"page": page})
 
         # We want to preserve other query parameters, when changing pages
         context["paginator_first_url"] = page_url(1)
@@ -164,38 +190,62 @@ class GameListView(PaginatedListView):
     model = Game
     template_name = "game_list.html"
 
+    def get(self, request):
+        self.order = GameOrder(request)
+        return super().get(request)
+
     def get_queryset(self):
-        season = get_season(self.request)
+        season = SeasonChooser(self.request).current
         qs = filter_season(Game.objects, season, should_include_live=True)
 
         query = self.request.GET.get("query", "")
-        usernames = re.split(r"[\s,]", query)
-        for username in usernames:
-            if username != "":
-                qs = qs.filter(players__username__icontains=username.strip())
+        parts = re.split(r"[\s,]", query)
+        for part in parts:
+            part = part.strip()
+            if part != "":
+                if part[0] == "#":
+                    # Filter by hashtag in description
+                    qs = qs.filter(description__icontains=part)
+                else:
+                    # Filter by username
+                    qs = qs.filter(players__username__icontains=part)
 
-        # First show live games (but not dnf games),
-        # then show all other games sorted by
-        # end_datetime if it is not null,
-        # otherwise use start_datetime instead
-        return qs.distinct().order_by(
-            Case(
-                When(end_datetime__isnull=True, dnf=False, then=Value(0)),
-                default=Value(1),
-                output_field=IntegerField(),
-            ),
-            Case(
-                When(end_datetime__isnull=True, then="start_datetime"),
-                default="end_datetime",
-                output_field=DateTimeField(),
-            ).desc(),
-        )
+        qs = qs.distinct()
+
+        if self.order.current_column == "end_datetime":
+            # First show live games (but not dnf games),
+            # then show all other games sorted by
+            # end_datetime if it is not null,
+            # otherwise use start_datetime instead
+            qs = qs.order_by(
+                Case(
+                    When(end_datetime__isnull=True, dnf=False, then=Value(0)),
+                    default=Value(1),
+                    output_field=IntegerField(),
+                ),
+                Case(
+                    When(end_datetime__isnull=True, then="start_datetime"),
+                    default="end_datetime",
+                    output_field=DateTimeField(),
+                ).desc(),
+            )
+            if self.order.reverse:
+                qs = qs.reverse()
+        elif self.order.current_column == "duration":
+            qs = Game.add_durations(qs)
+
+            # Always show games with unknown duration last
+            if self.order.reverse:
+                qs = qs.order_by(F("duration").desc(nulls_last=True))
+            else:
+                qs = qs.order_by(F("duration").asc(nulls_last=True))
+
+        return qs
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        season = get_season(self.request)
-        context["season"] = season
         context["query"] = self.request.GET.get("query", "")
+        context["order"] = self.order
         return context
 
 
@@ -236,14 +286,6 @@ class PlayerListView(PaginatedListView):
         return context
 
 
-def get_season(request):
-    season_number = request.GET.get("season")
-    if Season.is_valid_season_number(season_number):
-        return Season(int(season_number))
-    else:
-        return all_time_season
-
-
 class PlayerDetailView(DetailView):
     model = User
     template_name = "player_detail.html"
@@ -253,9 +295,19 @@ class PlayerDetailView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        season = get_season(self.request)
-        context["season"] = season
+        season = SeasonChooser(self.request).current
         context["stats"] = self.object.stats_for_season(season)
+
+        context["achievements"] = []
+        for achievement in ACHIEVEMENTS:
+            context["achievements"].append(
+                {
+                    "achieved": achievement.has_achieved(self.object),
+                    "name": achievement.name,
+                    "description": achievement.description,
+                    "icon_url": f"/static/achievements/{achievement.icon}.svg",
+                }
+            )
 
         context["rankings"] = []
         for ranking in RANKINGS:
@@ -273,7 +325,6 @@ class PlayerDetailView(DetailView):
                 games_played[g.end_datetime.date()] += 1
 
         HEATMAP_WEEKS = 53
-        context["heatmap_data"] = {"labels": [""] * HEATMAP_WEEKS, "datasets": []}
 
         today = timezone.now().date()
         weekday = today.weekday()
@@ -289,19 +340,30 @@ class PlayerDetailView(DetailView):
         ]
         DAY_NAMES = DAY_NAMES[weekday + 1 :] + DAY_NAMES[: weekday + 1]
 
+        series = []
+        dates = []
+        categories = []
         for d in DAY_NAMES:
-            context["heatmap_data"]["datasets"].append({"label": d, "data": []})
+            series.append({"name": d, "data": []})
+            dates.append([])
 
         date = today - datetime.timedelta(days=HEATMAP_WEEKS * 7 - 1)
         for i in range(HEATMAP_WEEKS * 7):
-            if i % 7 == 0 and date.day <= 7:
-                week = i // 7
-                context["heatmap_data"]["labels"][week] = date.strftime("%b")
+            if i % 7 == 0:
+                if date.day <= 7:
+                    categories.append(date.strftime("%b"))
+                else:
+                    categories.append("")
 
-            context["heatmap_data"]["datasets"][i % 7]["data"].append(
-                games_played[date]
-            )
+            series[i % 7]["data"].append(games_played[date])
+            dates[i % 7].append(date)
             date += datetime.timedelta(days=1)
+
+        context["heatmap_data"] = {
+            "series": series,
+            "categories": categories,
+            "dates": dates,
+        }
 
         return context
 
@@ -340,35 +402,21 @@ class RankingView(PaginatedListView):
     template_name = "ranking.html"
     page_limit = RANKING_PAGE_LIMIT
 
-    def get_ranking(self):
-        ranking_type = self.request.GET.get("type")
-        return get_ranking_from_key(ranking_type) or RANKINGS[0]
+    def get(self, request):
+        self.season = SeasonChooser(request).current
+        return super().get(request)
 
     def get_queryset(self):
-        season = get_season(self.request)
-        ranking = self.get_ranking()
-        return ranking.get_qs(season)
+        ranking_type = self.request.GET.get("type")
+        ranking = get_ranking_from_key(ranking_type) or RANKINGS[0]
+        return ranking.get_qs(self.season)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        season = get_season(self.request)
-        context["season"] = season
 
-        ranking_urls = []
-        for ranking in RANKINGS:
-            ranking_urls.append(
-                (
-                    ranking.name,
-                    updated_query_url(
-                        self.request, {"type": ranking.key, "page": None}
-                    ),
-                )
-            )
-
-        context["ranking_tabs"] = ranking_urls
-
-        ranking = self.get_ranking()
-        context["ranking"] = {"name": ranking.name}
+        ranking_chooser = RankingChooser(self.request)
+        context["ranking_chooser"] = ranking_chooser
+        ranking = ranking_chooser.current
 
         object_list = context["object_list"]
         start_index = object_list.start_index()
@@ -378,9 +426,166 @@ class RankingView(PaginatedListView):
             o.game = ranking.get_game(o)
 
         if self.request.user.is_authenticated:
-            context["user_rank"] = ranking.get_rank(self.request.user, season)
+            context["user_rank"] = ranking.get_rank(self.request.user, self.season)
             context["user_rank_url"] = get_ranking_url(
-                ranking, self.request.user, season
+                ranking, self.request.user, self.season
             )
+
+        return context
+
+
+SIPS_MEAN = sum(range(2, 14 + 1))
+CARD_MEAN = SIPS_MEAN / 13
+SIPS_VAR = sum((CARD_MEAN - i) ** 2 for i in range(2, 14 + 1))
+
+
+class StatsView(TemplateView):
+    template_name = "stats.html"
+
+    @classmethod
+    def sips_count_distribution(cls, player_count):
+        """
+        Approximate probability of getting exactly x sips.
+
+        Approximated using a normal distribution where the mean is known,
+        but the variance is estimated using a finite population correction.
+
+        Futhermore a continuity correction is used.
+
+        See https://math.stackexchange.com/a/1300566/19750
+        """
+        mean = SIPS_MEAN + 0.5
+        total_cards = 13 * player_count
+        fpc = (total_cards - 13) / (total_cards - 1)
+        var = SIPS_VAR * fpc
+        return norm(mean, sqrt(var)).pdf, f"N({mean}, {var:.2f})"
+
+    @classmethod
+    def chug_count_distribution(cls, player_count):
+        # Exact probability
+        N = 13 * player_count
+        K = player_count
+        n = 13
+        rv = hypergeom(N, K, n)
+        return rv.pmf, f"HyperGeometric({N}, {K}, {n})"
+
+    @classmethod
+    def combined_distribution(cls, season, dist_f):
+        ds = []
+        ws = []
+        for player_count in range(2, 6 + 1):
+            ds.append(dist_f(player_count))
+            ws.append(
+                GamePlayerStat.get_stats_with_player_count(season, player_count).count()
+            )
+
+        total_ws = sum(ws)
+
+        return (
+            lambda x: sum(d[0](x) * w / total_ws for d, w in zip(ds, ws)),
+            "\n" + " + \n".join(f"{w / total_ws:.2f} * {d[1]}" for d, w in zip(ds, ws)),
+        )
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        season = SeasonChooser(self.request).current
+
+        chooser = PlayerCountChooser(self.request)
+        context["player_count_chooser"] = chooser
+        player_count = chooser.current
+
+        games = filter_season_and_player_count(Game.objects, season, player_count)
+
+        total_sips = (
+            Card.objects.filter(game__id__in=games).aggregate(total_sips=Sum("value"))[
+                "total_sips"
+            ]
+            or 0
+        )
+
+        games_with_durations = Game.add_durations(games)
+
+        total_duration = games_with_durations.aggregate(total_duration=Sum("duration"))[
+            "total_duration"
+        ] or datetime.timedelta(0)
+
+        context["game_stats"] = {
+            "total_games": games.count(),
+            "total_dnf": games.filter(dnf=True).count(),
+            "total_sips": total_sips,
+            "total_beers": total_sips / 14,
+            "total_duration": str(round_timedelta(total_duration)),
+        }
+
+        stat_types = {
+            "sips_data": (
+                GamePlayerStat.get_sips_distribution(season, player_count),
+                self.sips_count_distribution,
+            ),
+            "chugs_data": (
+                GamePlayerStat.get_chugs_distribution(season, player_count),
+                self.chug_count_distribution,
+            ),
+        }
+
+        for name, (stats, prob_f) in stat_types.items():
+            xs = []
+            ys = []
+            probs = []
+            dist_str = None
+            if stats.exists():
+                d = {s["value"]: s["value__count"] for s in stats}
+                if prob_f:
+                    if player_count == None:
+                        dist, dist_str = self.combined_distribution(season, prob_f)
+                    else:
+                        dist, dist_str = prob_f(player_count)
+
+                for x in range(stats.first()["value"], stats.last()["value"] + 1):
+                    xs.append(x)
+                    ys.append(d.get(x, 0))
+
+                    if dist:
+                        probs.append(dist(x))
+
+            context[name] = {
+                "xs": xs,
+                "ys": ys,
+                "total_ys": sum(ys),
+                "probs": probs,
+                "probs_exact": name == "chugs_data",
+                "dist_str": dist_str,
+            }
+
+        MAX_HOURS = 4
+        BUCKETS = 60
+
+        max_duration = datetime.timedelta(hours=MAX_HOURS)
+        game_durations = games_with_durations.filter(
+            dnf=False, duration__lte=max_duration,
+        ).values("duration")
+        bucket_span = max_duration / BUCKETS
+        occurrences = Counter()
+        for d in game_durations:
+            duration = d["duration"]
+            x = int(duration / bucket_span)
+            occurrences[x] += 1
+
+        context["duration_data"] = {
+            "games": game_durations.count(),
+            "bucket_span_seconds": bucket_span.total_seconds(),
+            "max_hours": MAX_HOURS,
+            "xs": [str((i + 1) * bucket_span) for i in range(BUCKETS)],
+            "ys": [occurrences[i] for i in range(BUCKETS)],
+        }
+
+        context["chug_table_header"] = ["Players\xa0\\\xa0Chugs", *range(6 + 1)]
+        context["chug_table"] = []
+        for pcount in range(2, 6 + 1):
+            row = [pcount]
+            context["chug_table"].append(row)
+            dist, _ = self.chug_count_distribution(pcount)
+            for chugs in range(6 + 1):
+                row.append(dist(chugs) * 100 if chugs <= pcount else None)
 
         return context

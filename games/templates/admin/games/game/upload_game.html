@@ -3,6 +3,55 @@
 <script>
   (function ($) {
     $(function() {
+      var HOUR = 60 * 60 * 1000;
+
+      function set_data(data) {
+        var indented = JSON.stringify(data, null, 2);
+        $("#id_game_log").text(indented);
+      }
+
+      function fix_timezone_shifts() {
+        var data = JSON.parse($("#id_game_log").text());
+
+        var ds = [new Date(data.start_datetime)];
+        for (var i = 0; i < data.cards.length; i++) {
+            ds.push(new Date(data.cards[i].drawn_datetime));
+        }
+        ds.push(new Date(data.end_datetime));
+
+        for (var i = 1; i < ds.length; i++) {
+            var diff = ds[i] - ds[i - 1];
+            var hour_diff = Math.round(diff / HOUR);
+            ds[i] = new Date(ds[i].getTime() - hour_diff * HOUR);
+        }
+
+        data.start_datetime = ds[0].toISOString();
+        data.end_datetime = ds[ds.length - 1].toISOString();
+
+        for (var i = 0; i < data.cards.length; i++) {
+            data.cards[i].drawn_datetime = ds[i + 1].toISOString();
+        }
+
+        set_data(data);
+      }
+
+      var infoText = $("<div>").text("?");
+
+      $("fieldset").prepend(
+        $("<div>").addClass("form-row").append(
+          $("<div>").append(
+            $("<label>").text("Game info in DB:"),
+            infoText,
+          )
+        ),
+        $("<div>").addClass("form-row").append(
+          $("<div>").append(
+            $("<label>").text("Fix timezone shifts:"),
+            $("<button>").attr({type: "button"}).text("Fix").click(fix_timezone_shifts),
+          )
+        )
+      );
+
       var file_input = $("#file_input");
       file_input.change(function() {
         $("#id_game_log").text("");
@@ -16,8 +65,17 @@
               var text = evt.target.result;
               try {
                 var data = JSON.parse(text);
-                var indented = JSON.stringify(data, null, 2);
-                $("#id_game_log").text(indented);
+                set_data(data);
+
+                if (data.id) {
+                  $.get(location.protocol + "//" + location.host + "/api/games/" + data.id + "/", function(db_data) {
+                    var players = db_data.player_stats.length;
+                    var expected_cards = players * 13;
+                    var info = "Players: " + players + ", cards registered: " + db_data.cards.length + " / " + expected_cards;
+
+                    infoText.text(info);
+                  });
+                }
               } catch(e) {
                 alert(e);
               }

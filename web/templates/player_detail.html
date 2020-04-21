@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "container.html" %}
 
 {% load humanize %}
 
@@ -31,15 +31,29 @@
 	</div>
 	<div class="col-md-10 d-none d-lg-block">
 		<div style="display: flex; align-items: center; height: 100%;">
-			<canvas id="heatmap" style="width: 100%; height: 175px;"></canvas>
+			<div id="heatmap" style="width: 100%;"></div>
 		</div>
 	</div>
 </div>
 
 <br>
 
+<h4><i class="fas fa-trophy"></i>  Achievements</h4>
+
+<hr>
+
+<div class="container">
+	<div class="row achievements">
+		{% for achievement in achievements %}
+			<img class="rounder{% if achievement.achieved %} active{% endif %}" src="{{ achievement.icon_url }}" title="{{ achievement.name }}: {{ achievement.description }}">
+		{% endfor %}
+	</div>
+</div>
+
+<br>
+
 <h4>
-	<i class="fas fa-trophy"></i> Rank
+	<i class="fas fa-receipt"></i> Rank
 
 	<div style="float: right; margin-top: -7px;">
 		{% include "season_chooser.html" %}
@@ -140,23 +154,54 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="https://cdn.jsdelivr.net/npm/chart.heatmap.js@0.0.1-alpha/dst/Chart.HeatMap.S.min.js" integrity="sha256-lZtbPyu8/+LnH18+MWYsQjGEWfHgs8ISXNHlyr46NZw=" crossorigin="anonymous"></script>
-
 {{ heatmap_data|json_script:"heatmap_data" }}
 
 <script>
 	var data = JSON.parse(document.getElementById("heatmap_data").textContent);
 
 	var options = {
-		rounded: false,
-		paddingScale: 0.25,
-		colorInterpolation: "palette",
-		colors: ["#ebedf0", "#c6e48b", "#7bc96f", "#239a3b", "#196127"],
-		showLabels: false,
-		tooltipTemplate: "<%= yLabel %>: <%= value %>",
+		series: data.series,
+		xaxis: {
+			categories: data.categories,
+		},
+		grid: {
+			position: 'front',
+			xaxis: {
+				lines: {
+					show: true,
+				},
+			},
+			yaxis: {
+				lines: {
+					show: true,
+				},
+			},
+		},
+		tooltip: {
+			y: {
+				formatter: function(value, args) {
+					var games = value === 1? "game": "games";
+					return value + " " + games + " played";
+				},
+				title: {
+					formatter: function(value, args) {
+						return data.dates[args.seriesIndex][args.dataPointIndex];
+						return value;
+					},
+				},
+			},
+		},
+		chart: {
+			height: 200,
+			type: 'heatmap',
+		},
+		dataLabels: {
+			enabled: false
+		},
+		colors: ["#008FFB"],
 	};
 
-	var ctx = document.getElementById("heatmap").getContext("2d");
-	var chart = new Chart(ctx).HeatMap(data, options);
+	var chart = new ApexCharts(document.getElementById("heatmap"), options);
+	chart.render();
 </script>
 {% endblock %}

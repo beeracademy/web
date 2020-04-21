@@ -1,11 +1,13 @@
+import json
+
 from django import forms
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.views.generic import CreateView
-from .models import User, Game, Card, Chug, GamePlayer
+
+from .models import Card, Chug, Game, GamePlayer, User
 from .serializers import GameSerializer
 from .views import update_game
-import json
 
 
 @admin.register(User)
@@ -70,7 +72,12 @@ class UploadForm(forms.ModelForm):
         )
 
         s = GameSerializer(
-            game, data=data, context={"fix_times": self.cleaned_data["fix_times"]}
+            game,
+            data=data,
+            context={
+                "fix_times": self.cleaned_data["fix_times"],
+                "ignore_finished": True,
+            },
         )
         if not s.is_valid():
             raise forms.ValidationError(str(s.errors))
@@ -79,8 +86,11 @@ class UploadForm(forms.ModelForm):
         self.cleaned_data["validated_data"] = s.validated_data
 
     def save(self, commit=True):
-        update_game(self.cleaned_data["game"], self.cleaned_data["validated_data"])
-        return self.cleaned_data["game"]
+        game = self.cleaned_data["game"]
+        game.dnf = False
+        game.save()
+        update_game(game, self.cleaned_data["validated_data"])
+        return game
 
     def save_m2m(self):
         pass

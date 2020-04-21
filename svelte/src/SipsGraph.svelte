@@ -1,70 +1,75 @@
 <script>
-	export let game_data;
-	export let ordered_gameplayers;
+  export let game_data;
+  export let ordered_gameplayers;
 
-	import { userColors } from "./globals.js";
+  import { onMount } from "svelte";
+  import { userColors } from "./globals.js";
 
-	let canvas;
-	$: {
-		const datasets = [];
-		for (let i = 0; i < game_data.playerCount; i++) {
-			datasets.push({
-				label: ordered_gameplayers[i].user.username,
-				fill: false,
-				lineTension: 0,
-				backgroundColor: userColors[i],
-				borderColor: userColors[i],
-				data: [0],
-			});
-		}
+  let container;
+  let chart;
 
-		for (let i = 0; i < game_data.cards.length; i++) {
-			const data = datasets[i % game_data.playerCount].data;
-			data.push(data[data.length - 1] + game_data.cards[i].value);
-		}
+  let lastLength = -1;
+  function updateChart() {
+    if (!chart) return;
+    if (game_data.cards.length === lastLength) return;
+    lastLength = game_data.cards.length;
 
-		const labels = [];
-		for (let i = 0; i <= 13; i++) {
-			labels.push(i);
-		}
+    const series = [];
+    for (let i = 0; i < game_data.playerCount; i++) {
+      series.push({
+        name: ordered_gameplayers[i].user.username,
+        data: [[0, 0]]
+      });
+    }
 
-		const config = {
-			type: "line",
-			data: {
-				labels: labels,
-				datasets: datasets
-			},
-			options: {
-				responsive: true,
-				animation: false,
-				scales: {
-					xAxes: [{
-						scaleLabel: {
-							display: true,
-							labelString: "Round",
-						},
-						ticks: {
-							min: 0
-						},
-					}],
-					yAxes: [{
-						scaleLabel: {
-							display: true,
-							labelString: "Sips",
-						},
-						ticks: {
-							min: 0
-						},
-					}],
-				},
-			}
-		};
+    for (let i = 0; i < game_data.cards.length; i++) {
+      const data = series[i % game_data.playerCount].data;
+      data.push([
+        data.length,
+        data[data.length - 1][1] + game_data.cards[i].value
+      ]);
+    }
 
-		if (canvas) {
-			const ctx = canvas.getContext("2d");
-			new window.Chart(ctx, config);
-		}
-	}
+    chart.updateSeries(series);
+  }
+
+  onMount(() => {
+    const options = {
+      chart: {
+        type: "line",
+        height: 500
+      },
+      stroke: {
+        curve: "straight"
+      },
+      xaxis: {
+        type: "numeric",
+        title: {
+          text: "Round"
+        },
+        tickAmount: "dataPoints",
+        labels: {
+          formatter: function(value, timestamp, index) {
+            return Math.round(value);
+          }
+        }
+      },
+      yaxis: {
+        title: {
+          text: "Sips"
+        }
+      },
+      colors: userColors,
+      series: []
+    };
+
+    chart = new window.ApexCharts(container, options);
+    chart.render();
+
+    updateChart();
+  });
+
+  $: game_data, updateChart();
 </script>
 
-<canvas bind:this={canvas}></canvas>
+<div bind:this={container} />

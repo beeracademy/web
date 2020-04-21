@@ -6,33 +6,138 @@
 
 {% block styles %}
 <style>
-.card-img-top {
-    width: {{ IMAGE_WIDTH }}px;
-}
-</style>
+    body {
+        display: flex;
+        flex-direction: column;
+    }
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.bundle.min.js" integrity="sha256-xKeoJ50pzbUGkpQxDYHD7o7hxe0LaOGeguUidbq6vis=" crossorigin="anonymous"></script>
+    nav {
+        margin-bottom: 0px !important;
+        flex-grow: 0;
+    }
+
+    .game-wrapper {
+        display: flex;
+        flex: 1;
+        overflow: hidden;
+    }
+
+    .game-wrapper .game {
+        flex: 1;
+        padding: 0px 48px;
+        margin: 0px 5px;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+    .game-wrapper .chat, .game-wrapper .players {
+        width: 340px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .game-wrapper .players {
+        padding: 16px;
+        overflow-y: auto;
+        border-right: 1px solid #dededf;
+    }
+
+    .game-wrapper .chat {
+        border-left: 1px solid #dededf;
+    }
+
+    .game-wrapper .chat .info {
+        height: 64px;
+        border-bottom: 1px solid #dededf;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 1.5em;
+        color: #666;
+        text-transform: uppercase;
+
+    }
+
+    .game-wrapper .chat .messages {
+        display: flex;
+        flex: 1;
+        padding: 16px;
+        justify-content: flex-end;
+        flex-direction: column;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+    .game-wrapper .chat .messages .message.info-message {
+        color: #666;
+    }
+
+    .game-wrapper .chat .messages .message {
+        margin: 4px 8px;
+    }
+
+    .game-wrapper .chat .messages .message:not(.info-message) b {
+        color: #bd2130;
+    }
+
+    .game-wrapper .chat input {
+        margin: 16px;
+        padding: 8px;
+        border: none;
+        border-radius: 5px;
+        background-color: #f2f2f2;
+        outline-color: #bd2130;
+    }
+
+    .card-img-top {
+        width: {{ IMAGE_WIDTH }}px;
+    }
+
+    @media only screen and (max-width: 600px) {
+        .chat, .players {
+            display: none !important;
+        }
+
+        .game {
+            padding: 15px !important;
+            margin: 0px;
+        }
+    }
+
+    @media only screen and (min-width: 600px) {
+        .game::-webkit-scrollbar, .players::-webkit-scrollbar {
+            width: 10px;
+        }
+    
+        .game::-webkit-scrollbar-track, .players::-webkit-scrollbar-track {
+         background: transparent;
+        }
+    
+        .game::-webkit-scrollbar-thumb, .players::-webkit-scrollbar-thumb {
+            background-color: #646a7217;
+        }
+    }
+
+
+</style>
+<script>
+    window.is_authenticated = {{ user.is_authenticated|lower }};
+    window.is_staff = {{ user.is_staff|lower }};
+</script>
 
 {% svelte_include "GameDetail" %}
+
 {% endblock %}
 
-{% block content %}
+{% block body %}
 
-<h2>
-    Game
-	{% if user.is_staff %}
-		<a class="btn btn-primary float-right text-light col-md-auto" href="/admin/games/game/{{ object.id }}/change/">Edit</a>
-		<br><br class="d-lg-none">
-	{% endif %}
-</h2>
-
-<hr>
-
-<div id="svelte-game_detail">
-</div>
+{% include "nav.html" %}
 
 {{ game_data|json_script:"game_data" }}
 {{ ordered_gameplayers|json_script:"ordered_gameplayers" }}
 {{ card_constants|json_script:"card_constants" }}
 
+<div id="svelte-game_detail">
+</div>
+ 
 {% endblock %}

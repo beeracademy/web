@@ -1,10 +1,9 @@
 from .base import *
-from dotenv import load_dotenv
-
-load_dotenv()
 
 DEBUG = False
 ALLOWED_HOSTS = ["academy.beer"]
+
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 SECRET_KEY = os.environ["SECRET_KEY"]
 
@@ -32,6 +31,13 @@ DATABASES = {
     }
 }
 
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {"hosts": [("redis", 6379)],},
+    },
+}
+
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 # Server admins (get an email when server errors happen)
@@ -40,7 +46,7 @@ ADMINS = [("Asger Hautop Drewsen", "asgerdrewsen@gmail.com")]
 FACEBOOK_PAGE_ID = "227174884109471"
 FACEBOOK_ACCESS_TOKEN = os.environ["FACEBOOK_ACCESS_TOKEN"]
 
-CELERY_BROKER_URL = "amqp://guest:guest@rabbitmq:5672//"
+CELERY_BROKER_URL = "redis://redis:6379/0"
 
 LOGGING = {
     "version": 1,

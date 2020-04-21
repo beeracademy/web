@@ -1,8 +1,14 @@
+import datetime
+import re
+from urllib.parse import urlencode
+
+from django.urls import reverse
+from django.utils.html import format_html
 from rest_framework import serializers
 from rest_framework.authtoken.models import Token
-from .models import User, Game, Card, GamePlayer, PlayerStat, Chug
+
+from .models import Card, Chug, Game, GamePlayer, PlayerStat, User
 from .seed import is_seed_valid_for_players
-import datetime
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -122,9 +128,10 @@ class GameSerializer(serializers.ModelSerializer):
             "player_names",
             "sips_per_beer",
             "has_ended",
+            "description_html",
         ]
 
-    start_datetime = serializers.DateTimeField(required=True)
+    start_datetime = serializers.DateTimeField(required=False)
     official = serializers.BooleanField(required=True)
     cards = CardSerializer(many=True)
     seed = serializers.ListField(child=serializers.IntegerField(), write_only=True)
@@ -133,6 +140,17 @@ class GameSerializer(serializers.ModelSerializer):
     )
     player_names = serializers.ListField(child=serializers.CharField(), write_only=True)
     has_ended = serializers.BooleanField(required=True)
+    description_html = serializers.SerializerMethodField()
+
+    hashtag_re = re.compile(r"#([^# ]+)")
+
+    def get_description_html(self, obj):
+        def hashtag_link(m):
+            s = m.group()
+            url = reverse("game_list") + "?" + urlencode({"query": s})
+            return format_html("<a href='{}'>{}</a>", url, s)
+
+        return self.hashtag_re.sub(hashtag_link, obj.description)
 
     def validate(self, data):
         DEFAULT = object()
@@ -153,10 +171,11 @@ class GameSerializer(serializers.ModelSerializer):
                         }
                     )
 
-        if self.instance.has_ended:
+        if self.instance.has_ended and not self.context.get("ignore_finished"):
             raise serializers.ValidationError({"non_field_errors": "Game has finished"})
 
         check_field("start_datetime")
+        check_field("end_datetime")
         check_field("official")
         check_field("description", "")
 
