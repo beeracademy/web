@@ -325,7 +325,7 @@ class Command(BaseCommand):
                 continue
 
             card = Card.objects.get(game=game, value=value, suit=suit)
-            Chug.objects.create(card=card, duration_in_milliseconds=chug["millis"])
+            Chug.objects.create(card=card, duration_ms=chug["millis"])
 
         for game in Game.objects.all():
             chugs = len(list(game.ordered_chugs()))

@@ -77,14 +77,19 @@ def update_game(game, data):
         if key in data:
             setattr(game, key, data[key])
 
+    chug_fields = {"chug_start_start_delta_ms", "chug_duration_ms"}
+
     def update_chug(card, card_data):
-        chug = card_data.get("chug")
-        if chug:
+        if card.value == 14:
             Chug.objects.update_or_create(
-                id=getattr(getattr(card, "chug", None), "id", -1),
+                id=getattr(getattr(card, "chug", None), "id", None),
                 defaults={
                     "card": card,
-                    **{k: v for k, v in chug.items() if k in chug_fields},
+                    **{
+                        k[len("chug_") :]: v
+                        for k, v in card_data.items()
+                        if k in chug_fields
+                    },
                 },
             )
 
@@ -103,8 +108,6 @@ def update_game(game, data):
 
     cards = game.ordered_cards()
     new_cards = data["cards"]
-
-    chug_fields = {"start_start_delta_ms", "duration_in_milliseconds"}
 
     last_card = cards.last()
     previous_cards = cards.count()

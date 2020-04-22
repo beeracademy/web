@@ -75,7 +75,7 @@ RANKINGS = [
     Ranking("Total chugs", "-total_chugs"),
     Ranking(
         "Fastest chug",
-        "fastest_chug__duration_in_milliseconds",
+        "fastest_chug__duration_ms",
         "fastest_chug__card__game",
         format_duration,
     ),

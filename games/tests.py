@@ -147,6 +147,31 @@ class ApiTest(TransactionTestCase):
         game2 = Game.objects.get(id=r.data["id"])
         self.assertEqual(game2.ordered_players(), [self.u2, self.u1])
 
+    def test_correct_final(self):
+        self.set_token(self.t1)
+        self.update_game(self.final_game_data)
+        game = Game.objects.get(id=self.game_id)
+
+        for f in ["start_datetime", "official", "has_ended"]:
+            self.assertEqual(getattr(game, f), self.final_game_data[f])
+
+        self.assertEqual(game.cards.count(), len(self.final_game_data["cards"]))
+        for card, card_data in zip(game.cards.all(), self.final_game_data["cards"]):
+            for f in ["value", "suit", "start_delta_ms"]:
+                self.assertEqual(getattr(card, f), card_data[f])
+
+            self.assertEqual(hasattr(card, "chug"), card.value == 14)
+            if card.value == 14:
+                self.assertEqual(
+                    card.chug.start_start_delta_ms,
+                    card_data["chug_start_start_delta_ms"],
+                )
+                self.assertEqual(
+                    card.chug.duration_ms,
+                    card_data["chug_end_start_delta_ms"]
+                    - card_data["chug_start_start_delta_ms"],
+                )
+
     def test_send_final(self):
         self.set_token(self.t1)
         self.update_game(self.final_game_data)

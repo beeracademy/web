@@ -27,7 +27,7 @@ class GameViewTest(TestCase):
                 + delta,
             )
             if value == 14:
-                Chug.objects.create(card=card, duration_in_milliseconds=12345)
+                Chug.objects.create(card=card, duration_ms=12345)
 
         self.game.end_datetime = timezone.now()
         self.game.save()

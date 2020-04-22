@@ -709,10 +709,8 @@ class Card(models.Model):
     def get_finish_start_delta_ms(self):
         if self.value == Chug.VALUE:
             if hasattr(self, "chug"):
-                if self.chug.duration_in_milliseconds:
-                    return (
-                        self.start_start_delta_ms + self.chug.duration_in_milliseconds
-                    )
+                if self.chug.duration_ms:
+                    return self.start_start_delta_ms + self.chug.duration_ms
 
             return None
 
@@ -755,14 +753,14 @@ class Chug(models.Model):
 
     card = models.OneToOneField("Card", on_delete=models.CASCADE, related_name="chug")
     start_start_delta_ms = models.PositiveIntegerField(blank=True, null=True)
-    duration_in_milliseconds = models.PositiveIntegerField(blank=True, null=True)
+    duration_ms = models.PositiveIntegerField(blank=True, null=True)
 
     @property
     def duration(self):
-        if not self.duration_in_milliseconds:
+        if not self.duration_ms:
             return None
 
-        return datetime.timedelta(milliseconds=self.duration_in_milliseconds)
+        return datetime.timedelta(milliseconds=self.duration_ms)
 
     def duration_str(self):
         if self.duration:

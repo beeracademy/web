@@ -78,7 +78,7 @@ class CardSerializer(serializers.ModelSerializer):
     )
     chug_end_start_delta_ms = serializers.IntegerField(required=False)
     chug_duration_ms = serializers.IntegerField(
-        read_only=True, source="chug.duration_in_milliseconds"
+        read_only=True, source="chug.duration_ms"
     )
     chug_id = serializers.IntegerField(read_only=True, source="chug.id")
 
@@ -264,8 +264,7 @@ class GameSerializer(serializers.ModelSerializer):
             last_card = new_cards[-1]
             if hasattr(self, "chug"):
                 end_start_delta_ms = (
-                    last_card["start_start_delta_ms"]
-                    + last_card["chug.duration_in_milliseconds"]
+                    last_card["start_start_delta_ms"] + last_card["chug.duration_ms"]
                 )
             else:
                 end_start_delta_ms = last_card["start_delta_ms"]
@@ -360,5 +359,5 @@ class PlayerStatSerializer(serializers.ModelSerializer):
         ]
 
     fastest_chug_duration_ms = serializers.IntegerField(
-        required=False, source="fastest_chug.duration_in_milliseconds"
+        required=False, source="fastest_chug.duration_ms"
     )

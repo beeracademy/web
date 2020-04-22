@@ -144,9 +144,7 @@ class Command(BaseCommand):
                         raise CommandError(f"Chuck without an ace before")
 
                     duration_ms = self.parse_duration(parts[4])
-                    Chug.objects.create(
-                        card=last_card, duration_in_milliseconds=duration_ms
-                    )
+                    Chug.objects.create(card=last_card, duration_ms=duration_ms)
                 elif len(parts) == 4:
                     _, _, card, drawn_timestamp = parts
 

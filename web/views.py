@@ -92,7 +92,7 @@ def get_recent_players(n, min_sample_size=10):
 
 def get_bad_chuggers(n, min_sample_size=10):
     bad_chuggers = {}
-    for chug in Chug.objects.filter(duration_in_milliseconds__gte=20 * 1000).order_by(
+    for chug in Chug.objects.filter(duration_ms__gte=20 * 1000).order_by(
         F("card__game__start_datetime").desc(nulls_last=True)
     ):
         u = chug.card.get_user()
@@ -101,7 +101,7 @@ def get_bad_chuggers(n, min_sample_size=10):
 
         bad_chuggers[
             u
-        ] = f"For chugging an ace in {chug.duration_in_milliseconds / 1000} seconds on {chug.card.game.date}"
+        ] = f"For chugging an ace in {chug.duration_ms / 1000} seconds on {chug.card.game.date}"
 
         if len(bad_chuggers) >= min_sample_size:
             break
