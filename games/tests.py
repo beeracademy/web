@@ -69,6 +69,7 @@ class ApiTest(TransactionTestCase):
         self.assert_ok(r)
 
         self.game_id = r.data["id"]
+        self.game_token = r.data["token"]
         self.game_start = datetime.datetime.fromisoformat(r.data["start_datetime"])
 
         self.final_game_data = {
@@ -148,7 +149,7 @@ class ApiTest(TransactionTestCase):
         self.assertEqual(game2.ordered_players(), [self.u2, self.u1])
 
     def test_correct_final(self):
-        self.set_token(self.t1)
+        self.set_token(self.game_token)
         self.update_game(self.final_game_data)
         game = Game.objects.get(id=self.game_id)
 
@@ -173,13 +174,13 @@ class ApiTest(TransactionTestCase):
                 )
 
     def test_send_final(self):
-        self.set_token(self.t1)
+        self.set_token(self.game_token)
         self.update_game(self.final_game_data)
         # Can't update the game once it's finished
         self.update_game(self.final_game_data, 400)
 
     def send_all_updates(self, send_without_chug, send_with_chug):
-        self.set_token(self.t1)
+        self.set_token(self.game_token)
         for i in range(0, self.TOTAL_CARDS + 1):
             if send_without_chug:
                 game_data = self.get_game_data(i, False)
@@ -201,7 +202,7 @@ class ApiTest(TransactionTestCase):
         self.send_all_updates(False, True)
 
     def test_send_wrong_card(self):
-        self.set_token(self.t1)
+        self.set_token(self.game_token)
 
         game_data = self.get_game_data(1)
         game_data["cards"][0]["value"] = 3
@@ -209,7 +210,7 @@ class ApiTest(TransactionTestCase):
         self.update_game(game_data, 400)
 
     def test_end_game_early(self):
-        self.set_token(self.t1)
+        self.set_token(self.game_token)
 
         game_data = self.get_game_data(5)
         game_data["description"] = "!"
@@ -217,7 +218,7 @@ class ApiTest(TransactionTestCase):
         self.update_game(game_data, 400)
 
     def test_end_game_early_missing_chug(self):
-        self.set_token(self.t1)
+        self.set_token(self.game_token)
 
         game_data = self.final_game_data
         del game_data["cards"][-1]["chug_end_start_delta_ms"]
@@ -228,18 +229,19 @@ class ApiTest(TransactionTestCase):
         self.update_game(self.final_game_data, 403)
 
     def test_wrong_credentials(self):
-        self.set_token(self.t3)
+        r = self.client.post("/api/games/", {"tokens": [self.t2, self.t3]})
+        self.set_token(r.data["token"])
         self.update_game(self.final_game_data, 403)
 
     def test_send_less_cards(self):
-        self.set_token(self.t1)
+        self.set_token(self.game_token)
         game_data = self.get_game_data(5)
         self.update_game(game_data)
         game_data = self.get_game_data(4)
         self.update_game(game_data, 400)
 
     def test_send_different_start_time(self):
-        self.set_token(self.t1)
+        self.set_token(self.game_token)
         game_data = self.get_game_data(10)
         game_data["start_datetime"] = game_data["start_datetime"] - datetime.timedelta(
             seconds=1
@@ -251,13 +253,13 @@ class ApiTest(TransactionTestCase):
         self.update_game(game_data)
 
     def test_send_different_official(self):
-        self.set_token(self.t1)
+        self.set_token(self.game_token)
         game_data = self.get_game_data(17)
         game_data["official"] = False
         self.update_game(game_data, 400)
 
     def test_send_decreasing_times(self):
-        self.set_token(self.t1)
+        self.set_token(self.game_token)
         game_data = self.get_game_data(17)
         game_data["cards"][14]["start_delta_ms"] = game_data["cards"][2][
             "start_delta_ms"
@@ -265,7 +267,7 @@ class ApiTest(TransactionTestCase):
         self.update_game(game_data, 400)
 
     def test_concurrent_update(self):
-        self.set_token(self.t1)
+        self.set_token(self.game_token)
         game_data = self.get_game_data(24)
 
         def send_game_data():

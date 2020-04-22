@@ -2,11 +2,13 @@ from django.db import transaction
 from django.db.utils import IntegrityError, OperationalError
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers, status, viewsets
+from rest_framework.authentication import BaseAuthentication
 from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.decorators import action
+from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.permissions import BasePermission, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 
 from .facebook import post_to_page
@@ -15,6 +17,7 @@ from .models import (
     Chug,
     Game,
     GamePlayer,
+    GameToken,
     PlayerStat,
     Season,
     User,
@@ -58,12 +61,24 @@ class CreateOrAuthenticated(IsAuthenticatedOrReadOnly):
         return super().has_permission(request, view)
 
 
-class PartOfGame(IsAuthenticatedOrReadOnly):
-    def has_object_permission(self, request, view, game):
-        if request.method == "POST":
-            return request.user in game.players.all()
+class GameUpdateAuthentication(BaseAuthentication):
+    def authenticate(self, request):
+        auth_header = request.headers.get("Authorization", "")
+        parts = auth_header.split()
+        if len(parts) != 2 or parts[0] != "Token":
+            return None
 
-        return False
+        token_key = parts[1]
+        try:
+            token = GameToken.objects.get(key=token_key)
+            return (None, token.game)
+        except GameToken.DoesNotExist:
+            raise AuthenticationFailed("No game with that token")
+
+
+class GameUpdatePermission(BasePermission):
+    def has_object_permission(self, request, view, game):
+        return request.auth == game
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -158,9 +173,15 @@ class GameViewSet(viewsets.ReadOnlyModelViewSet):
 
         post_to_page("A game between {} just started!".format(players_str), game_url)
 
-        return Response(self.serializer_class(game).data)
+        token = GameToken.objects.create(game=game)
+        return Response({**self.serializer_class(game).data, "token": token.key})
 
-    @action(detail=True, methods=["post"], permission_classes=[PartOfGame])
+    @action(
+        detail=True,
+        methods=["post"],
+        authentication_classes=[GameUpdateAuthentication],
+        permission_classes=[GameUpdatePermission],
+    )
     def update_state(self, request, pk=None):
         game = get_object_or_404(Game, pk=pk)
         self.check_object_permissions(request, game)

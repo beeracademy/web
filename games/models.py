@@ -1,5 +1,6 @@
 import datetime
 import os
+import secrets
 
 import pytz
 from PIL import Image
@@ -622,6 +623,19 @@ class Game(models.Model):
 
     def get_absolute_url(self):
         return reverse("game_detail", args=[self.id])
+
+
+class GameToken(models.Model):
+    key = models.CharField(max_length=40, unique=True)
+    game = models.OneToOneField(Game, on_delete=models.CASCADE, unique=True)
+
+    def save(self, *args, **kwargs):
+        if not self.key:
+            self.key = self.generate_key()
+        return super().save(*args, **kwargs)
+
+    def generate_key(self):
+        return secrets.token_hex(20)
 
 
 class GamePlayer(models.Model):
