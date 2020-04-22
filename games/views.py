@@ -187,9 +187,10 @@ class GameViewSet(viewsets.ReadOnlyModelViewSet):
         self.check_object_permissions(request, game)
 
         serializer = GameSerializer(game, data=request.data)
-        serializer.is_valid(raise_exception=True)
 
         try:
+            serializer.is_valid(raise_exception=True)
+
             with transaction.atomic():
                 update_game(game, serializer.validated_data)
         except (OperationalError, IntegrityError):
