@@ -107,7 +107,7 @@ class ApiTest(TransactionTestCase):
         self.final_game_data["description"] = "foo"
 
     def set_token(self, token):
-        self.client.credentials(HTTP_AUTHORIZATION="Token " + token)
+        self.client.credentials(HTTP_AUTHORIZATION="GameToken " + token)
 
     def test_login(self):
         r = self.client.post(

@@ -69,7 +69,7 @@ If a user with that username exists, but the password was wrong, the response is
 ### Request
 ```javascript
 // POST /api/games/<game_id>/update_state/
-// Authorization: Token <game_token>
+// Authorization: GameToken <game_token>
 {
   "official": bool,
   "seed": int[],

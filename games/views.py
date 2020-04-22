@@ -65,7 +65,7 @@ class GameUpdateAuthentication(BaseAuthentication):
     def authenticate(self, request):
         auth_header = request.headers.get("Authorization", "")
         parts = auth_header.split()
-        if len(parts) != 2 or parts[0] != "Token":
+        if len(parts) != 2 or parts[0] != "GameToken":
             return None
 
         token_key = parts[1]
