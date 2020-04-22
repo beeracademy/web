@@ -13,23 +13,19 @@
       function fix_timezone_shifts() {
         var data = JSON.parse($("#id_game_log").text());
 
-        var ds = [new Date(data.start_datetime)];
+        var ds = [0];
         for (var i = 0; i < data.cards.length; i++) {
-            ds.push(new Date(data.cards[i].drawn_datetime));
+            ds.push(data.cards[i].start_delta_ms);
         }
-        ds.push(new Date(data.end_datetime));
 
         for (var i = 1; i < ds.length; i++) {
             var diff = ds[i] - ds[i - 1];
             var hour_diff = Math.round(diff / HOUR);
-            ds[i] = new Date(ds[i].getTime() - hour_diff * HOUR);
+            ds[i] = ds[i] - hour_diff * HOUR;
         }
 
-        data.start_datetime = ds[0].toISOString();
-        data.end_datetime = ds[ds.length - 1].toISOString();
-
         for (var i = 0; i < data.cards.length; i++) {
-            data.cards[i].drawn_datetime = ds[i + 1].toISOString();
+            data.cards[i].start_delta_ms = ds[i + 1];
         }
 
         set_data(data);
