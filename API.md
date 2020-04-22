@@ -58,6 +58,7 @@ If a user with that username exists, but the password was wrong, the response is
 ```javascript
 {
   "id": int,
+  "token": string,
   "start_datetime": datetime_string,
   ...
 }
@@ -68,6 +69,7 @@ If a user with that username exists, but the password was wrong, the response is
 ### Request
 ```javascript
 // POST /api/games/<game_id>/update_state/
+// Authorization: Token <game_token>
 {
   "official": bool,
   "seed": int[],
