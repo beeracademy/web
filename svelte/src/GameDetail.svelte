@@ -336,7 +336,7 @@
 			<div class="container">
 				<div id="chugs_container" class="row justify-content-md-center">
 					{#each chugs as chug}
-					<Chug chug={chug}/>
+						<Chug start_datetime={game_data.start_datetime} chug={chug}/>
 					{/each}
 				</div>
 			</div>

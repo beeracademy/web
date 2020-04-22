@@ -3,12 +3,39 @@
 </script>
 
 <script>
+	export let start_datetime;
 	export let chug;
 
 	import ColoredSuit from "./ColoredSuit.svelte";
 
 	const player = chug.player;
 	$: card = chug.card;
+
+	var intervalId = null;
+	var durationStr;
+
+	function start_delta_ms() {
+		return Date.now() - new Date(start_datetime);
+	}
+
+	function updateDuration() {
+		durationStr = window.formatDuration(start_delta_ms() - card.chug_start_start_delta_ms, 3);
+	}
+
+	$: {
+		console.error(card);
+		if (intervalId !== null) {
+			clearInterval(intervalId);
+		}
+
+		if (card.chug_duration_ms) {
+			durationStr = window.formatDuration(card.chug_duration_ms, 3);
+		} else if (card.chug_start_start_delta_ms) {
+			intervalId = setInterval(updateDuration, 10);
+		} else {
+			durationStr = "Not started";
+		}
+	};
 </script>
 
 <style>
@@ -30,11 +57,7 @@
 				</a>
 			</li>
 			<li class="list-group-item">
-				{#if card.chug_duration_ms}
-					{window.formatDuration(card.chug_duration_ms, 3)}
-				{:else}
-					Not done
-				{/if}
+				{durationStr}
 			</li>
 			{#if card.chug_id}
 			<li class="list-group-item staff-only">
