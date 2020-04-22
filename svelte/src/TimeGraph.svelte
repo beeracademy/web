@@ -8,8 +8,6 @@
   let container;
   let chart;
 
-  const start_timestamp = new Date(game_data.start_datetime).getTime();
-
   let lastLength = -1;
 
   function updateChart() {
@@ -26,7 +24,7 @@
 
     for (let i = 0; i < game_data.cards.length; i++) {
       series[0].data.push(
-        new Date(game_data.cards[i].drawn_datetime).getTime()
+        game_data.cards[i].start_delta_ms
       );
     }
 
@@ -63,11 +61,10 @@
         title: {
           text: "Time"
         },
-        min: start_timestamp,
+        min: 0,
         labels: {
           formatter: function(val, index) {
-            const msDiff = val - start_timestamp;
-            return window.formatDuration(msDiff);
+            return window.formatDuration(val);
           }
         }
       },
@@ -91,7 +88,7 @@
           formatter: function(val, { series, seriesIndex, dataPointIndex, w }) {
             const previous =
               dataPointIndex === 0
-                ? start_timestamp
+                ? 0
                 : series[0][dataPointIndex - 1];
             const msDiff = val - previous;
             return "Turn time " + window.formatDuration(msDiff);
@@ -111,7 +108,7 @@
 </script>
 
 <div>
-  {#if game_data.cards.length > 0 && game_data.cards[0].drawn_datetime === null}
+  {#if game_data.cards.length > 0 && game_data.cards[0].start_delta_ms === null}
     <p style="text-align: center;">
       Time graph unavailable due to missing data
     </p>
