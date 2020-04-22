@@ -432,33 +432,13 @@ class Game(models.Model):
         ordering = ("-end_datetime",)
 
     """
-    There are 4 kinds of games:
-
-    - Unfinished/DNF games:
-        - end_datetime          == None
-        - start_datetime        != None
-        - cards__drawn_datetime != None
-
-    - Finished games after 2015-07-02 (e.g. ):
-        - end_datetime          != None
-        - start_datetime        != None
-        - cards__drawn_datetime != None
-        - example: 1800
-
-    - Finished games between 2014-04-09 and 2015-7-2:
-        - end_datetime          != None
-        - start_datetime        != None
-        - cards__drawn_datetime == None
-        - example: 279
-
-    - Finished games between 2013-02-01 and 2014-4-4:
-        - end_datetime          != None
-        - start_datetime        == None
-        - cards__drawn_datetime == None
-        - example: 119
-
-    This means that if start_datetime is missing,
-    then so are the card draw times.
+    Game data updates:
+    - 2013-02-01: First version (example: 119)
+    - 2014-04-09: Introduced start_datetime and thus game durations (example: 279)
+    - 2015-07-02: Introduced individual times for cards (example: 1800)
+    - 2019-08-29: Introduced dnf games, thus finished games are no longer those with no end_datetime (example: 2240)
+        - However note that either start_datetime or end_datetime always exists for a game
+    - 2020-04-23: Introduced start times for chugs, which gives a better turn time (example: N/A)
     """
 
     players = models.ManyToManyField(User, through="GamePlayer", related_name="games")
@@ -576,15 +556,15 @@ class Game(models.Model):
         return self.players.count() * len(Card.VALUES)
 
     def get_turn_durations(self):
-        prev_datetime = self.start_datetime
+        prev_finish_start_delta_ms = 0
         for c in self.ordered_cards():
-            if c.drawn_datetime is None:
+            if c.finish_start_delta_ms is None:
                 return
 
-            if prev_datetime is not None:
-                yield c.drawn_datetime - prev_datetime
+            if prev_finish_start_delta_ms is not None:
+                yield c.finish_start_delta_ms - prev_finish_start_delta_ms
 
-            prev_datetime = c.drawn_datetime
+            prev_finish_start_delta_ms = c.finish_start_delta_ms
 
     def get_player_stats(self):
         # Note that toal_drawn and total_done,
@@ -604,8 +584,8 @@ class Game(models.Model):
             last_sip = (i % n, c.value)
 
         first_card = self.ordered_cards().first()
-        if first_card and first_card.drawn_datetime:
-            total_times = [datetime.timedelta()] * n
+        if first_card and first_card.start_delta_ms:
+            total_times = [0] * n
             total_done = [0] * n
             for i, dt in enumerate(self.get_turn_durations()):
                 total_times[i % n] += dt
@@ -706,11 +686,17 @@ class Card(models.Model):
 
         return None
 
-    def get_finish_start_delta_ms(self):
+    @property
+    def finish_start_delta_ms(self):
         if self.value == Chug.VALUE:
-            if hasattr(self, "chug"):
-                if self.chug.duration_ms:
-                    return self.start_start_delta_ms + self.chug.duration_ms
+            chug = getattr(self, "chug", None)
+            if chug and chug.duration_ms:
+                if chug.start_start_delta_ms:
+                    chug_start = chug.start_start_delta_ms
+                else:
+                    chug_start = self.start_delta_ms
+
+                return chug_start + self.chug.duration_ms
 
             return None
 
