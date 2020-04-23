@@ -6,18 +6,21 @@ Frontend and api server for Academy.
 
 ## Installation
 
-Install Python 3.8 and [Poetry](https://poetry.eustace.io/).
+Install Python 3.8 and create a virtual environment:
+```sh
+python -mvenv ~/.cache/venvs/academy-web
+```
 
-To install the python dependencies run:
+Inside the virtual enviroment install [pip-tools](https://github.com/jazzband/pip-tools):
 
 ```sh
-poetry install
+pip install pip-tools
 ```
 
 Then apply the database migrations:
 
 ```sh
-poetry run ./manage.py migrate
+./manage.py migrate
 ```
 
 ## Running
@@ -25,7 +28,7 @@ poetry run ./manage.py migrate
 To start the server locally run:
 
 ```sh
-poetry run ./manage.py runserver
+./manage.py runserver
 ```
 
 ## Compiling Svelte components

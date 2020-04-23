@@ -10,7 +10,7 @@ if ! [[ $ans = y || $ans = Y ]]; then
 fi
 
 rm -f db.sqlite3
-poetry run ./manage.py migrate
+venv run ./manage.py migrate
 
 echo
 echo "Dumping and downloading production database..."
@@ -21,6 +21,6 @@ ssh academy.beer 'sudo docker ps --no-trunc --format "{{.ID}} {{.Names}}" | grep
 
 echo "Importing production database..."
 echo
-poetry run ./manage.py loaddata "$fixture"
+venv run ./manage.py loaddata "$fixture"
 
 rm -f "$fixture"
