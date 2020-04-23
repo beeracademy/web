@@ -645,7 +645,7 @@ class Game(models.Model):
 
 class GameToken(models.Model):
     key = models.CharField(max_length=40, unique=True)
-    game = models.OneToOneField(Game, on_delete=models.CASCADE, unique=True)
+    game = models.OneToOneField(Game, on_delete=models.CASCADE)
 
     def save(self, *args, **kwargs):
         if not self.key:
