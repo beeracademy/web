@@ -3,8 +3,6 @@ import os
 import secrets
 
 import pytz
-from PIL import Image
-
 from django.contrib.auth.models import AbstractUser, UserManager
 from django.db import models
 from django.db.models import Count, DurationField, ExpressionWrapper, F, Q, Subquery
@@ -12,6 +10,7 @@ from django.templatetags.static import static
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.html import mark_safe
+from PIL import Image
 from tqdm import tqdm
 
 from .seed import shuffle_with_seed

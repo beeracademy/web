@@ -4,9 +4,10 @@ from copy import deepcopy
 
 from django.test import TransactionTestCase
 from django.utils import timezone
+from rest_framework.test import APIClient
+
 from games.models import Card, Chug, Game, User
 from games.utils import get_milliseconds
-from rest_framework.test import APIClient
 
 
 class ApiTest(TransactionTestCase):

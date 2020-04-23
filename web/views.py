@@ -5,8 +5,6 @@ from collections import Counter
 from math import sqrt
 from urllib.parse import urlencode
 
-from scipy.stats import hypergeom, norm
-
 from django.contrib import messages
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -33,6 +31,8 @@ from django.db.models import (
 from django.shortcuts import render
 from django.utils import timezone
 from django.views.generic import DetailView, ListView, TemplateView, UpdateView
+from scipy.stats import hypergeom, norm
+
 from games.achievements import ACHIEVEMENTS
 from games.models import (
     Card,

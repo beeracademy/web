@@ -1,4 +1,5 @@
 from django.conf import settings
+
 from games.models import User
 
 
