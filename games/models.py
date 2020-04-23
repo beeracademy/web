@@ -359,7 +359,7 @@ class User(AbstractUser):
 
 class OneTimePassword(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    password = models.CharField(max_length=20, unique=True)
+    password = models.CharField(max_length=20)
 
     @classmethod
     def check_password(cls, username, password):
