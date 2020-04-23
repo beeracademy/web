@@ -76,9 +76,7 @@ def recalculate_all_stats():
 
 
 def update_stats_on_game_finished(game):
-    print("Updating player stats...")
     PlayerStat.update_on_game_finished(game)
-    print("Updating game player stats...")
     GamePlayerStat.update_on_game_finished(game)
 
 
