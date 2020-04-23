@@ -357,6 +357,26 @@ class User(AbstractUser):
         return reverse("player_detail", args=[self.id])
 
 
+class OneTimePassword(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    password = models.CharField(max_length=20, unique=True)
+
+    @classmethod
+    def check_password(cls, username, password):
+        try:
+            user = User.objects.get(username__iexact=username)
+            return cls.objects.filter(user=user, password=password).exists()
+        except (User.DoesNotExist, cls.DoesNotExist):
+            pass
+
+        return False
+
+    def save(self, *args, **kwargs):
+        if not self.password:
+            self.password = secrets.token_hex(10)
+        return super().save(*args, **kwargs)
+
+
 class Season:
     FIRST_SEASON_START = datetime.date(2013, 1, 1)
 

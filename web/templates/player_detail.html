@@ -151,12 +151,29 @@
 	</div>
 </div>
 
+{% if otp_data %}
+<hr>
+
+<button id="otp-button" class="btn btn-primary">Copy one-time password</button>
+{% endif %}
+
 {% endblock %}
 
 {% block scripts %}
 {{ heatmap_data|json_script:"heatmap_data" }}
+{{ otp_data|json_script:"otp_data" }}
 
 <script>
+	var otp = JSON.parse(document.getElementById("otp_data").textContent);
+	if (otp) {
+		$("#otp-button").click(function() {
+			navigator.clipboard.writeText(otp).then(function() {
+			}, function() {
+				alert("Copying failed!");
+			});
+		});
+	}
+
 	var data = JSON.parse(document.getElementById("heatmap_data").textContent);
 
 	var options = {

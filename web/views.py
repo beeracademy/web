@@ -40,6 +40,7 @@ from games.models import (
     Game,
     GamePlayer,
     GamePlayerStat,
+    OneTimePassword,
     User,
     filter_season,
     filter_season_and_player_count,
@@ -364,6 +365,10 @@ class PlayerDetailView(DetailView):
             "categories": categories,
             "dates": dates,
         }
+
+        if self.object == self.request.user or self.request.user.is_staff:
+            otp, _ = OneTimePassword.objects.get_or_create(user=self.object)
+            context["otp_data"] = otp.password
 
         return context
 

@@ -148,6 +148,11 @@ LOGOUT_REDIRECT_URL = "/"
 
 AUTH_USER_MODEL = "games.User"
 
+AUTHENTICATION_BACKENDS = [
+    "django.contrib.auth.backends.ModelBackend",
+    "games.auth.OneTimePasswordBackend",
+]
+
 REST_FRAMEWORK = {
     # Use Django's standard `django.contrib.auth` permissions,
     # or allow read-only access for unauthenticated users.

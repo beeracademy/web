@@ -16,6 +16,8 @@ class AutologinMiddleware:
             username = getattr(settings, "AUTOLOGIN_USERNAME", None)
             if username:
                 user = User.objects.get(username=username)
-                login(request, user)
+                login(
+                    request, user, backend="django.contrib.auth.backends.ModelBackend"
+                )
 
         return self.get_response(request)
