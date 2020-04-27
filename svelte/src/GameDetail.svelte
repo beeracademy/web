@@ -30,10 +30,11 @@
 			end_datetime = new Date(game_data.end_datetime);
 		} else {
 			if (game_data.dnf) {
+				const start_date = new Date(game_data.start_datetime);
 				if (game_data.cards.length === 0) {
-					end_datetime = new Date(game_data.start_datetime);
+					end_datetime = start_date;
 				} else {
-					end_datetime = new Date(game_data.cards[game_data.cards.length - 1].start_delta_ms);
+					end_datetime = new Date(start_date.getTime() + game_data.cards[game_data.cards.length - 1].start_delta_ms);
 				}
 			} else {
 				end_datetime = Date.now();
