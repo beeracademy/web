@@ -288,3 +288,9 @@ class ApiTest(TransactionTestCase):
         self.assertEqual(r.status_code, 404)
         r = self.client.get("/api/stats/foo/")
         self.assertEqual(r.status_code, 404)
+
+    def test_negative_times(self):
+        self.set_token(self.game_token)
+        game_data = self.final_game_data
+        game_data["cards"][0]["start_delta_ms"] = -1
+        self.update_game(game_data, 400)
