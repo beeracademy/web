@@ -129,6 +129,7 @@ class GameSerializer(serializers.ModelSerializer):
             "sips_per_beer",
             "has_ended",
             "description_html",
+            "dnf_player_ids",
         ]
 
     start_datetime = serializers.DateTimeField(required=False)
@@ -141,6 +142,9 @@ class GameSerializer(serializers.ModelSerializer):
     player_names = serializers.ListField(child=serializers.CharField(), write_only=True)
     has_ended = serializers.BooleanField(required=True)
     description_html = serializers.SerializerMethodField()
+    dnf_player_ids = serializers.ListField(
+        child=serializers.IntegerField(), write_only=True, required=False, default=[]
+    )
 
     hashtag_re = re.compile(r"#([^# ]+)")
 
@@ -173,6 +177,11 @@ class GameSerializer(serializers.ModelSerializer):
 
         if self.instance.has_ended and not self.context.get("ignore_finished"):
             raise serializers.ValidationError({"non_field_errors": "Game has finished"})
+
+        if not (set(data["dnf_player_ids"]) <= set(data["player_ids"])):
+            raise serializers.ValidationError(
+                {"dnf_player_ids": "dnf_player_ids is not a subset of player_ids"}
+            )
 
         check_field("start_datetime")
         check_field("end_datetime")
