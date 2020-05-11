@@ -1,0 +1,13 @@
+#!/bin/sh
+set -euo pipefail
+
+rm -rf static/svelte
+mkdir -p static/svelte
+
+yarn install --frozen-lockfile
+yarn build
+
+for f in build/*.js; do
+	name=$(basename "$f")
+	cp "$f" static/svelte/"${name/.*/}.js"
+done

@@ -2,7 +2,7 @@ FROM node:12-alpine as builder
 
 COPY /svelte .
 
-RUN yarn install --frozen-lockfile && yarn build
+RUN ./build_components
 
 FROM python:3.8
 

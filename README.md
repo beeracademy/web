@@ -37,6 +37,5 @@ Some views uses [Svelte](https://svelte.dev/) components, which needs to be comp
 To do this, run the following:
 ```sh
 cd svelte
-yarn install --frozen-lockfile
-yarn build
+./build_components
 ```

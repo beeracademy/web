@@ -11,5 +11,7 @@
 /dump/tables/
 /svelte/node_modules/
 /svelte/static/svelte/
+/svelte/build/
+/svelte/web_modules/
 *.pyc
 __pycache__/
