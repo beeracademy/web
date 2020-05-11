@@ -86,7 +86,7 @@
 
 			socket.addEventListener("error", function(e) {
 				console.error("Got an error from the chat socket!");
-				disconnected();
+				socket.close();
 			});
 
 			socket.addEventListener("message", function (e) {
