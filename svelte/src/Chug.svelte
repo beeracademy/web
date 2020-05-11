@@ -23,7 +23,6 @@
 	}
 
 	$: {
-		console.error(card);
 		if (intervalId !== null) {
 			clearInterval(intervalId);
 		}
