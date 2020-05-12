@@ -15,6 +15,7 @@ body:not(.staff-user) .staff-only {
 
 footer {
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
     color: #666;
