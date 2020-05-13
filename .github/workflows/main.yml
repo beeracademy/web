@@ -32,7 +32,6 @@ jobs:
 
     - name: Deploy image to production
       run: |
-        set -euo pipefail
         for url in $WEBHOOK_URLS; do
           curl --fail -X POST "$url"
         done
