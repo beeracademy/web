@@ -1,7 +1,7 @@
 from django.db import transaction
-from django.db.utils import IntegrityError, OperationalError
+from django.http import Http404
 from django.shortcuts import get_object_or_404
-from rest_framework import serializers, status, viewsets
+from rest_framework import serializers, viewsets
 from rest_framework.authentication import BaseAuthentication
 from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.views import ObtainAuthToken
@@ -180,6 +180,7 @@ class GameViewSet(viewsets.ReadOnlyModelViewSet):
         token = GameToken.objects.create(game=game)
         return Response({**self.serializer_class(game).data, "token": token.key})
 
+    @transaction.atomic()
     @action(
         detail=True,
         methods=["post"],
@@ -187,19 +188,17 @@ class GameViewSet(viewsets.ReadOnlyModelViewSet):
         permission_classes=[GameUpdatePermission],
     )
     def update_state(self, request, pk=None):
-        game = get_object_or_404(Game, pk=pk)
-        self.check_object_permissions(request, game)
-
-        serializer = GameSerializer(game, data=request.data)
-
+        # Lock game object
+        # Note: Doesn't do anything when using SQLite
         try:
-            serializer.is_valid(raise_exception=True)
+            game = Game.objects.select_for_update().get(pk=pk)
+        except Game.DoesNotExist:
+            raise Http404("Game does not exist")
 
-            with transaction.atomic():
-                update_game(game, serializer.validated_data)
-        except (OperationalError, IntegrityError):
-            return Response({}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
-
+        self.check_object_permissions(request, game)
+        serializer = GameSerializer(game, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        update_game(game, serializer.validated_data)
         return Response({})
 
     @action(detail=False, methods=["get"], permission_classes=[])

@@ -1,13 +1,17 @@
 import concurrent.futures
 import datetime
 from copy import deepcopy
+from threading import Lock
+from time import sleep
+from unittest.mock import patch
 
-from django.test import TransactionTestCase
+from django.test import TransactionTestCase, skipUnlessDBFeature
 from django.utils import timezone
 from rest_framework.test import APIClient
 
 from games.models import Card, Chug, Game, User
 from games.utils import get_milliseconds
+from games.views import update_game
 
 
 class ApiTest(TransactionTestCase):
@@ -37,9 +41,18 @@ class ApiTest(TransactionTestCase):
         token = r.data["token"]
         return u, token
 
-    def update_game(self, game_data, expected_status=200):
+    def update_game(
+        self, game_data, expected_status=200, game_id=None, game_token=None
+    ):
+        if not game_id:
+            game_id = self.game_id
+
+        extra = {}
+        if game_token:
+            extra["HTTP_AUTHORIZATION"] = "GameToken " + game_token
+
         r = self.client.post(
-            f"/api/games/{self.game_id}/update_state/", game_data, format="json"
+            f"/api/games/{game_id}/update_state/", game_data, format="json", **extra,
         )
         if expected_status:
             self.assert_status(r, expected_status)
@@ -60,18 +73,23 @@ class ApiTest(TransactionTestCase):
 
         return game_state
 
+    def create_game(self, tokens):
+        r = self.client.post("/api/games/", {"tokens": tokens})
+        self.assert_ok(r)
+        return r.data
+
     def setUp(self):
         self.client = APIClient()
 
         self.u1, self.t1 = self.create_user(self.client, "Player1", "test1")
         self.u2, self.t2 = self.create_user(self.client, "Player2", "test2")
         self.u3, self.t3 = self.create_user(self.client, "Player3", "test3")
-        r = self.client.post("/api/games/", {"tokens": [self.t1, self.t2]})
-        self.assert_ok(r)
 
-        self.game_id = r.data["id"]
-        self.game_token = r.data["token"]
-        self.game_start = datetime.datetime.fromisoformat(r.data["start_datetime"])
+        game_data = self.create_game([self.t1, self.t2])
+
+        self.game_id = game_data["id"]
+        self.game_token = game_data["token"]
+        self.game_start = datetime.datetime.fromisoformat(game_data["start_datetime"])
 
         self.final_game_data = {
             "start_datetime": self.game_start,
@@ -144,9 +162,8 @@ class ApiTest(TransactionTestCase):
         game = Game.objects.get(id=self.game_id)
         self.assertEqual(game.ordered_players(), [self.u1, self.u2])
 
-        r = self.client.post("/api/games/", {"tokens": [self.t2, self.t1]})
-        self.assert_ok(r)
-        game2 = Game.objects.get(id=r.data["id"])
+        game_data = self.create_game([self.t2, self.t1])
+        game2 = Game.objects.get(id=game_data["id"])
         self.assertEqual(game2.ordered_players(), [self.u2, self.u1])
 
     def test_correct_final(self):
@@ -267,21 +284,77 @@ class ApiTest(TransactionTestCase):
         ]
         self.update_game(game_data, 400)
 
+    def _update_games_concurrent(self, game_infos):
+        def send_game_data(game_info):
+            return self.update_game(
+                game_info["data"],
+                game_id=game_info["id"],
+                game_token=game_info["token"],
+            )
+
+        lock = Lock()
+        times_called = 0
+        times_called_at_first_end = None
+
+        def mocked_update_game(game, *args, **kwargs):
+            nonlocal times_called, times_called_at_first_end
+            with lock:
+                times_called += 1
+                first_time = times_called == 1
+
+            # Sleep to allow other concurrent updates to finish before the first
+            if first_time:
+                sleep(0.5)
+
+            update_game(game, *args, **kwargs)
+
+            if first_time:
+                with lock:
+                    times_called_at_first_end = times_called
+
+        with patch("games.views.update_game", mocked_update_game):
+            with concurrent.futures.ThreadPoolExecutor() as executor:
+                futures = [
+                    executor.submit(send_game_data, game_info)
+                    for game_info in game_infos
+                ]
+                results = [f.result().status_code for f in futures]
+
+                self.assertEqual(set(results), {200}, results)
+                self.assertEqual(times_called, len(game_infos))
+
+                return times_called_at_first_end
+
+    @skipUnlessDBFeature("has_select_for_update")
     def test_concurrent_update(self):
-        self.set_token(self.game_token)
-        game_data = self.get_game_data(24)
+        game_info = {
+            "data": self.get_game_data(24),
+            "id": self.game_id,
+            "token": self.game_token,
+        }
+        times_called_at_first_end = self._update_games_concurrent([game_info] * 2)
+        self.assertEqual(times_called_at_first_end, 1)
 
-        def send_game_data():
-            return self.update_game(game_data, None)
+    @skipUnlessDBFeature("has_select_for_update")
+    def test_concurrent_update_different_game(self):
 
-        with concurrent.futures.ThreadPoolExecutor() as executor:
-            f1 = executor.submit(send_game_data)
-            f2 = executor.submit(send_game_data)
+        orig_game_data2 = self.create_game([self.t1, self.t2])
+        game_id2 = orig_game_data2["id"]
+        game_token2 = orig_game_data2["token"]
+        game_data2 = self.get_game_data(17)
+        game_data2["start_datetime"] = orig_game_data2["start_datetime"]
 
-            s1 = f1.result().status_code
-            s2 = f2.result().status_code
+        game_infos = [
+            {
+                "data": self.get_game_data(24),
+                "id": self.game_id,
+                "token": self.game_token,
+            },
+            {"data": game_data2, "id": game_id2, "token": game_token2,},
+        ]
 
-            self.assertLessEqual({s1, s2}, {200, 503}, [s1, s2])
+        times_called_at_first_end = self._update_games_concurrent(game_infos)
+        self.assertEqual(times_called_at_first_end, 2)
 
     def test_non_integer_game_id(self):
         r = self.client.get("/api/games/foo/")
