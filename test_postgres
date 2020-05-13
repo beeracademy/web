@@ -1,0 +1,33 @@
+#!/bin/bash
+set -euo pipefail
+
+echo "[-] Starting postgres"
+container_id=$(docker run --rm -e POSTGRES_HOST_AUTH_METHOD=trust -p 5432:5432 -d postgres:12)
+
+cleanup() {
+	echo "[-] Stopping postgres"
+	docker stop "$container_id"
+}
+
+trap cleanup INT TERM ERR
+
+echo "[-] Waiting for postgres to be ready"
+while ! docker exec "$container_id" pg_isready; do
+	:
+done
+
+# FIXME: Without --keepdb I get the following exception after every test has passed:
+# django.db.utils.OperationalError: database "test_postgres" is being accessed by other users
+# DETAIL:  There are 2 other sessions using the database.
+echo "[-] Running tests"
+env="DJANGO_SETTINGS_MODULE=academy.settings.development_postgres"
+cmd=(./manage.py test --keepdb "$@")
+if [[ "${USE_DOCKER:-}" = "1" ]]; then
+	cmd=(docker run --net=host --env "$env" beeracademy/web "${cmd[@]}")
+else
+	cmd=(env "$env" "${cmd[@]}")
+fi
+
+"${cmd[@]}"
+
+cleanup

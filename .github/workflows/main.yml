@@ -19,6 +19,9 @@ jobs:
     - name: Run tests
       run: docker run --env DJANGO_SETTINGS_MODULE=academy.settings.development beeracademy/web ./manage.py test
 
+    - name: Run tests using postgres
+      run: USE_DOCKER=1 ./test_postgres
+
     - name: Publish image to Docker Hub
       run: |
         echo "$DOCKER_PASSWORD" | docker login --username "$DOCKER_USERNAME" --password-stdin
