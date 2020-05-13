@@ -74,6 +74,7 @@ TEMPLATES = [
                 "constance.context_processors.config",
                 "academy.context_processors.constants",
                 "games.context_processors.seasons",
+                "web.context_processors.admin_url",
             ]
         },
     }

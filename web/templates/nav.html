@@ -13,7 +13,7 @@
         <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
             <div class="navbar-nav">
                 {% if user.is_staff %}
-                    <a class="nav-item nav-link" href="/admin/">Admin<i class="fas fa-tools float-right d-lg-none"></i></a>
+                    <a class="nav-item nav-link" href="{{ admin_url }}">Admin<i class="fas fa-tools float-right d-lg-none"></i></a>
                 {% endif %}
                 <a class="nav-item nav-link" href="/games/">Games<i class="fas fa-gamepad float-right d-lg-none"></i></a>
                 <a class="nav-item nav-link" href="/players/">Players<i class="fas fa-users float-right d-lg-none"></i></a>
