@@ -11,10 +11,11 @@ Install Python 3.8 and create a virtual environment:
 python -mvenv ~/.cache/venvs/academy-web
 ```
 
-Inside the virtual enviroment install [pip-tools](https://github.com/jazzband/pip-tools):
+Inside the virtual enviroment install [pip-tools](https://github.com/jazzband/pip-tools) and install our dependencies with `pip-sync`:
 
 ```sh
 pip install pip-tools
+pip-sync
 ```
 
 Then apply the database migrations:
