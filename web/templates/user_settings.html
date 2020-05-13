@@ -63,6 +63,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.5/cropper.min.js" integrity="sha256-vshROrHusjRqmlrpFKS7oAAd4YV7Stzn6DlDmtIBG/4=" crossorigin="anonymous"></script>
 <script>
 	var image = document.getElementById("image");
+	var initialImageSrc = image.src;
 
 	function updateCropped() {
 		var new_url = cropper.getCroppedCanvas().toDataURL("image/png");
@@ -74,15 +75,10 @@
 		autoCropArea: true,
 	});
 
-	
-
 	image.addEventListener("cropend", updateCropped);
 
-	var firstReady = true;
 	image.addEventListener("ready", function() {
-		if (firstReady) {
-			firstReady = false;
-		} else {
+		if (image.src !== initialImageSrc) {
 			updateCropped();
 		}
 	});
