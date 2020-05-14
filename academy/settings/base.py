@@ -182,3 +182,5 @@ CONSTANCE_CONFIG = {
 
 
 load_dotenv()
+
+GIT_COMMIT_HASH = os.getenv("GIT_COMMIT_HASH")

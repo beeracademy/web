@@ -17,4 +17,15 @@
       <span>&copy; Academy 2002-{% now "Y" %}</span>
     </div>
   </div>
+  <div class="row">
+    <div class="col">
+      <small>
+        {% if GIT_COMMIT_HASH %}
+          Running version <a href="https://github.com/beeracademy/web/commit/{{ GIT_COMMIT_HASH }}">{{ GIT_COMMIT_HASH }}</a>
+        {% else %}
+          Running unknown version
+        {% endif %}
+      </small>
+    </div>
+  </div>
 </footer>
