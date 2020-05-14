@@ -47,3 +47,52 @@ if ($(".live").length) {
         });
     }, 1000);
 }
+
+function gamesHeatmap(el, data) {
+	var options = {
+		series: data.series,
+		xaxis: {
+			categories: data.categories,
+		},
+		grid: {
+			position: 'front',
+			xaxis: {
+				lines: {
+					show: true,
+				},
+			},
+			yaxis: {
+				lines: {
+					show: true,
+				},
+			},
+		},
+		tooltip: {
+			y: {
+				formatter: function(value, args) {
+					if (value === null) return "Out of season";
+					var games = value === 1? "game": "games";
+					return value + " " + games + " played";
+				},
+				title: {
+					formatter: function(value, args) {
+						return data.dates[args.seriesIndex][args.dataPointIndex];
+					},
+				},
+			},
+		},
+		chart: {
+			height: 200,
+			type: 'heatmap',
+		},
+		dataLabels: {
+			enabled: false
+		},
+		colors: ["#008FFB"],
+	};
+
+	var chart = new ApexCharts(el, options);
+	chart.render();
+
+    return chart;
+}

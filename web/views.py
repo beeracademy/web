@@ -42,6 +42,7 @@ from games.models import (
     GamePlayerStat,
     OneTimePassword,
     User,
+    all_time_season,
     filter_season,
     filter_season_and_player_count,
 )
@@ -288,6 +289,67 @@ class PlayerListView(PaginatedListView):
         return context
 
 
+def games_heatmap_data(games, season):
+    if season == all_time_season:
+        last_date = timezone.now().date()
+        first_date = last_date - datetime.timedelta(days=53 * 7 - 1)
+    else:
+        last_date = season.end_datetime.date()
+        first_date = season.start_datetime.date()
+
+    games_played = Counter()
+    for g in filter_season(games, season):
+        if g.end_datetime:
+            games_played[g.end_datetime.date()] += 1
+
+    weekday = last_date.weekday()
+
+    DAY_NAMES = [
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday",
+        "Sunday",
+    ]
+    DAY_NAMES = DAY_NAMES[weekday + 1 :] + DAY_NAMES[: weekday + 1]
+
+    series = []
+    dates = []
+    categories = []
+    for d in DAY_NAMES:
+        series.append({"name": d, "data": []})
+        dates.append([])
+
+    # Ensure we have a whole number of weeks
+    rounded_first_date = first_date + (last_date - first_date) % datetime.timedelta(days=7) - datetime.timedelta(days=6)
+    date = rounded_first_date
+    i = 0
+    while date <= last_date:
+        if i % 7 == 0:
+            if date.day <= 7:
+                categories.append(date.strftime("%b"))
+            else:
+                categories.append("")
+
+        if date >= first_date:
+            played = games_played[date]
+        else:
+            played = None
+
+        series[i % 7]["data"].append(played)
+        dates[i % 7].append(date)
+        date += datetime.timedelta(days=1)
+        i += 1
+
+    return {
+        "series": series,
+        "categories": categories,
+        "dates": dates,
+    }
+
+
 class PlayerDetailView(DetailView):
     model = User
     template_name = "player_detail.html"
@@ -321,51 +383,7 @@ class PlayerDetailView(DetailView):
                 }
             )
 
-        games_played = Counter()
-        for g in self.object.games.all():
-            if g.end_datetime:
-                games_played[g.end_datetime.date()] += 1
-
-        HEATMAP_WEEKS = 53
-
-        today = timezone.now().date()
-        weekday = today.weekday()
-
-        DAY_NAMES = [
-            "Monday",
-            "Tuesday",
-            "Wednesday",
-            "Thursday",
-            "Friday",
-            "Saturday",
-            "Sunday",
-        ]
-        DAY_NAMES = DAY_NAMES[weekday + 1 :] + DAY_NAMES[: weekday + 1]
-
-        series = []
-        dates = []
-        categories = []
-        for d in DAY_NAMES:
-            series.append({"name": d, "data": []})
-            dates.append([])
-
-        date = today - datetime.timedelta(days=HEATMAP_WEEKS * 7 - 1)
-        for i in range(HEATMAP_WEEKS * 7):
-            if i % 7 == 0:
-                if date.day <= 7:
-                    categories.append(date.strftime("%b"))
-                else:
-                    categories.append("")
-
-            series[i % 7]["data"].append(games_played[date])
-            dates[i % 7].append(date)
-            date += datetime.timedelta(days=1)
-
-        context["heatmap_data"] = {
-            "series": series,
-            "categories": categories,
-            "dates": dates,
-        }
+        context["heatmap_data"] = games_heatmap_data(self.object.games.all(), season)
 
         if self.object == self.request.user or self.request.user.is_staff:
             otp, _ = OneTimePassword.objects.get_or_create(user=self.object)
@@ -522,6 +540,13 @@ class StatsView(TemplateView):
             "total_beers": total_sips / 14,
             "total_duration": str(round_timedelta(total_duration)),
         }
+
+        games_played = Counter()
+        for g in games.all():
+            if g.end_datetime:
+                games_played[g.end_datetime.date()] += 1
+
+        context["heatmap_data"] = games_heatmap_data(games, season)
 
         stat_types = {
             "sips_data": (

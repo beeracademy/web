@@ -35,6 +35,8 @@
 	</tbody>
 </table>
 
+<div id="heatmap"></div>
+
 <h3>Sips distribution ({{ sips_data.total_ys|intcomma }} data points)</h3>
 
 Approximate distribution:
@@ -91,12 +93,15 @@ Only shows chugs with duration less than {{ chug_duration_data.max_duration }}.
 {% endblock %}
 
 {% block scripts %}
+{{ heatmap_data|json_script:"heatmap_data" }}
 {{ sips_data|json_script:"sips_data" }}
 {{ chugs_data|json_script:"chugs_data" }}
 {{ duration_data|json_script:"duration_data" }}
 {{ chug_duration_data|json_script:"chug_duration_data" }}
 
 <script>
+	gamesHeatmap(document.getElementById("heatmap"), JSON.parse(document.getElementById("heatmap_data").textContent));
+
 	function barchart_options() {
 		return {
 			chart: {

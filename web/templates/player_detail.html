@@ -174,51 +174,6 @@
 		});
 	}
 
-	var data = JSON.parse(document.getElementById("heatmap_data").textContent);
-
-	var options = {
-		series: data.series,
-		xaxis: {
-			categories: data.categories,
-		},
-		grid: {
-			position: 'front',
-			xaxis: {
-				lines: {
-					show: true,
-				},
-			},
-			yaxis: {
-				lines: {
-					show: true,
-				},
-			},
-		},
-		tooltip: {
-			y: {
-				formatter: function(value, args) {
-					var games = value === 1? "game": "games";
-					return value + " " + games + " played";
-				},
-				title: {
-					formatter: function(value, args) {
-						return data.dates[args.seriesIndex][args.dataPointIndex];
-						return value;
-					},
-				},
-			},
-		},
-		chart: {
-			height: 200,
-			type: 'heatmap',
-		},
-		dataLabels: {
-			enabled: false
-		},
-		colors: ["#008FFB"],
-	};
-
-	var chart = new ApexCharts(document.getElementById("heatmap"), options);
-	chart.render();
+	gamesHeatmap(document.getElementById("heatmap"), JSON.parse(document.getElementById("heatmap_data").textContent));
 </script>
 {% endblock %}
