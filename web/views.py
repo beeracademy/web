@@ -47,6 +47,7 @@ from games.models import (
 )
 from games.ranking import RANKINGS, get_ranking_from_key
 from games.serializers import GameSerializerWithPlayerStats, UserSerializer
+from games.utils import get_milliseconds
 
 from .forms import UserSettingsForm
 from .utils import (
@@ -562,27 +563,54 @@ class StatsView(TemplateView):
                 "dist_str": dist_str,
             }
 
-        MAX_HOURS = 4
         BUCKETS = 60
+        chugs = filter_season_and_player_count(
+            Chug.objects, season, player_count, key="card__game"
+        )
+        duration_data = [
+            {
+                "name": "duration_data",
+                "max_duration": 4,
+                "max_duration_unit": "hours",
+                "durations": lambda max_duration: (
+                    g["duration"]
+                    for g in games_with_durations.filter(
+                        dnf=False, duration__lte=max_duration
+                    ).values("duration")
+                ),
+                "format": str,
+            },
+            {
+                "name": "chug_duration_data",
+                "max_duration": 15,
+                "max_duration_unit": "seconds",
+                "durations": lambda max_duration: (
+                    datetime.timedelta(milliseconds=c["duration_ms"])
+                    for c in chugs.filter(
+                        duration_ms__lte=get_milliseconds(max_duration)
+                    ).values("duration_ms")
+                ),
+                "format": lambda td: f"{td.total_seconds():.2f}",
+            },
+        ]
 
-        max_duration = datetime.timedelta(hours=MAX_HOURS)
-        game_durations = games_with_durations.filter(
-            dnf=False, duration__lte=max_duration,
-        ).values("duration")
-        bucket_span = max_duration / BUCKETS
-        occurrences = Counter()
-        for d in game_durations:
-            duration = d["duration"]
-            x = int(duration / bucket_span)
-            occurrences[x] += 1
+        for d in duration_data:
+            max_duration = datetime.timedelta(
+                **{d["max_duration_unit"]: d["max_duration"]}
+            )
+            bucket_span = max_duration / BUCKETS
+            occurrences = Counter()
+            for duration in d["durations"](max_duration):
+                x = int(duration / bucket_span)
+                occurrences[x] += 1
 
-        context["duration_data"] = {
-            "games": game_durations.count(),
-            "bucket_span_seconds": bucket_span.total_seconds(),
-            "max_hours": MAX_HOURS,
-            "xs": [str((i + 1) * bucket_span) for i in range(BUCKETS)],
-            "ys": [occurrences[i] for i in range(BUCKETS)],
-        }
+            context[d["name"]] = {
+                "total_ys": sum(occurrences.values()),
+                "bucket_span_seconds": bucket_span.total_seconds(),
+                "max_duration": f"{d['max_duration']} {d['max_duration_unit']}",
+                "xs": [d["format"]((i + 1) * bucket_span) for i in range(BUCKETS)],
+                "ys": [occurrences[i] for i in range(BUCKETS)],
+            }
 
         context["chug_table_header"] = ["Players\xa0\\\xa0Chugs", *range(6 + 1)]
         context["chug_table"] = []
@@ -592,5 +620,9 @@ class StatsView(TemplateView):
             dist, _ = self.chug_count_distribution(pcount)
             for chugs in range(6 + 1):
                 row.append(dist(chugs) * 100 if chugs <= pcount else None)
+
+        chugs = filter_season_and_player_count(
+            Chug.objects, season, player_count, key="card__game"
+        )
 
         return context

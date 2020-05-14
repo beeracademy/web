@@ -42,9 +42,9 @@ Approximate distribution:
 
 <div id="sips_chart"></div>
 
-<h3>Game duration distribution ({{ duration_data.games|intcomma }} data points)</h3>
+<h3>Game duration distribution ({{ duration_data.total_ys|intcomma }} data points)</h3>
 
-Only shows finished games with duration less than {{ duration_data.max_hours }} hours.
+Only shows finished games with duration less than {{ duration_data.max_duration }}.
 
 <div id="duration_chart"></div>
 
@@ -82,12 +82,19 @@ Exact distribution:
 
 <div id="chugs_chart"></div>
 
+<h3>Chug duration distribution ({{ chug_duration_data.total_ys|intcomma }} data points)</h3>
+
+Only shows chugs with duration less than {{ chug_duration_data.max_duration }}.
+
+<div id="chug_duration_chart"></div>
+
 {% endblock %}
 
 {% block scripts %}
 {{ sips_data|json_script:"sips_data" }}
 {{ chugs_data|json_script:"chugs_data" }}
 {{ duration_data|json_script:"duration_data" }}
+{{ chug_duration_data|json_script:"chug_duration_data" }}
 
 <script>
 	function barchart_options() {
@@ -182,21 +189,45 @@ Exact distribution:
 		chart.render();
 	}
 
+	var duration_charts = [{
+		data: "duration_data",
+		chart: "duration_chart",
+		name: "Game duration",
+	}, {
+		data: "chug_duration_data",
+		chart: "chug_duration_chart",
+		name: "Chug duration (s)",
+	}];
 
-	var duration_data = JSON.parse(document.getElementById("duration_data").textContent);
-	var duration_chart_el = document.getElementById("duration_chart");
-	if (duration_data.games === 0) {
-		duration_chart_el.textContent = "No data";
-	} else {
-		var duration_options = barchart_options();
-		duration_options.xaxis = {
+	for (var i = 0; i < duration_charts.length; i++) {
+		var data = JSON.parse(document.getElementById(duration_charts[i].data).textContent);
+		var chart_el = document.getElementById(duration_charts[i].chart);
+        if (duration_data.total_ys === 0) {
+			chart_el.textContent = "No data";
+			continue;
+	    }
+
+		var options = barchart_options();
+		options.xaxis = {
 			title: {
-				text: "Game duration",
+				text: duration_charts[i].name,
 			},
-			categories: duration_data.xs,
+			categories: data.xs,
 		};
-		duration_options.series[0].data = duration_data.ys;
-		duration_options.tooltip.y = {
+		options.series[0].data = data.ys;
+		options.tooltip.x = {
+			formatter: (function(data) {
+				return function(i, d) {
+					var x = data.xs[d.dataPointIndex];
+					var prevX = "0";
+					if (d.dataPointIndex > 0) {
+						var prevX = data.xs[d.dataPointIndex - 1];
+					}
+					return "[" + prevX + ", " + x + ")";
+				};
+			})(data),
+		};
+		options.tooltip.y = {
 			formatter: (function(data) {
 				return function(val, d) {
 					return val + " (" + (val / data.total_ys * 100).toFixed(2) + " %)";
@@ -204,8 +235,8 @@ Exact distribution:
 			})(data),
 		};
 
-		var duration_chart = new ApexCharts(duration_chart_el, duration_options);
-		duration_chart.render();
+		var chart = new ApexCharts(chart_el, options);
+		chart.render();
 	}
 </script>
 {% endblock %}
