@@ -621,8 +621,4 @@ class StatsView(TemplateView):
             for chugs in range(6 + 1):
                 row.append(dist(chugs) * 100 if chugs <= pcount else None)
 
-        chugs = filter_season_and_player_count(
-            Chug.objects, season, player_count, key="card__game"
-        )
-
         return context
