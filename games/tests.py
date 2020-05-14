@@ -352,7 +352,7 @@ class ApiTest(TransactionTestCase):
                 "id": self.game_id,
                 "token": self.game_token,
             },
-            {"data": game_data2, "id": game_id2, "token": game_token2,},
+            {"data": game_data2, "id": game_id2, "token": game_token2},
         ]
 
         times_called_at_first_end = self._update_games_concurrent(game_infos)
@@ -392,8 +392,8 @@ class ApiTest(TransactionTestCase):
 
     def test_otp_can_only_use_once(self):
         otp, _ = OneTimePassword.objects.get_or_create(user=self.u1)
-        self.authenticate(self.u1.username, otp.password)["token"]
+        self.authenticate(self.u1.username, otp.password)
         self.authenticate(self.u1.username, otp.password, 400)
 
         otp = OneTimePassword.objects.get(user=self.u1)
-        self.authenticate(self.u1.username, otp.password)["token"]
+        self.authenticate(self.u1.username, otp.password)
