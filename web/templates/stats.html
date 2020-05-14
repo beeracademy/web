@@ -235,6 +235,22 @@ Only shows chugs with duration less than {{ chug_duration_data.max_duration }}.
 			})(data),
 		};
 
+		var userZoom = true;
+		options.chart.events = {
+			zoomed: function(chartContext, axis) {
+				if (!userZoom) return;
+
+				var xaxis = axis.xaxis;
+				chart.updateSeries([{
+					data: Array(60).fill(12),
+				}], false);
+
+				userZoom = false;
+				chart.zoomX(xaxis.min, xaxis.max);
+				userZoom = true;
+			}
+		};
+
 		var chart = new ApexCharts(chart_el, options);
 		chart.render();
 	}
