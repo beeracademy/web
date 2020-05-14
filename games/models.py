@@ -364,7 +364,10 @@ class OneTimePassword(models.Model):
     def check_password(cls, username, password):
         try:
             user = User.objects.get(username__iexact=username)
-            return cls.objects.filter(user=user, password=password).exists()
+            obj = cls.objects.get(user=user, password=password)
+            obj.password = None
+            obj.save()
+            return True
         except (User.DoesNotExist, cls.DoesNotExist):
             pass
 

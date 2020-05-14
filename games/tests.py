@@ -9,7 +9,7 @@ from django.test import TransactionTestCase, skipUnlessDBFeature
 from django.utils import timezone
 from rest_framework.test import APIClient
 
-from games.models import Card, Chug, Game, User
+from games.models import Card, Chug, Game, OneTimePassword, User
 from games.utils import get_milliseconds
 from games.views import update_game
 
@@ -28,17 +28,19 @@ class ApiTest(TransactionTestCase):
     def assert_ok(self, r, status=200):
         self.assert_status(r, 200)
 
-    def create_user(self, client, username, password):
+    def authenticate(self, username, password, expected_status=200):
+        r = self.client.post(
+            "/api-token-auth/", {"username": username, "password": password}
+        )
+        self.assert_status(r, expected_status)
+        return r.data
+
+    def create_user(self, username, password):
         u = User.objects.create(username=username)
         u.set_password(password)
         u.save()
 
-        r = client.post(
-            "/api-token-auth/", {"username": username, "password": password}
-        )
-        self.assert_ok(r)
-
-        token = r.data["token"]
+        token = self.authenticate(username, password)["token"]
         return u, token
 
     def update_game(
@@ -81,9 +83,9 @@ class ApiTest(TransactionTestCase):
     def setUp(self):
         self.client = APIClient()
 
-        self.u1, self.t1 = self.create_user(self.client, "Player1", "test1")
-        self.u2, self.t2 = self.create_user(self.client, "Player2", "test2")
-        self.u3, self.t3 = self.create_user(self.client, "Player3", "test3")
+        self.u1, self.t1 = self.create_user("Player1", "test1")
+        self.u2, self.t2 = self.create_user("Player2", "test2")
+        self.u3, self.t3 = self.create_user("Player3", "test3")
 
         game_data = self.create_game([self.t1, self.t2])
 
@@ -387,3 +389,11 @@ class ApiTest(TransactionTestCase):
         gp2.refresh_from_db()
         self.assertFalse(gp1.dnf)
         self.assertTrue(gp2.dnf)
+
+    def test_otp_can_only_use_once(self):
+        otp, _ = OneTimePassword.objects.get_or_create(user=self.u1)
+        self.authenticate(self.u1.username, otp.password)["token"]
+        self.authenticate(self.u1.username, otp.password, 400)
+
+        otp = OneTimePassword.objects.get(user=self.u1)
+        self.authenticate(self.u1.username, otp.password)["token"]
