@@ -10,7 +10,7 @@ body:not(.staff-user) .staff-only {
 
 .wrapper {
     min-height: 100%;
-    margin-bottom: -130px;
+    margin-bottom: -170px;
 }
 
 footer {
@@ -24,7 +24,7 @@ footer {
 
 footer, .push {
     margin-top: 50px;
-    height: 80px;
+    height: 120px;
 }
 
 footer i {
