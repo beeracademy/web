@@ -397,3 +397,17 @@ class ApiTest(TransactionTestCase):
 
         otp = OneTimePassword.objects.get(user=self.u1)
         self.authenticate(self.u1.username, otp.password)
+
+    def test_merge_users(self):
+        self.create_game([self.t2, self.t3])
+
+        self.assertEqual(self.u1.games.count(), 1)
+        self.assertEqual(self.u2.games.count(), 2)
+        self.assertEqual(self.u3.games.count(), 1)
+
+        self.u1.merge_with(self.u3)
+
+        self.assertEqual(self.u1.games.count(), 2)
+        self.assertEqual(self.u2.games.count(), 2)
+        with self.assertRaises(User.DoesNotExist):
+            self.u3.refresh_from_db()

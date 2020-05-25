@@ -1,13 +1,85 @@
 import json
 
 from django import forms
-from django.contrib import admin
+from django.contrib import admin, messages
+from django.contrib.admin.views.decorators import staff_member_required
+from django.contrib.admin.widgets import AutocompleteSelect
 from django.contrib.auth.admin import UserAdmin
-from django.views.generic import CreateView
+from django.urls import path, reverse_lazy
+from django.utils.decorators import method_decorator
+from django.utils.html import format_html
+from django.views.generic import CreateView, FormView
 
 from .models import Card, Chug, Game, GamePlayer, User
 from .serializers import GameSerializer
 from .views import update_game
+
+
+class AutocompleteModelChoiceField(forms.ModelChoiceField):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # Hack to make AutocompleteSelect work for non-foreign key
+        class FakeRemoteField:
+            model = self.queryset.model
+
+        self.widget = AutocompleteSelect(FakeRemoteField, admin.site)
+
+
+class MergeUsersForm(forms.Form):
+    user1 = AutocompleteModelChoiceField(label="User 1", queryset=User.objects.all())
+    user2 = AutocompleteModelChoiceField(
+        label="User 2", help_text="(will be deleted)", queryset=User.objects.all()
+    )
+
+    def clean(self):
+        super().clean()
+        if "user1" in self.cleaned_data and self.cleaned_data.get(
+            "user1"
+        ) == self.cleaned_data.get("user2"):
+            raise forms.ValidationError("Please pick two different users.")
+
+    def merge_users(self):
+        self.cleaned_data["user1"].merge_with(self.cleaned_data["user2"])
+        return self.cleaned_data["user1"]
+
+
+@method_decorator(staff_member_required, name="dispatch")
+class CustomAdminFormView(FormView):
+    def __init__(self, *args, **kwargs):
+        self.template_name = "admin/custom_form.html"
+        self.success_url = reverse_lazy(
+            f"admin:{self.model._meta.app_label}_{self.model._meta.model_name}_changelist"
+        )
+        self.model_admin = admin.site._registry[self.model]
+        super().__init__(*args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["opts"] = self.model._meta
+        context["has_view_permission"] = self.model_admin.has_view_permission(
+            self.request
+        )
+        context["title"] = self.title
+        return context
+
+
+class MergeUsersView(CustomAdminFormView):
+    form_class = MergeUsersForm
+    model = User
+    title = "Merge users"
+
+    def form_valid(self, form):
+        user = form.merge_users()
+        messages.success(
+            self.request,
+            format_html(
+                "Users successfully merged to: <a href='{}'>{}</a>.",
+                user.get_absolute_url(),
+                user.username,
+            ),
+        )
+        return super().form_valid(form)
 
 
 @admin.register(User)
@@ -15,6 +87,9 @@ class UserAdminWithImage(UserAdmin):
     model = User
 
     fieldsets = UserAdmin.fieldsets + (("Image", {"fields": ("image",)}),)
+
+    def get_urls(self):
+        return [path("merge/", MergeUsersView.as_view())] + super().get_urls()
 
 
 @admin.register(GamePlayer)

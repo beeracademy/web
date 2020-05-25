@@ -187,6 +187,14 @@ class PlayerStat(models.Model):
             )
             ps.recalculate()
 
+    @classmethod
+    def recalculate_user(cls, user):
+        for season_number in tqdm(range(Season.current_season().number + 1)):
+            ps, _ = PlayerStat.objects.get_or_create(
+                user=user, season_number=season_number
+            )
+            ps.recalculate()
+
     def recalculate(self):
         for f in self._meta.fields:
             if f.default != models.fields.NOT_PROVIDED:
@@ -354,6 +362,11 @@ class User(AbstractUser):
 
     def get_absolute_url(self):
         return reverse("player_detail", args=[self.id])
+
+    def merge_with(self, other_user):
+        other_user.gameplayer_set.update(user_id=self)
+        other_user.delete()
+        PlayerStat.recalculate_user(self)
 
 
 class OneTimePassword(models.Model):

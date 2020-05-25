@@ -323,7 +323,11 @@ def games_heatmap_data(games, season):
         dates.append([])
 
     # Ensure we have a whole number of weeks
-    rounded_first_date = first_date + (last_date - first_date) % datetime.timedelta(days=7) - datetime.timedelta(days=6)
+    rounded_first_date = (
+        first_date
+        + (last_date - first_date) % datetime.timedelta(days=7)
+        - datetime.timedelta(days=6)
+    )
     date = rounded_first_date
     i = 0
     while date <= last_date:
