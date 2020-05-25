@@ -9,7 +9,7 @@ from django.db.models import Count, DurationField, ExpressionWrapper, F, Q, Subq
 from django.templatetags.static import static
 from django.urls import reverse
 from django.utils import timezone
-from django.utils.html import mark_safe
+from django.utils.html import format_html
 from PIL import Image
 from tqdm import tqdm
 
@@ -778,7 +778,7 @@ class Card(models.Model):
 
     def colored_suit_symbol(self):
         symbol, color = self.SUIT_SYMBOLS[self.suit]
-        return mark_safe(f'<span style="color: {color};">{symbol}</span>')
+        return format_html("<span style='color: {};'>{}</span>", color, symbol)
 
 
 class Chug(models.Model):
