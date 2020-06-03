@@ -8,7 +8,6 @@ django-filter
 tqdm
 django-bootstrap4
 python-dotenv
-whitenoise
 psycopg2
 django-debug-toolbar
 facebook-sdk

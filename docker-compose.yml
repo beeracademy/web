@@ -57,6 +57,19 @@ services:
         - traefik.http.routers.media-academy-beer.rule=Host(`media.academy.beer`)
         - traefik.http.services.media-academy-beer.loadbalancer.server.port=80
 
+  static:
+    image: nginx:apline
+    volumes:
+      - ./static:/usr/share/nginx/html
+      - ./nginx-default.conf:/etc/nginx/conf.d/default.conf
+    networks:
+      - traefik
+    deploy:
+      labels:
+        - traefik.enable=true
+        - traefik.http.routers.media-academy-beer.rule=Host(`static.academy.beer`)
+        - traefik.http.services.media-academy-beer.loadbalancer.server.port=80
+
   redis:
     image: redis:alpine
 

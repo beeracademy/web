@@ -19,6 +19,7 @@ SERVER_EMAIL = "no-reply@academy.beer"
 DEFAULT_FROM_EMAIL = "no-reply@academy.beer"
 
 PLAY_URL = "https://game.academy.beer/"
+STATIC_URL = "https://static.academy.beer/"
 MEDIA_URL = "https://media.academy.beer/"
 
 DATABASES = {
@@ -37,8 +38,6 @@ CHANNEL_LAYERS = {
         "CONFIG": {"hosts": [("redis", 6379)],},
     },
 }
-
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 # Server admins (get an email when server errors happen)
 ADMINS = [("Asger Hautop Drewsen", "asgerdrewsen@gmail.com")]
