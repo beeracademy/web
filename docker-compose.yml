@@ -8,6 +8,7 @@ services:
       - default
     volumes:
       - ./media:/app/media
+      - ./static:/app/static
       - ./.env:/app/.env
     deploy:
       labels:
@@ -17,6 +18,7 @@ services:
     depends_on:
       - db
       - media
+      - static
       - celery
       - celery-beat
       - redis
@@ -58,7 +60,7 @@ services:
         - traefik.http.services.media-academy-beer.loadbalancer.server.port=80
 
   static:
-    image: nginx:apline
+    image: nginx:alpine
     volumes:
       - ./static:/usr/share/nginx/html
       - ./nginx-default.conf:/etc/nginx/conf.d/default.conf
