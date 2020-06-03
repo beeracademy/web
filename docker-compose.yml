@@ -67,8 +67,8 @@ services:
     deploy:
       labels:
         - traefik.enable=true
-        - traefik.http.routers.media-academy-beer.rule=Host(`static.academy.beer`)
-        - traefik.http.services.media-academy-beer.loadbalancer.server.port=80
+        - traefik.http.routers.static-academy-beer.rule=Host(`static.academy.beer`)
+        - traefik.http.services.static-academy-beer.loadbalancer.server.port=80
 
   redis:
     image: redis:alpine
