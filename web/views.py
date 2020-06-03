@@ -29,6 +29,7 @@ from django.db.models import (
     When,
 )
 from django.shortcuts import render
+from django.templatetags.static import static
 from django.utils import timezone
 from django.views.generic import DetailView, ListView, TemplateView, UpdateView
 from scipy.stats import hypergeom, norm
@@ -373,7 +374,7 @@ class PlayerDetailView(DetailView):
                     "achieved": achievement.has_achieved(self.object),
                     "name": achievement.name,
                     "description": achievement.description,
-                    "icon_url": f"/static/achievements/{achievement.icon}.svg",
+                    "icon_url": static(f"achievements/{achievement.icon}.svg"),
                 }
             )
 
