@@ -33,7 +33,7 @@ django-extensions==2.2.9  # via -r requirements.in
 django-filter==2.2.0      # via -r requirements.in
 django-picklefield==2.1.1  # via django-constance
 django-timezone-field==4.0  # via django-celery-beat
-django==3.0.5             # via -r requirements.in, channels, django-celery-beat, django-debug-toolbar, django-filter, django-picklefield, django-timezone-field, djangorestframework
+django==3.0.7             # via -r requirements.in, channels, django-celery-beat, django-debug-toolbar, django-filter, django-picklefield, django-timezone-field, djangorestframework
 djangorestframework==3.11.0  # via -r requirements.in
 facebook-sdk==3.1.0       # via -r requirements.in
 hiredis==1.0.1            # via aioredis
