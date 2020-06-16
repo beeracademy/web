@@ -140,7 +140,7 @@ class UploadForm(forms.ModelForm):
         try:
             game_id = int(data["id"])
         except (KeyError, ValueError):
-            raise forms.ValidationError("Invalid game id")
+            game_id = None
 
         game, created = Game.objects.get_or_create(
             id=game_id, defaults={"start_datetime": None}
