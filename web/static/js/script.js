@@ -1,4 +1,5 @@
 $("[data-href]").click(function(e) {
+	if (e.target.nodeName === "A") return;
     var url = this.getAttribute("data-href");
     var openInNew = e.ctrlKey || (e.metaKey && navigator.userAgent.indexOf("Mac OS X"));
 
