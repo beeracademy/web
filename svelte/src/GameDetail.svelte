@@ -24,8 +24,10 @@
 	updateData();
 
 	let duration = null;
+	let durationSinceLastActivity = null;
 	$: {
 		let end_datetime;
+		let lastActivityStartDeltaMs = null;
 		if (game_data.end_datetime) {
 			end_datetime = new Date(game_data.end_datetime);
 		} else {
@@ -38,11 +40,26 @@
 				}
 			} else {
 				end_datetime = Date.now();
+				if (game_data.cards.length === 0) {
+					lastActivityStartDeltaMs = 0;
+				} else {
+					const lastCard = game_data.cards[game_data.cards.length - 1];
+					if (lastCard.chug_duration_ms) {
+						lastActivityStartDeltaMs = lastCard.chug_start_start_delta_ms + lastCard.chug_duration_ms;
+					} else if (lastCard.chug_start_start_delta_ms) {
+						lastActivityStartDeltaMs = lastCard.chug_start_start_delta_ms;
+					} else {
+						lastActivityStartDeltaMs = lastCard.start_delta_ms;
+					}
+				}
 			}
 		}
 		if (game_data.start_datetime) {
 			const start_datetime = new Date(game_data.start_datetime);
 			duration = end_datetime - start_datetime;
+			if (lastActivityStartDeltaMs !== null) {
+				durationSinceLastActivity = Date.now() - start_datetime - lastActivityStartDeltaMs;
+			}
 		}
 	}
 
@@ -298,6 +315,9 @@
 				<th scope="col">Start Time</th>
 				<th scope="col">End Time</th>
 				<th scope="col">Duration</th>
+				{#if durationSinceLastActivity !== null}
+				<th scope="col">Time since last activity</th>
+				{/if}
 				</tr>
 			</thead>
 			<tbody>
@@ -326,6 +346,11 @@
 						?
 					{/if}
 				</td>
+				{#if durationSinceLastActivity !== null}
+				<td>
+					{window.formatDuration(durationSinceLastActivity)}
+				</td>
+				{/if}
 				</tr>
 			</tbody>
 			</table>
