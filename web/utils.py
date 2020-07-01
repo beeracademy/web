@@ -71,8 +71,12 @@ class ChooserData:
 class SeasonChooser(ChooserData):
     key = "season"
     reset_keys = ["page"]
-    current_season = Season.current_season()
-    values = [all_time_season] + list(map(Season, range(current_season.number, 0, -1)))
+
+    @property
+    def values(self):
+        return [all_time_season] + list(
+            map(Season, range(Season.current_season().number, 0, -1))
+        )
 
     def from_str(self, s):
         if Season.is_valid_season_number(s):

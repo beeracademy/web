@@ -449,7 +449,10 @@ class Season:
 class _AllTimeSeason:
     number = 0
     start_datetime = Season(1).start_datetime
-    end_datetime = Season.current_season().end_datetime
+
+    @property
+    def end_datetime(self):
+        return Season.current_season().end_datetime
 
     def __str__(self):
         return "All time"
