@@ -247,7 +247,7 @@ class GameSerializer(serializers.ModelSerializer):
 
         previous_delta = None
         extra_time = 0
-        for delta in increasing_deltas:
+        for i, delta in enumerate(increasing_deltas):
             if delta < 0:
                 raise serializers.ValidationError(
                     {"cards": "Card times are not non-negative"}
@@ -262,7 +262,9 @@ class GameSerializer(serializers.ModelSerializer):
                     delta += time_increase
                 else:
                     raise serializers.ValidationError(
-                        {"cards": "Card times are not increasing"}
+                        {
+                            "cards": f"Card times are not increasing: {delta} < {previous_delta} ({i - 1}, {i})"
+                        }
                     )
 
             previous_delta = delta
