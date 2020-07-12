@@ -267,7 +267,17 @@ class GameSerializer(serializers.ModelSerializer):
                         }
                     )
 
+            increasing_deltas[i] = delta
             previous_delta = delta
+
+        if self.context.get("fix_times"):
+            g = iter(increasing_deltas)
+            for card_data in new_cards:
+                card_data["start_delta_ms"] = next(g)
+
+                for f in CHUG_FIELDS:
+                    if f in card_data:
+                        card_data[f] = next(g)
 
         for i, card_data in enumerate(new_cards):
             if card_data["value"] == 14 and "chug_end_start_delta_ms" not in card_data:

@@ -10,6 +10,7 @@ from django.utils import timezone
 from rest_framework.test import APIClient
 
 from games.models import Card, Chug, Game, OneTimePassword, User
+from games.serializers import GameSerializer
 from games.utils import get_milliseconds
 from games.views import update_game
 
@@ -285,6 +286,32 @@ class ApiTest(TransactionTestCase):
             "start_delta_ms"
         ]
         self.update_game(game_data, 400)
+
+    def _test_fix_times(self, game_data):
+        game = Game.objects.get(id=self.game_id)
+        self.assertFalse(GameSerializer(game, data=game_data).is_valid())
+        s = GameSerializer(game, data=game_data, context={"fix_times": True})
+        self.assertTrue(s.is_valid())
+        self.assertTrue(GameSerializer(game, data=s.validated_data).is_valid())
+
+    def test_send_decreasing_times_fix_times(self):
+        game_data = self.final_game_data
+        game_data["cards"][14]["start_delta_ms"] = game_data["cards"][2][
+            "start_delta_ms"
+        ]
+        self._test_fix_times(game_data)
+
+    def test_send_decreasing_fix_times_chug_start(self):
+        game_data = self.final_game_data
+        aces = [c for c in game_data["cards"] if c["value"] == 14]
+        aces[0]["chug_start_start_delta_ms"] = game_data["cards"][0]["start_delta_ms"]
+        self._test_fix_times(game_data)
+
+    def test_send_decreasing_fix_times_chug_end(self):
+        game_data = self.final_game_data
+        aces = [c for c in game_data["cards"] if c["value"] == 14]
+        aces[0]["chug_end_start_delta_ms"] = aces[0]["chug_start_start_delta_ms"] - 1
+        self._test_fix_times(game_data)
 
     def _update_games_concurrent(self, game_infos):
         def send_game_data(game_info):
