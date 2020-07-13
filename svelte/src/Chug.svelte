@@ -5,6 +5,7 @@
 <script>
 	export let start_datetime;
 	export let chug;
+	export let dnf;
 
 	import ColoredSuit from "./ColoredSuit.svelte";
 
@@ -27,7 +28,9 @@
 			clearInterval(intervalId);
 		}
 
-		if (card.chug_duration_ms) {
+		if (dnf) {
+			durationStr = "DNF";
+		} else if (card.chug_duration_ms) {
 			durationStr = window.formatDuration(card.chug_duration_ms, 3);
 		} else if (card.chug_start_start_delta_ms) {
 			intervalId = setInterval(updateDuration, 10);
