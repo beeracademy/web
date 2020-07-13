@@ -293,6 +293,7 @@ class ApiTest(TransactionTestCase):
         s = GameSerializer(game, data=game_data, context={"fix_times": True})
         self.assertTrue(s.is_valid())
         self.assertTrue(GameSerializer(game, data=s.validated_data).is_valid())
+        update_game(game, s.validated_data)
 
     def test_send_decreasing_times_fix_times(self):
         game_data = self.final_game_data

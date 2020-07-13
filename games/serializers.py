@@ -279,6 +279,12 @@ class GameSerializer(serializers.ModelSerializer):
                     if f in card_data:
                         card_data[f] = next(g)
 
+                if "chug_duration_ms" in card_data:
+                    card_data["chug_duration_ms"] = (
+                        card_data["chug_end_start_delta_ms"]
+                        - card_data["chug_start_start_delta_ms"]
+                    )
+
         for i, card_data in enumerate(new_cards):
             if card_data["value"] == 14 and "chug_end_start_delta_ms" not in card_data:
                 if i != len(new_cards) - 1 or ended:
