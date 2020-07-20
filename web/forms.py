@@ -10,6 +10,8 @@ from PIL import Image
 
 from games.models import User
 
+from .models import FailedGameUpload
+
 validators_help_text = "<br>".join(
     [v.get_help_text() for v in get_default_password_validators()]
 )
@@ -63,3 +65,11 @@ class UserSettingsForm(forms.ModelForm):
             validate_password(password, self.instance)
 
         return password
+
+
+class FailedGameUploadForm(forms.ModelForm):
+    class Meta:
+        model = FailedGameUpload
+        fields = ["game_log_file", "game_log", "notes"]
+
+    game_log_file = forms.FileField(required=False)

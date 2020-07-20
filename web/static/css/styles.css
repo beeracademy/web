@@ -164,3 +164,8 @@ tr.in-game a {
 .achievements img.active {
     opacity: 1;
 }
+
+.invalid-feedback {
+    /* wtf bootstrap??? */
+    display: block !important;
+}

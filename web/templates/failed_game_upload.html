@@ -1,0 +1,60 @@
+{% extends "container.html" %}
+
+{% load static %}
+{% load bootstrap4 %}
+
+{% block pagetitle %}Upload failed game{% endblock %}
+
+{% block content %}
+<div class="container">
+	<div class="row">
+		<div class="mx-auto card col-md-6">
+			<div class="card-body">
+				<h3 class="card-title">Upload failed game</h3>
+				<hr>
+				<form action="/upload_game/" method="post" class="form">
+					{% csrf_token %}
+					{% bootstrap_form form %}
+					{% buttons %}
+					<br>
+					<button type="submit" class="btn btn-danger col-12 text-big" style="font-size: 18px;">Upload game</button>
+					{% endbuttons %}
+				</form>
+			</div>
+		</div>
+	</div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(function() {
+  function set_data(data) {
+	var indented = JSON.stringify(data, null, 2);
+	$("#id_game_log").text(indented);
+  }
+
+  var file_input = $("#id_game_log_file");
+  file_input.change(function() {
+	$("#id_game_log").text("");
+	var files = file_input.get(0).files;
+	if (files.length > 0) {
+	  var file = files[0];
+	  var reader = new FileReader();
+	  reader.readAsText(file);
+	  reader.onload = function(evt) {
+		if(evt.target.readyState === FileReader.DONE) {
+		  var text = evt.target.result;
+		  try {
+			var data = JSON.parse(text);
+			set_data(data);
+		  } catch(e) {
+			alert(e);
+		  }
+		}
+	  };
+	}
+  });
+});
+</script>
+{% endblock scripts %}

@@ -1,3 +1,8 @@
 from django.contrib import admin
 
-# Register your models here.
+from .models import FailedGameUpload
+
+
+@admin.register(FailedGameUpload)
+class FailedGameUploadAdmin(admin.ModelAdmin):
+    pass

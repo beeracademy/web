@@ -7,6 +7,7 @@ urlpatterns = [
     path("about/", views.about, name="about"),
     path("games/", views.GameListView.as_view(), name="game_list"),
     path("games/<int:pk>/", views.GameDetailView.as_view(), name="game_detail"),
+    path("upload_game/", views.FailedGameUploadView.as_view(), name="upload_game"),
     path("players/", views.PlayerListView.as_view(), name="player_list"),
     path("players/<int:pk>/", views.PlayerDetailView.as_view(), name="player_detail"),
     path("ranking/", views.RankingView.as_view(), name="ranking"),

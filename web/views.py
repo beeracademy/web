@@ -31,7 +31,13 @@ from django.db.models import (
 from django.shortcuts import render
 from django.templatetags.static import static
 from django.utils import timezone
-from django.views.generic import DetailView, ListView, TemplateView, UpdateView
+from django.views.generic import (
+    CreateView,
+    DetailView,
+    ListView,
+    TemplateView,
+    UpdateView,
+)
 from scipy.stats import hypergeom, norm
 
 from games.achievements import ACHIEVEMENTS
@@ -51,7 +57,8 @@ from games.ranking import RANKINGS, get_ranking_from_key
 from games.serializers import GameSerializerWithPlayerStats, UserSerializer
 from games.utils import get_milliseconds
 
-from .forms import UserSettingsForm
+from .forms import FailedGameUploadForm, UserSettingsForm
+from .models import FailedGameUpload
 from .utils import (
     GameOrder,
     PlayerCountChooser,
@@ -652,3 +659,15 @@ class StatsView(TemplateView):
                 row.append(dist(chugs) * 100 if chugs <= pcount else None)
 
         return context
+
+
+class FailedGameUploadView(CreateView):
+    model = FailedGameUpload
+    template_name = "failed_game_upload.html"
+    form_class = FailedGameUploadForm
+    success_url = "/"
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        messages.success(self.request, "Game log successfully uploaded.")
+        return response

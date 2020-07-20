@@ -30,4 +30,7 @@ def admin_url(request):
         url_name = f"admin:{model._meta.app_label}_{model._meta.model_name}_{page}"
         return reverse(url_name, args=args)
 
-    return {"admin_url": aux(request) or reverse("admin:index")}
+    try:
+        return {"admin_url": aux(request) or reverse("admin:index")}
+    except:
+        return {"admin_url": reverse("admin:index")}
