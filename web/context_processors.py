@@ -23,14 +23,16 @@ def admin_url(request):
             page = "change"
             view = view_class()
             view.setup(request, *r.args, **r.kwargs)
-            args = [view.get_object().pk]
+            try:
+                obj = view.get_object()
+            except AttributeError:
+                return None
+
+            args = [obj.pk]
         else:
             return None
 
         url_name = f"admin:{model._meta.app_label}_{model._meta.model_name}_{page}"
         return reverse(url_name, args=args)
 
-    try:
-        return {"admin_url": aux(request) or reverse("admin:index")}
-    except:
-        return {"admin_url": reverse("admin:index")}
+    return {"admin_url": aux(request) or reverse("admin:index")}
