@@ -17,6 +17,7 @@ from django.contrib.auth.views import (
     PasswordResetView,
 )
 from django.core.files import File
+from django.core.mail import mail_admins
 from django.core.paginator import Paginator
 from django.db.models import (
     Case,
@@ -64,6 +65,7 @@ from .utils import (
     PlayerCountChooser,
     RankingChooser,
     SeasonChooser,
+    get_admin_object_url,
     round_timedelta,
     updated_query_url,
 )
@@ -669,5 +671,17 @@ class FailedGameUploadView(CreateView):
 
     def form_valid(self, form):
         response = super().form_valid(form)
+        if self.request.user.is_authenticated:
+            form.instance.user = self.request.user
+            form.instance.save()
+        mail_admins(
+            "[academy.beer] Game log uploaded",
+            f"""A game has been uploaded to
+https://academy.beer{get_admin_object_url(form.instance)}
+by {self.request.user}.
+
+Notes:
+{form.instance.notes}""",
+        )
         messages.success(self.request, "Game log successfully uploaded.")
         return response

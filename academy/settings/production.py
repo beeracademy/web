@@ -39,9 +39,6 @@ CHANNEL_LAYERS = {
     },
 }
 
-# Server admins (get an email when server errors happen)
-ADMINS = [("Asger Hautop Drewsen", "asgerdrewsen@gmail.com")]
-
 FACEBOOK_PAGE_ID = "227174884109471"
 FACEBOOK_ACCESS_TOKEN = os.environ["FACEBOOK_ACCESS_TOKEN"]
 

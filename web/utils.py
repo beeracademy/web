@@ -1,5 +1,7 @@
 import datetime
 
+from django.urls import reverse
+
 from games.models import Season, all_time_season
 from games.ranking import RANKINGS, get_ranking_from_key
 
@@ -181,3 +183,14 @@ class SortOrder:
 
 class GameOrder(SortOrder):
     columns = ["end_datetime", "duration"]
+
+
+def get_admin_url(obj_or_model, page="changelist", args=[]):
+    url_name = (
+        f"admin:{obj_or_model._meta.app_label}_{obj_or_model._meta.model_name}_{page}"
+    )
+    return reverse(url_name, args=args)
+
+
+def get_admin_object_url(obj, page="change"):
+    return get_admin_url(obj, page, args=[obj.pk])

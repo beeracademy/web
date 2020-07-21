@@ -2,6 +2,8 @@ from django.urls import Resolver404, resolve, reverse
 from django.views.generic.detail import SingleObjectMixin
 from django.views.generic.list import MultipleObjectMixin
 
+from .utils import get_admin_object_url, get_admin_url
+
 
 def admin_url(request):
     def aux(request):
@@ -16,23 +18,15 @@ def admin_url(request):
         if not model:
             return None
 
-        if issubclass(view_class, MultipleObjectMixin):
-            page = "changelist"
-            args = []
-        elif issubclass(view_class, SingleObjectMixin):
-            page = "change"
+        if issubclass(view_class, SingleObjectMixin):
             view = view_class()
             view.setup(request, *r.args, **r.kwargs)
             try:
                 obj = view.get_object()
+                return get_admin_object_url(obj)
             except AttributeError:
-                return None
+                pass
 
-            args = [obj.pk]
-        else:
-            return None
-
-        url_name = f"admin:{model._meta.app_label}_{model._meta.model_name}_{page}"
-        return reverse(url_name, args=args)
+        return get_admin_url(model)
 
     return {"admin_url": aux(request) or reverse("admin:index")}
