@@ -1,10 +1,4 @@
 {
   "extends": "@snowpack/app-scripts-svelte",
-  "scripts": {},
-  "devOptions": {
-    "port": 12345
-  },
-  "installOptions": {
-    "alias": {"svelte": "svelte/internal"}
-  }
+  "plugins": [["@snowpack/plugin-webpack", {}]]
 }

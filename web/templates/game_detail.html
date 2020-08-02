@@ -125,8 +125,6 @@
     window.is_staff = {{ user.is_staff|lower }};
 </script>
 
-{% svelte_include "GameDetail" %}
-
 {% endblock %}
 
 {% block body %}
@@ -139,5 +137,7 @@
 
 <div id="svelte-game_detail">
 </div>
+
+{% svelte_include "GameDetail" %}
  
 {% endblock %}
