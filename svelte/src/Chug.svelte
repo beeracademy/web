@@ -1,26 +1,27 @@
-<script context="module">
-	import { card_constants } from "./globals.js";
+<script context="module" lang="ts">
+	import type { ChugData } from "./types";
+	import { formatDuration } from "./globals";
 </script>
 
-<script>
-	export let start_datetime;
-	export let chug;
-	export let dnf;
+<script lang="ts">
+	export let start_datetime: string;
+	export let chug: ChugData;
+	export let dnf: boolean;
 
 	import ColoredSuit from "./ColoredSuit.svelte";
 
-	const player = chug.player;
+	const player = chug.player!;
 	$: card = chug.card;
 
-	var intervalId = null;
-	var durationStr;
+	let intervalId:number | null = null;
+	let durationStr = "";
 
 	function start_delta_ms() {
-		return Date.now() - new Date(start_datetime);
+		return Date.now() - new Date(start_datetime).getTime();
 	}
 
 	function updateDuration() {
-		durationStr = window.formatDuration(start_delta_ms() - card.chug_start_start_delta_ms, 3);
+		durationStr = formatDuration(start_delta_ms() - card.chug_start_start_delta_ms!, 3);
 	}
 
 	$: {
@@ -31,7 +32,7 @@
 		if (dnf) {
 			durationStr = "DNF";
 		} else if (card.chug_duration_ms) {
-			durationStr = window.formatDuration(card.chug_duration_ms, 3);
+			durationStr = formatDuration(card.chug_duration_ms, 3);
 		} else if (card.chug_start_start_delta_ms) {
 			intervalId = setInterval(updateDuration, 10);
 		} else {

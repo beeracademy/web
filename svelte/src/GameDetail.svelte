@@ -1,4 +1,9 @@
-<script>
+<script context="module" lang="ts">
+	import { is_authenticated, is_staff, formatDate, formatDuration, moment } from "./globals";
+	import type { GameData, GamePlayerData, ChugData } from "./types";
+</script>
+
+<script lang="ts">
 	import { onMount } from 'svelte';
 
 	import Players from "./Players.svelte";
@@ -7,8 +12,8 @@
 	import SipsGraph from "./SipsGraph.svelte";
 	import TimeGraph from "./TimeGraph.svelte";
 
-	let game_data = JSON.parse(document.getElementById("game_data").textContent);
-	const ordered_gameplayers = JSON.parse(document.getElementById("ordered_gameplayers").textContent);
+	let game_data = JSON.parse(document.getElementById("game_data")!.textContent!) as GameData;
+	const ordered_gameplayers = JSON.parse(document.getElementById("ordered_gameplayers")!.textContent!) as GamePlayerData[];
 
 	async function updateData() {
 		if (game_data.end_datetime || game_data.dnf) return;
@@ -23,8 +28,8 @@
 
 	updateData();
 
-	let duration = null;
-	let durationSinceLastActivity = null;
+	let duration: number | null = null;
+	let durationSinceLastActivity: number | null = null;
 	$: {
 		let end_datetime;
 		let lastActivityStartDeltaMs = null;
@@ -32,20 +37,20 @@
 			end_datetime = new Date(game_data.end_datetime);
 		} else {
 			if (game_data.dnf) {
-				const start_date = new Date(game_data.start_datetime);
+				const start_date = new Date(game_data.start_datetime!);
 				if (game_data.cards.length === 0) {
 					end_datetime = start_date;
 				} else {
 					end_datetime = new Date(start_date.getTime() + game_data.cards[game_data.cards.length - 1].start_delta_ms);
 				}
 			} else {
-				end_datetime = Date.now();
+				end_datetime = new Date;
 				if (game_data.cards.length === 0) {
 					lastActivityStartDeltaMs = 0;
 				} else {
 					const lastCard = game_data.cards[game_data.cards.length - 1];
 					if (lastCard.chug_duration_ms) {
-						lastActivityStartDeltaMs = lastCard.chug_start_start_delta_ms + lastCard.chug_duration_ms;
+						lastActivityStartDeltaMs = lastCard.chug_start_start_delta_ms! + lastCard.chug_duration_ms;
 					} else if (lastCard.chug_start_start_delta_ms) {
 						lastActivityStartDeltaMs = lastCard.chug_start_start_delta_ms;
 					} else {
@@ -56,14 +61,14 @@
 		}
 		if (game_data.start_datetime) {
 			const start_datetime = new Date(game_data.start_datetime);
-			duration = end_datetime - start_datetime;
+			duration = end_datetime.getTime() - start_datetime.getTime();
 			if (lastActivityStartDeltaMs !== null) {
-				durationSinceLastActivity = Date.now() - start_datetime - lastActivityStartDeltaMs;
+				durationSinceLastActivity = Date.now() - start_datetime.getTime() - lastActivityStartDeltaMs;
 			}
 		}
 	}
 
-	let chugs;
+	let chugs: ChugData[];
 	$: {
 		chugs = [];
 		for (let i = 0; i < game_data.cards.length; i++) {
@@ -77,36 +82,37 @@
 		}
 	}
 
-	$: game_data, game_data.playerCount = ordered_gameplayers.length;
+	$: if (game_data) {
+		game_data.playerCount = ordered_gameplayers.length;
+	}
 
-	let chat_messages, chat_input;
+	let chat_messages:HTMLDivElement, chat_input:HTMLInputElement;
 	onMount(function () {
-		var scheme = window.location.protocol === "https:"? "wss": "ws";
-
-		var socket = null;
+		const scheme = window.location.protocol === "https:"? "wss": "ws";
+		let socket:WebSocket | null = null;
 
 		startSocket();
 
 		function startSocket() {
 			socket = new WebSocket(scheme + "://" + window.location.host + "/ws/chat/" + game_data.id + "/");
 
-			socket.addEventListener("open", function (e) {
-				if (window.is_authenticated) {
+			socket.addEventListener("open", function() {
+				if (is_authenticated) {
 					chat_input.disabled = false;
 				}
 			});
 
-			socket.addEventListener("close", function(e) {
+			socket.addEventListener("close", function() {
 				console.error("Chat socket closed unexpectedly!");
 				disconnected();
 			});
 
-			socket.addEventListener("error", function(e) {
+			socket.addEventListener("error", function() {
 				console.error("Got an error from the chat socket!");
-				socket.close();
+				socket!.close();
 			});
 
-			socket.addEventListener("message", function (e) {
+			socket.addEventListener("message", function(e) {
 				var data = JSON.parse(e.data);
 
 				var username = data["username"];
@@ -144,7 +150,7 @@
 
 		chat_input.addEventListener("keyup", function(e) {
 			if (e.keyCode === 13) {
-				socket.send(JSON.stringify({
+				socket!.send(JSON.stringify({
 					"message": chat_input.value,
 				}));
 
@@ -157,12 +163,12 @@
 			setTimeout(startSocket, 1000);
 		}
 
-		function addMessage(user, msg, isInfo, time) {
-			var elm = document.createElement("div");
-			elm.classList += "message";
+		function addMessage(user: string, msg: string, isInfo: boolean, _time: string) {
+			let elm = document.createElement("div");
+			elm.classList.add("message");
 
 			if (isInfo) {
-				elm.classList += " info-message";
+				elm.classList.add("info-message");
 			}
 
 			var userElm = document.createElement("B");
@@ -238,15 +244,15 @@
         overflow-x: hidden;
     }
 
-    .game-wrapper .chat .messages .message.info-message {
+    .game-wrapper .chat .messages :global(.message.info-message) {
         color: #666;
     }
 
-    .game-wrapper .chat .messages .message {
+    .game-wrapper .chat .messages :global(.message) {
         margin: 4px 8px;
     }
 
-    .game-wrapper .chat .messages .message:not(.info-message) b {
+    .game-wrapper .chat .messages :global(.message:not(.info-message) b) {
         color: #bd2130;
     }
 
@@ -257,11 +263,6 @@
         border-radius: 5px;
         background-color: #f2f2f2;
         outline-color: #bd2130;
-    }
-
-    .card-img-top {
-		/* IMAGE_WIDTH: */
-        width: 156px;
     }
 
     @media only screen and (max-width: 600px) {
@@ -298,7 +299,7 @@
 		<div class="container">
 			<h2>
 				Meta
-		        {#if window.is_staff}
+		        {#if is_staff}
                 <a class="btn btn-primary float-right text-light col-md-auto" href="/admin/games/game/{game_data.id}/change/">Edit</a>
                 <br><br class="d-lg-none">
 				{/if}
@@ -325,7 +326,7 @@
 				<td>{game_data.id}</td>
 				<td id="game_start_datetime">
 					{#if game_data.start_datetime}
-						{window.formatDate(new Date(game_data.start_datetime))}
+						{formatDate(new Date(game_data.start_datetime))}
 					{:else}
 						?
 					{/if}
@@ -334,21 +335,21 @@
 					{#if game_data.dnf}
 						DNF
 					{:else if game_data.end_datetime}
-						{window.formatDate(new Date(game_data.end_datetime))}
+						{formatDate(new Date(game_data.end_datetime))}
 					{:else}
 						-
 					{/if}
 				</td>
 				<td id="game_duration">
 					{#if duration}
-						{window.formatDuration(duration)}
+						{formatDuration(duration)}
 					{:else}
 						?
 					{/if}
 				</td>
 				{#if durationSinceLastActivity !== null}
 				<td>
-					{window.formatDuration(durationSinceLastActivity)}
+					{formatDuration(durationSinceLastActivity)}
 				</td>
 				{/if}
 				</tr>
@@ -362,7 +363,9 @@
 			<div class="container">
 				<div id="chugs_container" class="row justify-content-md-center">
 					{#each chugs as chug}
+						{#if game_data.start_datetime}
 						<Chug start_datetime={game_data.start_datetime} chug={chug} dnf={game_data.dnf}/>
+						{/if}
 					{/each}
 				</div>
 			</div>
@@ -413,6 +416,6 @@
 		<div class="messages" id="chat-messages" bind:this={chat_messages}>
         </div>
 		<input id="chat-input" autocomplete="off" type="text" disabled
-			placeholder={window.is_authenticated? "Send a message": "Login to chat"} bind:this={chat_input}>
+			placeholder={is_authenticated? "Send a message": "Login to chat"} bind:this={chat_input}>
 	</div>
 </div>

@@ -1,12 +1,14 @@
-<script>
-  export let game_data;
-  export let ordered_gameplayers;
+<script lang="ts">
+  import type { GameData, GamePlayerData } from "./types";
+
+  export let game_data: GameData;
+  export let ordered_gameplayers: GamePlayerData[];
 
   import { onMount } from "svelte";
-  import { userColors } from "./globals.js";
+  import { formatDuration, ApexCharts } from "./globals.js";
 
-  let container;
-  let chart;
+  let container: HTMLElement;
+  let chart: any;
 
   let lastLength = -1;
 
@@ -15,7 +17,7 @@
     if (game_data.cards.length === lastLength) return;
     lastLength = game_data.cards.length;
 
-    const series = [
+    const series: { name: string, data: number[] }[] = [
       {
         name: "Time",
         data: []
@@ -29,8 +31,6 @@
     }
 
     chart.updateSeries(series);
-
-    window.series = series;
   }
 
   onMount(() => {
@@ -51,7 +51,7 @@
         },
         tickAmount: "dataPoints",
         labels: {
-          formatter: function(value, timestamp, index) {
+          formatter: function(value: number, _timestamp: any, _index: any) {
             return Math.round(value);
           }
         }
@@ -63,8 +63,8 @@
         },
         min: 0,
         labels: {
-          formatter: function(val, index) {
-            return window.formatDuration(val);
+          formatter: function(val: number, _index: any) {
+            return formatDuration(val);
           }
         }
       },
@@ -73,7 +73,7 @@
       },
       tooltip: {
         x: {
-          formatter: function(value, index) {
+          formatter: function(value: number, _index: any) {
             const player_name =
               ordered_gameplayers[(value - 1) % game_data.playerCount].user
                 .username;
@@ -85,26 +85,28 @@
           }
         },
         y: {
-          formatter: function(val, { series, seriesIndex, dataPointIndex, w }) {
+          formatter: function(val: number, { series, dataPointIndex } : { series: any, dataPointIndex: number }) {
             const previous =
               dataPointIndex === 0
                 ? 0
                 : series[0][dataPointIndex - 1];
             const msDiff = val - previous;
-            return "Turn time " + window.formatDuration(msDiff);
+            return "Turn time " + formatDuration(msDiff);
           }
         }
       },
       series: []
     };
 
-    chart = new window.ApexCharts(container, options);
+    chart = new ApexCharts(container, options);
     chart.render();
 
     updateChart();
   });
 
-  $: game_data, updateChart();
+  $: if (game_data) {
+    updateChart();
+  }
 </script>
 
 <div>

@@ -1,12 +1,14 @@
-<script>
-  export let game_data;
-  export let ordered_gameplayers;
+<script lang="ts">
+  import type { GameData, GamePlayerData } from "./types";
+
+  export let game_data: GameData;
+  export let ordered_gameplayers: GamePlayerData[];
 
   import { onMount } from "svelte";
-  import { userColors } from "./globals.js";
+  import { userColors, ApexCharts } from "./globals.js";
 
-  let container;
-  let chart;
+  let container: HTMLElement;
+  let chart: any;
 
   let lastLength = -1;
   function updateChart() {
@@ -49,7 +51,7 @@
         },
         tickAmount: "dataPoints",
         labels: {
-          formatter: function(value, timestamp, index) {
+          formatter: function(value: number, _timestamp: any, _index: any) {
             return Math.round(value);
           }
         }
@@ -63,13 +65,15 @@
       series: []
     };
 
-    chart = new window.ApexCharts(container, options);
+    chart = new ApexCharts(container, options);
     chart.render();
 
     updateChart();
   });
 
-  $: game_data, updateChart();
+  $: if (game_data) {
+    updateChart();
+  }
 </script>
 
 <div bind:this={container} />

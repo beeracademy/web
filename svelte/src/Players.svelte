@@ -1,8 +1,9 @@
-<script>
+<script lang="ts">
+    import type { GameData, GamePlayerData } from "./types";
 	import PlayerStats from "./PlayerStats.svelte";
 
-    export let game_data;
-    export let ordered_gameplayers;
+    export let game_data: GameData;
+    export let ordered_gameplayers: GamePlayerData[];
 </script>
 
 <style>

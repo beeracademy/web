@@ -1,11 +1,12 @@
 <svelte:options immutable/>
 
-<script context="module">
-	import { card_constants } from "./globals.js";
+<script context="module" lang="ts">
+	import { card_constants } from "./globals";
+	import type { CardData } from "./types";
 </script>
 
-<script>
-	export let card;
+<script lang="ts">
+	export let card: CardData;
 
 	const [symbol, color] = card_constants.suit_symbols[card.suit];
 </script>
