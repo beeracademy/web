@@ -447,3 +447,18 @@ class ApiTest(TransactionTestCase):
         game_data["dnf"] = True
         game_data["has_ended"] = True
         self.update_game(game_data)
+
+    def test_location(self):
+        self.set_token(self.game_token)
+        game_data = self.get_game_data(20)
+        game_data["location"] = {
+            "latitude": 10.5,
+            "longitude": -4.7,
+            "accuracy": 32.7,
+        }
+        self.update_game(game_data)
+
+        game = Game.objects.get(id=self.game_id)
+
+        for k, v in game_data["location"].items():
+            self.assertEqual(v, getattr(game, "location_" + k))

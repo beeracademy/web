@@ -147,6 +147,10 @@ def update_game(game, data):
 
     game.dnf = data["dnf"]
 
+    if "location" in data:
+        for k, v in data["location"].items():
+            setattr(game, "location_" + k, v)
+
     game.save()
 
     if game.has_ended and not game_already_ended:

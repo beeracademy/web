@@ -485,6 +485,9 @@ class Game(models.Model):
     description = models.CharField(max_length=1000, blank=True)
     official = models.BooleanField(default=True)
     dnf = models.BooleanField(default=False)
+    location_latitude = models.FloatField(null=True, blank=True)
+    location_longitude = models.FloatField(null=True, blank=True)
+    location_accuracy = models.FloatField(null=True, blank=True)
 
     @staticmethod
     def add_durations(qs):

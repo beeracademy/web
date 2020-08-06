@@ -112,6 +112,12 @@ class CardSerializer(serializers.ModelSerializer):
         return data
 
 
+class LocationSerializer(serializers.Serializer):
+    latitude = serializers.FloatField()
+    longitude = serializers.FloatField()
+    accuracy = serializers.FloatField()
+
+
 class GameSerializer(serializers.ModelSerializer):
     class Meta:
         model = Game
@@ -130,6 +136,7 @@ class GameSerializer(serializers.ModelSerializer):
             "has_ended",
             "description_html",
             "dnf_player_ids",
+            "location",
         ]
 
     start_datetime = serializers.DateTimeField(required=False)
@@ -145,6 +152,7 @@ class GameSerializer(serializers.ModelSerializer):
     dnf_player_ids = serializers.ListField(
         child=serializers.IntegerField(), write_only=True, required=False, default=[]
     )
+    location = LocationSerializer(required=False)
 
     hashtag_re = re.compile(r"#([^# ]+)")
 
@@ -200,7 +208,9 @@ class GameSerializer(serializers.ModelSerializer):
             )
 
         if dnf and not ended:
-            raise serializers.ValidationError({"dnf": "has_ended must be true if dnf is true"})
+            raise serializers.ValidationError(
+                {"dnf": "has_ended must be true if dnf is true"}
+            )
 
         previous_cards = len(cards)
 
