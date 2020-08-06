@@ -192,10 +192,15 @@ class GameSerializer(serializers.ModelSerializer):
         new_cards = data["cards"]
 
         ended = data["has_ended"]
-        if not ended and data.get("description") != None:
+        dnf = data["dnf"]
+        completed = ended and not dnf
+        if not completed and data.get("description") != None:
             raise serializers.ValidationError(
                 {"description": "Can't set description before game has ended"}
             )
+
+        if dnf and not ended:
+            raise serializers.ValidationError({"dnf": "has_ended must be true if dnf is true"})
 
         previous_cards = len(cards)
 
@@ -232,7 +237,7 @@ class GameSerializer(serializers.ModelSerializer):
                 {"cards": "More cards than expected for the game"}
             )
 
-        if ended and len(new_cards) < len(seed_cards):
+        if completed and len(new_cards) < len(seed_cards):
             raise serializers.ValidationError(
                 {"cards": "Can't end game before drawing every card"}
             )
@@ -287,12 +292,12 @@ class GameSerializer(serializers.ModelSerializer):
 
         for i, card_data in enumerate(new_cards):
             if card_data["value"] == 14 and "chug_end_start_delta_ms" not in card_data:
-                if i != len(new_cards) - 1 or ended:
+                if i != len(new_cards) - 1 or completed:
                     raise serializers.ValidationError(
                         {"cards": f"Card {i} has missing chug data"}
                     )
 
-        if ended:
+        if completed:
             last_card = new_cards[-1]
             if hasattr(self, "chug"):
                 end_start_delta_ms = (

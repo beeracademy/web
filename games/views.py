@@ -145,6 +145,8 @@ def update_game(game, data):
     dnf_gps.update(dnf=True)
     game.gameplayer_set.exclude(id__in=dnf_gps).update(dnf=False)
 
+    game.dnf = data["dnf"]
+
     game.save()
 
     if game.has_ended and not game_already_ended:

@@ -102,6 +102,7 @@ class ApiTest(TransactionTestCase):
             "player_ids": [self.u1.id, self.u2.id],
             "player_names": [self.u1.username, self.u2.username],
             "has_ended": True,
+            "dnf": False,
         }
 
         delta = 0
@@ -439,3 +440,10 @@ class ApiTest(TransactionTestCase):
         self.assertEqual(self.u2.games.count(), 2)
         with self.assertRaises(User.DoesNotExist):
             self.u3.refresh_from_db()
+
+    def test_dnf(self):
+        self.set_token(self.game_token)
+        game_data = self.get_game_data(17)
+        game_data["dnf"] = True
+        game_data["has_ended"] = True
+        self.update_game(game_data)

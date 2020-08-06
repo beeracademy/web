@@ -76,6 +76,7 @@ If a user with that username exists, but the password was wrong, the response is
   "cards": card[], // see below
   "has_ended": bool,
   "description": string, // only at end of game
+  "dnf": bool,
 }
 ```
 
