@@ -141,6 +141,7 @@ class GameSerializer(serializers.ModelSerializer):
 
     start_datetime = serializers.DateTimeField(required=False)
     official = serializers.BooleanField(required=True)
+    dnf = serializers.BooleanField(required=False, default=False)
     cards = CardSerializer(many=True)
     seed = serializers.ListField(child=serializers.IntegerField(), write_only=True)
     player_ids = serializers.ListField(

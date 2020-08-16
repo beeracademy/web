@@ -462,3 +462,9 @@ class ApiTest(TransactionTestCase):
 
         for k, v in game_data["location"].items():
             self.assertEqual(v, getattr(game, "location_" + k))
+
+    def test_no_dnf_key(self):
+        self.set_token(self.game_token)
+        game_data = self.get_game_data(7)
+        del game_data["dnf"]
+        self.update_game(game_data)
