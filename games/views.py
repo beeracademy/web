@@ -147,9 +147,9 @@ def update_game(game, data):
 
     game.dnf = data["dnf"]
 
-    if "location" in data:
-        for k, v in data["location"].items():
-            setattr(game, "location_" + k, v)
+    for k, v in data.items():
+        if k.startswith("location_"):
+            setattr(game, k, v)
 
     game.save()
 
