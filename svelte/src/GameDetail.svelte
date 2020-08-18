@@ -1,6 +1,7 @@
 <script>
 	import { onMount } from 'svelte';
 
+	import Map from "./Map.svelte";
 	import Players from "./Players.svelte";
 	import CardCell from "./CardCell.svelte";
 	import Chug from "./Chug.svelte";
@@ -354,6 +355,12 @@
 				</tr>
 			</tbody>
 			</table>
+
+			{#if game_data.location.latitude !== null}
+			<h2>Location</h2>
+			<hr>
+			<Map location={game_data.location}/>
+			{/if}
 
 			<h2>Chugs</h2>
 

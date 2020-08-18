@@ -113,9 +113,9 @@ class CardSerializer(serializers.ModelSerializer):
 
 
 class LocationSerializer(serializers.Serializer):
-    latitude = serializers.FloatField()
-    longitude = serializers.FloatField()
-    accuracy = serializers.FloatField()
+    latitude = serializers.FloatField(source="location_latitude")
+    longitude = serializers.FloatField(source="location_longitude")
+    accuracy = serializers.FloatField(source="location_accuracy")
 
 
 class GameSerializer(serializers.ModelSerializer):
@@ -153,7 +153,7 @@ class GameSerializer(serializers.ModelSerializer):
     dnf_player_ids = serializers.ListField(
         child=serializers.IntegerField(), write_only=True, required=False, default=[]
     )
-    location = LocationSerializer(required=False)
+    location = LocationSerializer(required=False, source="*")
 
     hashtag_re = re.compile(r"#([^# ]+)")
 

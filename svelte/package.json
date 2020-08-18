@@ -12,8 +12,8 @@
     "@snowpack/plugin-webpack": "^2.0.1",
     "@testing-library/jest-dom": "^5.5.0",
     "@testing-library/svelte": "^3.0.0",
-    "jest": "^25.4.0",
+    "jest": "^26.0",
     "snowpack": "^2.7.5",
-    "svelte-check": "^0.1.59"
+    "svelte-check": "^1.0"
   }
 }
