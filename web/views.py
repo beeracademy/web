@@ -666,7 +666,7 @@ class StatsView(TemplateView):
                 {
                     "latitude": g.location_latitude,
                     "longitude": g.location_longitude,
-                    "popup": "...",
+                    "popup": f"<a href='/'>{g.date}<br>{g.players_str()}</a>",
                 }
             )
 
