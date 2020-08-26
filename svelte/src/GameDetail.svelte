@@ -189,8 +189,7 @@
 
     .game-wrapper {
         display: flex;
-        flex: 1;
-        overflow: hidden;
+        height: 100%;
     }
 
     .game-wrapper .game {

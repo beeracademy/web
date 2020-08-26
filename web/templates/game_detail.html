@@ -11,23 +11,17 @@
         flex-direction: column;
     }
 
+    footer {
+        display: none;
+    }
+
     nav {
         margin-bottom: 0px !important;
         flex-grow: 0;
     }
 
-    .game-wrapper {
-        display: flex;
-        flex: 1;
-        overflow: hidden;
-    }
-
-    .game-wrapper .game {
-        flex: 1;
-        padding: 0px 48px;
-        margin: 0px 5px;
-        overflow-y: auto;
-        overflow-x: hidden;
+    #svelte-game_detail {
+        height: calc(100% - 64px);
     }
 
     .game-wrapper .chat, .game-wrapper .players {
@@ -117,8 +111,6 @@
             background-color: #646a7217;
         }
     }
-
-
 </style>
 <script>
     window.is_authenticated = {{ user.is_authenticated|lower }};
