@@ -139,11 +139,6 @@ tr.in-game a {
     line-height: 28px;
 }
 
-.table-striped tbody tr:nth-of-type(odd) {
-    background-color: inherit;
-
-}
-
 .text-cetner {
     text-align: center;
 }
