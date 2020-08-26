@@ -178,6 +178,8 @@
 			elm.appendChild(textElm)
 
 			chat_messages.appendChild(elm);
+
+			chat_messages.scrollTo(0, chat_messages.scrollHeight);
 		}
 	});
 </script>
@@ -229,7 +231,6 @@
     }
 
     .game-wrapper .chat .messages {
-        display: flex;
         flex: 1;
         padding: 16px;
         justify-content: flex-end;
