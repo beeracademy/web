@@ -31,6 +31,7 @@ from django.db.models import (
 )
 from django.shortcuts import render
 from django.templatetags.static import static
+from django.urls import reverse
 from django.utils import timezone
 from django.views.generic import (
     CreateView,
@@ -664,11 +665,12 @@ class StatsView(TemplateView):
         for g in games.filter(
             location_latitude__isnull=False, location_accuracy__lte=100 * 1000
         ):
+            game_url = reverse("game_detail", args=[g.id])
             context["location_data"].append(
                 {
                     "latitude": g.location_latitude,
                     "longitude": g.location_longitude,
-                    "popup": f"<a href='/'>{g.date}<br>{g.players_str()}</a>",
+                    "popup": f"<a href='{game_url}'>{g.date}<br>{g.players_str()}</a>",
                 }
             )
 
