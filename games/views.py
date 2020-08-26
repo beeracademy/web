@@ -1,6 +1,7 @@
 from django.db import transaction
-from django.http import Http404
+from django.http import Http404, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404
+from PIL import Image
 from rest_framework import serializers, viewsets
 from rest_framework.authentication import BaseAuthentication
 from rest_framework.authtoken.models import Token
@@ -8,6 +9,7 @@ from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.decorators import action
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.parsers import MultiPartParser
 from rest_framework.permissions import BasePermission, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 
@@ -205,6 +207,34 @@ class GameViewSet(viewsets.ReadOnlyModelViewSet):
         serializer = GameSerializer(game, data=request.data)
         serializer.is_valid(raise_exception=True)
         update_game(game, serializer.validated_data)
+        return Response({})
+
+    @action(
+        detail=True,
+        methods=["post"],
+        authentication_classes=[GameUpdateAuthentication],
+        permission_classes=[GameUpdatePermission],
+        parser_classes=[MultiPartParser],
+    )
+    def update_image(self, request, pk=None):
+        try:
+            game = Game.objects.get(pk=pk)
+        except Game.DoesNotExist:
+            raise Http404("Game does not exist")
+
+        f = request.data.get("image")
+        if not f:
+            return HttpResponseBadRequest("image file is missing")
+
+        try:
+            image = Image.open(f)
+            image.verify()
+        except Exception as e:
+            print(e)
+            return HttpResponseBadRequest("image is not valid")
+
+        game.image.save(None, f)
+
         return Response({})
 
     @action(detail=False, methods=["get"], permission_classes=[])

@@ -102,6 +102,20 @@ If a user with that username exists, but the password was wrong, the response is
 {}
 ```
 
+## Update game image
+
+### Request
+```
+// POST /api/games/<game_id>/update_image/
+// Authorization: GameToken <game_token>
+// multipart/form-data with image field containing image
+```
+
+### Response
+```javascript
+{}
+```
+
 ## Get list of ranked users for face cards
 
 ### Request
