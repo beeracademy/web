@@ -661,7 +661,9 @@ class StatsView(TemplateView):
                 row.append(dist(chugs) * 100 if chugs <= pcount else None)
 
         context["location_data"] = []
-        for g in games.filter(location_latitude__isnull=False, location_accuracy__lte=5000):
+        for g in games.filter(
+            location_latitude__isnull=False, location_accuracy__lte=100 * 1000
+        ):
             context["location_data"].append(
                 {
                     "latitude": g.location_latitude,
