@@ -151,6 +151,11 @@
 	</div>
 </div>
 
+<h4><i class="fas fa-users"></i> Top 30 co-players</h4>
+<hr>
+
+<div id="played_with_charts"></div>
+
 {% if otp_data %}
 <hr>
 
@@ -162,6 +167,7 @@
 {% block scripts %}
 {{ heatmap_data|json_script:"heatmap_data" }}
 {{ otp_data|json_script:"otp_data" }}
+{{ played_with_data|json_script:"played_with_data" }}
 
 <script>
 	var otp = JSON.parse(document.getElementById("otp_data").textContent);
@@ -175,5 +181,36 @@
 	}
 
 	gamesHeatmap(document.getElementById("heatmap"), JSON.parse(document.getElementById("heatmap_data").textContent));
+
+	var played_with_data = JSON.parse(document.getElementById("played_with_data").textContent);
+
+	var options = {
+		chart: {
+			type: 'bar',
+		},
+		plotOptions: {
+			bar: {
+				columnWidth: "90%",
+				horizontal: true,
+			},
+		},
+		series: [{
+			data: played_with_data,
+		}],
+		xaxis: {
+			title: {
+				text: "Games",
+			},
+		},
+		yaxis: {
+			title: {
+				text: "Co-player",
+			},
+			decimalsInFloat: 0,
+		},
+	};
+
+	var chart = new ApexCharts(document.getElementById('played_with_charts'), options);
+	chart.render();
 </script>
 {% endblock %}

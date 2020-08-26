@@ -404,6 +404,17 @@ class PlayerDetailView(DetailView):
             otp, _ = OneTimePassword.objects.get_or_create(user=self.object)
             context["otp_data"] = otp.password
 
+        played_with_count = Counter()
+        for game in self.object.games.all():
+            for player in game.players.all():
+                if player != self.object:
+                    played_with_count[player.username] += 1
+
+        context["played_with_data"] = sorted(
+            ({"x": k, "y": v} for k, v in played_with_count.items()),
+            key=lambda x: -x["y"],
+        )[:30]
+
         return context
 
 
