@@ -116,6 +116,19 @@ If a user with that username exists, but the password was wrong, the response is
 {}
 ```
 
+## Delete game image
+
+### Request
+```
+// POST /api/games/<game_id>/delete_image/
+// Authorization: GameToken <game_token>
+```
+
+### Response
+```javascript
+{}
+```
+
 ## Get list of ranked users for face cards
 
 ### Request

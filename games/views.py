@@ -237,6 +237,22 @@ class GameViewSet(viewsets.ReadOnlyModelViewSet):
 
         return Response({})
 
+    @action(
+        detail=True,
+        methods=["post"],
+        authentication_classes=[GameUpdateAuthentication],
+        permission_classes=[GameUpdatePermission],
+    )
+    def delete_image(self, request, pk=None):
+        try:
+            game = Game.objects.get(pk=pk)
+        except Game.DoesNotExist:
+            raise Http404("Game does not exist")
+
+        game.image.delete()
+
+        return Response({})
+
     @action(detail=False, methods=["get"], permission_classes=[])
     def live_games(self, request):
         return Response(
