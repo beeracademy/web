@@ -12,12 +12,13 @@
     }).addTo(map);
     L.marker([location.latitude, location.longitude]).addTo(map)
      .bindPopup(location.latitude + ", " + location.longitude);
-    L.circle([location.latitude, location.longitude], {
+    const circle = L.circle([location.latitude, location.longitude], {
       color: 'red',
       fillColor: '#f03',
       fillOpacity: 0.5,
       radius: location.accuracy,
     }).addTo(map);
+    map.fitBounds(map.getBounds().extend(circle.getBounds()));
   });
 </script>
 
