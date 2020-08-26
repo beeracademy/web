@@ -24,65 +24,6 @@
         height: calc(100% - 64px);
     }
 
-    .game-wrapper .chat, .game-wrapper .players {
-        width: 340px;
-        display: flex;
-        flex-direction: column;
-    }
-
-    .game-wrapper .players {
-        padding: 16px;
-        overflow-y: auto;
-        border-right: 1px solid #dededf;
-    }
-
-    .game-wrapper .chat {
-        border-left: 1px solid #dededf;
-    }
-
-    .game-wrapper .chat .info {
-        height: 64px;
-        border-bottom: 1px solid #dededf;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        font-size: 1.5em;
-        color: #666;
-        text-transform: uppercase;
-
-    }
-
-    .game-wrapper .chat .messages {
-        display: flex;
-        flex: 1;
-        padding: 16px;
-        justify-content: flex-end;
-        flex-direction: column;
-        overflow-y: auto;
-        overflow-x: hidden;
-    }
-
-    .game-wrapper .chat .messages .message.info-message {
-        color: #666;
-    }
-
-    .game-wrapper .chat .messages .message {
-        margin: 4px 8px;
-    }
-
-    .game-wrapper .chat .messages .message:not(.info-message) b {
-        color: #bd2130;
-    }
-
-    .game-wrapper .chat input {
-        margin: 16px;
-        padding: 8px;
-        border: none;
-        border-radius: 5px;
-        background-color: #f2f2f2;
-        outline-color: #bd2130;
-    }
-
     .card-img-top {
         width: {{ IMAGE_WIDTH }}px;
     }
