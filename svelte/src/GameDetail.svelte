@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 
 	import Map from "./Map.svelte";
+	import Image from "./Image.svelte";
 	import Players from "./Players.svelte";
 	import CardCell from "./CardCell.svelte";
 	import Chug from "./Chug.svelte";
@@ -360,6 +361,12 @@
 			<h2>Location</h2>
 			<hr>
 			<Map location={game_data.location}/>
+			{/if}
+
+			{#if game_data.image !== null}
+			<h2>Image</h2>
+			<hr>
+			<Image url={game_data.image}/>
 			{/if}
 
 			<h2>Chugs</h2>

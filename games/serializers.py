@@ -137,6 +137,7 @@ class GameSerializer(serializers.ModelSerializer):
             "description_html",
             "dnf_player_ids",
             "location",
+            "image",
         ]
 
     start_datetime = serializers.DateTimeField(required=False)

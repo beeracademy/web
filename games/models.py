@@ -25,6 +25,29 @@ def get_user_image_name(user, filename=None):
     return f"user_images/{user.id}.png"
 
 
+def get_game_image_name(game, filename=None):
+    return f"game_images/{game.id}.png"
+
+
+def save_force_image_name(obj, image_key, upload_to):
+    # Ensure that the image file is always saved
+    # at the location governed by get_user_image_name
+    # and deleted when the image is removed.
+    expected_image_name = upload_to(obj)
+    image = getattr(obj, image_key)
+    expected_image_path = image.storage.path(expected_image_name)
+    if image:
+        if image.path != expected_image_path:
+            os.rename(image.path, expected_image_path)
+            image.name = expected_image_name
+            super(type(obj), obj).save()
+    else:
+        try:
+            os.remove(expected_image_path)
+        except FileNotFoundError:
+            pass
+
+
 def q_between(key, lower, upper):
     return Q(**{f"{key}__gte": lower, f"{key}__lte": upper})
 
@@ -319,26 +342,13 @@ class User(AbstractUser):
     def save(self, *args, **kwargs):
         super().save()
 
-        # Ensure that the image file is always saved
-        # at the location governed by get_user_image_name
-        # and deleted when the image is removed.
-        expected_image_name = get_user_image_name(self)
-        expected_image_path = self.image.storage.path(expected_image_name)
-        if self.image:
-            if self.image.path != expected_image_path:
-                os.rename(self.image.path, expected_image_path)
-                self.image.name = expected_image_name
-                super().save()
+        save_force_image_name(self, "image", get_user_image_name)
 
+        if self.image:
             try:
-                image = Image.open(expected_image_path)
+                image = Image.open(self.image.path)
                 thumb = image.resize(self.IMAGE_SIZE)
-                thumb.save(expected_image_path)
-            except FileNotFoundError:
-                pass
-        else:
-            try:
-                os.remove(expected_image_path)
+                thumb.save(self.image.path)
             except FileNotFoundError:
                 pass
 
@@ -488,6 +498,11 @@ class Game(models.Model):
     location_latitude = models.FloatField(null=True, blank=True)
     location_longitude = models.FloatField(null=True, blank=True)
     location_accuracy = models.FloatField(null=True, blank=True)
+    image = models.ImageField(upload_to=get_game_image_name, blank=True, null=True)
+
+    def save(self, *args, **kwargs):
+        super().save()
+        save_force_image_name(self, "image", get_game_image_name)
 
     @staticmethod
     def add_durations(qs):
