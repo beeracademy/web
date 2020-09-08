@@ -17,6 +17,11 @@ def format_duration(ms):
     return a.split(":", 1)[1] + "." + b.rstrip("0").ljust(3, "0")
 
 
+def format_total_time(s):
+    td = datetime.timedelta(seconds=s)
+    return str(td).split(".")[0]
+
+
 def django_getattr(obj, key):
     keys = key.split("__")
     for k in keys:
@@ -78,6 +83,9 @@ RANKINGS = [
         "fastest_chug__duration_ms",
         "fastest_chug__card__game",
         format_duration,
+    ),
+    Ranking(
+        "Total time played", "-total_time_played_seconds", formatter=format_total_time,
     ),
 ]
 
