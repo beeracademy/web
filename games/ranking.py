@@ -7,6 +7,20 @@ def add_thousand_seperators(value):
     return f"{value:,}"
 
 
+def format_sips(value):
+    BASE = 14
+    res = []
+    while value > 0:
+        v = value % 14
+        if v < 10:
+            res.append(str(v))
+        else:
+            res.append(chr(ord("A") + (v - 10)))
+        value //= BASE
+
+    return "".join(res[::-1])
+
+
 def format_duration(ms):
     td = datetime.timedelta(milliseconds=ms)
     s = str(td)
@@ -75,8 +89,8 @@ class Ranking:
 
 RANKINGS = [
     Ranking("Total sips", "-total_sips"),
-    Ranking("Best game", "-best_game_sips", "best_game"),
-    Ranking("Worst game", "worst_game_sips", "worst_game"),
+    Ranking("Best game", "-best_game_sips", "best_game", format_sips),
+    Ranking("Worst game", "worst_game_sips", "worst_game", format_sips),
     Ranking("Total chugs", "-total_chugs"),
     Ranking(
         "Fastest chug",
