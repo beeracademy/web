@@ -3,9 +3,6 @@ from facebook import GraphAPI, GraphAPIError
 
 
 def post_to_page(msg, link):
-    # TODO: Get group posting permission from facebook
-    return
-
     if settings.DEBUG:
         print("Facebook page post")
         print("\n------------------------------")
