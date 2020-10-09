@@ -40,3 +40,10 @@ To do this, run the following:
 cd svelte
 ./build_components
 ```
+
+## Generating Facebook access token
+
+- Create a Facebook app: https://developers.facebook.com/apps/ (Disable uBlock Origin)
+- Open the Graph API explorer: https://developers.facebook.com/tools/explorer
+- Generate a User Token with permission `pages_manage_posts`
+- Run `./get_facebook_access_token` with the required arguments. It will output a Page Access Token that will never expire.
