@@ -13,8 +13,12 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v2
 
-    - name: Pull existing image
-      run: docker pull beeracademy/web
+    - name: Pull existing images
+      run: docker-compose pull
+
+    - name: Restore docker layer cache
+      uses: satackey/action-docker-layer-caching@v0.0.8
+      continue-on-error: true
 
     - name: Build image
       run: ./build
