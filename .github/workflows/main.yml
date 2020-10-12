@@ -38,9 +38,6 @@ jobs:
         DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
     - name: Deploy image to production
-      run: |
-        for url in $WEBHOOK_URLS; do
-          curl --fail -X POST "$url"
-        done
+      run: curl --fail -X POST "$WEBHOOK_URL"
       env:
-        WEBHOOK_URLS: ${{ secrets.WEBHOOK_URLS }}
+        WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
