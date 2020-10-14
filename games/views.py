@@ -13,7 +13,7 @@ from rest_framework.parsers import MultiPartParser
 from rest_framework.permissions import BasePermission, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 
-from .facebook import post_to_page
+from .facebook import post_game_to_page
 from .models import (
     Card,
     Chug,
@@ -180,10 +180,7 @@ class GameViewSet(viewsets.ReadOnlyModelViewSet):
         serializer.is_valid(raise_exception=True)
         game = serializer.save()
 
-        players_str = ", ".join(map(lambda p: p.username, game.ordered_players()))
-        game_url = request.build_absolute_uri("/games/{}/".format(game.id))
-
-        post_to_page("A game between {} just started!".format(players_str), game_url)
+        post_game_to_page(game)
 
         token = GameToken.objects.create(game=game)
         return Response({**self.serializer_class(game).data, "token": token.key})

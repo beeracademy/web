@@ -1,39 +1,12 @@
 import datetime
 
 from .models import PlayerStat
-
-
-def add_thousand_seperators(value):
-    return f"{value:,}"
-
-
-def format_sips(value):
-    BASE = 14
-    res = []
-    while value > 0:
-        v = value % 14
-        if v < 10:
-            res.append(str(v))
-        else:
-            res.append(chr(ord("A") + (v - 10)))
-        value //= BASE
-
-    return "".join(res[::-1])
-
-
-def format_duration(ms):
-    td = datetime.timedelta(milliseconds=ms)
-    s = str(td)
-    if not "." in s:
-        s += "."
-
-    a, b = s.split(".")
-    return a.split(":", 1)[1] + "." + b.rstrip("0").ljust(3, "0")
-
-
-def format_total_time(s):
-    td = datetime.timedelta(seconds=s)
-    return str(td).split(".")[0]
+from .utils import (
+    add_thousand_seperators,
+    format_chug_duration,
+    format_sips,
+    format_total_time,
+)
 
 
 def django_getattr(obj, key):
@@ -96,7 +69,7 @@ RANKINGS = [
         "Fastest chug",
         "fastest_chug__duration_ms",
         "fastest_chug__card__game",
-        format_duration,
+        format_chug_duration,
     ),
     Ranking(
         "Total time played", "-total_time_played_seconds", formatter=format_total_time,

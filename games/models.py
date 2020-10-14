@@ -13,6 +13,7 @@ from django.utils.html import format_html
 from PIL import Image
 from tqdm import tqdm
 
+from .facebook import update_game_post
 from .seed import shuffle_with_seed
 
 
@@ -100,6 +101,7 @@ def recalculate_all_stats():
 def update_stats_on_game_finished(game):
     PlayerStat.update_on_game_finished(game)
     GamePlayerStat.update_on_game_finished(game)
+    update_game_post(game)
 
 
 class GamePlayerStat(models.Model):
@@ -499,6 +501,7 @@ class Game(models.Model):
     location_longitude = models.FloatField(null=True, blank=True)
     location_accuracy = models.FloatField(null=True, blank=True)
     image = models.ImageField(upload_to=get_game_image_name, blank=True, null=True)
+    facebook_post_id = models.CharField(max_length=64, null=True, blank=True)
 
     def save(self, *args, **kwargs):
         super().save()
@@ -594,6 +597,12 @@ class Game(models.Model):
     def players_str(self):
         return ", ".join(p.username for p in self.ordered_players())
 
+    def pretty_players_str(self):
+        players = self.ordered_players()
+        return (
+            ", ".join(p.username for p in players[:-1]) + " & " + players[-1].username
+        )
+
     def ordered_cards(self):
         return self.cards.order_by("index")
 
@@ -649,7 +658,7 @@ class Game(models.Model):
             total_times = [None] * n
             total_done = [None] * n
 
-        ordered_players = self.ordered_players()
+        ordered_gameplayers = self.ordered_gameplayers()
         for i in range(n):
             full_beers = total_sips[i] // self.sips_per_beer
             extra_sips = total_sips[i] % self.sips_per_beer
@@ -663,9 +672,12 @@ class Game(models.Model):
             else:
                 time_per_sip = div_or_none(total_times[i], total_sips[i])
 
+            gp = ordered_gameplayers[i]
+
             yield {
-                "id": ordered_players[i].id,
-                "username": ordered_players[i].username,
+                "id": gp.user.id,
+                "username": gp.user.username,
+                "dnf": gp.dnf,
                 "total_sips": total_sips[i],
                 "sips_per_turn": div_or_none(total_sips[i], total_drawn[i]),
                 "full_beers": full_beers,
