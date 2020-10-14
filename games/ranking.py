@@ -1,5 +1,3 @@
-import datetime
-
 from .models import PlayerStat
 from .utils import (
     add_thousand_seperators,
