@@ -399,7 +399,7 @@ class ApiTest(TransactionTestCase):
         game_data["cards"][0]["start_delta_ms"] = -1
         self.update_game(game_data, 400)
 
-    def test_dnf(self):
+    def test_dnf_players(self):
         self.set_token(self.game_token)
         game_data = self.get_game_data(5)
         game_data["dnf_player_ids"] = [self.u1.id]
@@ -441,7 +441,7 @@ class ApiTest(TransactionTestCase):
         with self.assertRaises(User.DoesNotExist):
             self.u3.refresh_from_db()
 
-    def test_dnf(self):
+    def test_dnf_game(self):
         self.set_token(self.game_token)
         game_data = self.get_game_data(17)
         game_data["dnf"] = True
