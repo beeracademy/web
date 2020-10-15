@@ -7,3 +7,6 @@ export const userColors = [
 	'#5F9ED1',
 	'#C85200',
 ];
+export function toBase14(n) {
+  return n.toString(14).toUpperCase();
+}

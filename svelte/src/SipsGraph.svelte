@@ -1,4 +1,6 @@
 <script>
+  import { toBase14 } from "./globals.js";
+
   export let game_data;
   export let ordered_gameplayers;
 
@@ -9,6 +11,19 @@
   let chart;
 
   let lastLength = -1;
+
+  const yaxis = {
+    title: {
+      text: "Sips"
+    },
+    min: 0,
+    labels: {
+      formatter: function(val, index) {
+        return toBase14(val);
+      }
+    },
+  };
+
   function updateChart() {
     if (!chart) return;
     if (game_data.cards.length === lastLength) return;
@@ -31,6 +46,22 @@
     }
 
     chart.updateSeries(series);
+
+    let max = 0;
+    for (let i = 0; i < game_data.playerCount; i++) {
+      const data = series[i].data;
+      max = Math.max(max, data[data.length - 1][1]);
+    }
+
+    const maxRounded = Math.ceil(max / 14) * 14;
+    console.error(max, maxRounded, maxRounded / 14);
+
+    yaxis.max = maxRounded;
+    yaxis.tickAmount = maxRounded / 14;
+
+    chart.updateOptions({
+      yaxis: yaxis,
+    });
   }
 
   onMount(() => {
@@ -54,11 +85,7 @@
           }
         }
       },
-      yaxis: {
-        title: {
-          text: "Sips"
-        }
-      },
+      yaxis: yaxis,
       colors: userColors,
       series: []
     };

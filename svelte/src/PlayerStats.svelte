@@ -1,13 +1,11 @@
 <script>
+	import { toBase14 } from "./globals.js";
+
 	export let player_stats;
 	export let sips_per_beer;
 
 	let ps;
 	$: ps = player_stats;
-
-	function toBase14(n) {
-		return n.toString(14).toUpperCase();
-	}
 
 	function format(s, f) {
 		if (s === null) return "?";
