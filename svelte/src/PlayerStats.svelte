@@ -5,6 +5,10 @@
 	let ps;
 	$: ps = player_stats;
 
+	function toBase14(n) {
+		return n.toString(14).toUpperCase();
+	}
+
 	function format(s, f) {
 		if (s === null) return "?";
 		if (!f) return s;
@@ -15,13 +19,7 @@
 </script>
 
 <div style="margin: 6px 0px; border-bottom: 1px solid #eee; display: flex;">
-	<b>Total sips</b><span style="margin-left: auto;">{format(ps.total_sips)}</span>
-</div>
-<div style="margin: 6px 0px; border-bottom: 1px solid #eee; display: flex;">
-	<b>Total beers</b><span style="margin-left: auto;">{format(ps.full_beers)}</span>
-	<div style="margin-left: 6px;">
-		<sup><span>{format(ps.extra_sips)}</span></sup>&frasl;<sub>{sips_per_beer}</sub>
-	</div>
+	<b>Total sips</b><span style="margin-left: auto;">{format(ps.total_sips, toBase14)}</span>
 </div>
 <div style="margin: 6px 0px; border-bottom: 1px solid #eee; display: flex;">
 	<b>Total time</b><span style="margin-left: auto;">{format(ps.total_time, window.formatDuration)}</span>

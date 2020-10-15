@@ -9,8 +9,8 @@ def add_thousand_seperators(value):
     return f"{value:,}"
 
 
+BASE = 14
 def format_sips(value):
-    BASE = 14
     res = []
     while value > 0:
         v = value % 14
@@ -21,6 +21,11 @@ def format_sips(value):
         value //= BASE
 
     return "".join(res[::-1])
+
+
+def format_float_sips(value, places):
+    s = format_sips(round(value * BASE**places))
+    return s[:-places] + "." + s[-places:]
 
 
 def format_chug_duration(ms):

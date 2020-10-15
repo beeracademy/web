@@ -319,7 +319,7 @@ class PlayerStat(models.Model):
     def average_game_sips(self):
         if self.total_games == 0:
             return None
-        return round(self.total_sips / self.total_games, 1)
+        return self.total_sips / self.total_games
 
     @property
     def average_chug_time(self):

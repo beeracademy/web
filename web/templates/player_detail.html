@@ -1,6 +1,7 @@
 {% extends "container.html" %}
 
 {% load humanize %}
+{% load base14 %}
 
 {% block pagetitle %}Player {{ object.username }}{% endblock %}
 
@@ -121,17 +122,19 @@
 				</tr>
 				<tr>
 					<th>Best game</th>
-					<td>{% include "utils/link.html" with text=stats.best_game_sips prefix="/games" id=stats.best_game.id %}
+					<td>
+            {% include "utils/link.html" with text=stats.best_game_sips|base14 prefix="/games" id=stats.best_game.id %}
 					</td>
 				</tr>
 				<tr>
 					<th>Worst game</th>
-					<td>{% include "utils/link.html" with text=stats.worst_game_sips prefix="/games" id=stats.worst_game.id %}
+          <td>
+            {% include "utils/link.html" with text=stats.worst_game_sips|base14 prefix="/games" id=stats.worst_game.id %}
 					</td>
 				</tr>
 				<tr>
 					<th>Average game</th>
-					<td>{% firstof stats.average_game_sips "-" %}</a></td>
+					<td>{% firstof stats.average_game_sips|base14:1 "-" %}</a></td>
 				</tr>
 				<tr>
 					<th>Total chugs</th>
