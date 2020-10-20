@@ -39,7 +39,7 @@ jobs:
         sleep 10
         res=$(docker-compose ps)
         echo "$res"
-        if "$res" | grep Exit &>/dev/null; then
+        if echo "$res" | grep Exit &>/dev/null; then
           exit 1
         fi
 
