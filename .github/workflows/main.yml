@@ -31,10 +31,15 @@ jobs:
 
     - name: Test docker-compose
       run: |
+        for k in "SECRET_KEY" "EMAIL_HOST_PASSWORD" "FACEBOOK_ACCESS_TOKEN"; do
+          echo "$k=foo" >> ".env"
+        done
         docker network create traefik
         docker-compose up -d
         sleep 10
-        if docker-compose ps | tee /dev/tty | grep Exit &>/dev/null; then
+        res=$(docker-compose ps)
+        echo "$res"
+        if "$res" | grep Exit &>/dev/null; then
           exit 1
         fi
 
