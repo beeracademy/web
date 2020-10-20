@@ -34,7 +34,7 @@ jobs:
         docker network create traefik
         docker-compose up -d
         sleep 10
-        if docker-compose ps | tee | grep Exit &>/dev/null; then
+        if docker-compose ps | tee /dev/tty | grep Exit &>/dev/null; then
           exit 1
         fi
 
