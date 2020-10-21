@@ -1,0 +1,7 @@
+#!/bin/bash
+while ! curl -I app:8000 --connect-timeout 1 > /dev/null; do
+	echo "Waiting for app to start serving..."
+	sleep 1
+done
+echo "Got response from app."
+exec "$@"
