@@ -1,6 +1,4 @@
 <script>
-  import { toBase14 } from "./globals.js";
-
   export let game_data;
   export let ordered_gameplayers;
 
@@ -19,7 +17,7 @@
     min: 0,
     labels: {
       formatter: function(val, index) {
-        return toBase14(val);
+        return window.toBase14(val);
       }
     },
   };

@@ -216,6 +216,11 @@ Only shows chugs with duration less than {{ chug_duration_data.max_duration }}.
 		};
 
 		if (charts[i].data === "sips_data" && data.probs.length !== 0) {
+      options.xaxis.labels = {
+        formatter: function(val, index) {
+          return val === undefined? "": toBase14(val);
+        }
+      };
 			var expected = [];
 			for (var j = 0; j < data.probs.length; j++) {
 				expected.push(data.probs[j] * data.total_ys);
