@@ -1,4 +1,5 @@
 import datetime
+from django.utils.html import format_html
 
 
 def get_milliseconds(td):
@@ -10,7 +11,7 @@ def add_thousand_seperators(value):
 
 
 BASE = 14
-def format_sips(value):
+def _format_sips(value):
     res = []
     while value > 0:
         v = value % 14
@@ -23,9 +24,17 @@ def format_sips(value):
     return "".join(res[::-1])
 
 
+def _add_subscript(s):
+    return format_html("{}<sub>14</sub>", s)
+
+
+def format_sips(value):
+    return _add_subscript(_format_sips(value))
+
+
 def format_float_sips(value, places):
-    s = format_sips(round(value * BASE**places))
-    return s[:-places] + "." + s[-places:]
+    s = _format_sips(round(value * BASE**places))
+    return _add_subscript(s[:-places] + "." + s[-places:])
 
 
 def format_chug_duration(ms):

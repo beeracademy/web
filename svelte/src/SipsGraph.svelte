@@ -14,7 +14,7 @@
 
   const yaxis = {
     title: {
-      text: "Sips"
+      text: "Sips (base 14)"
     },
     min: 0,
     labels: {

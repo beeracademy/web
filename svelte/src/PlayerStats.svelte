@@ -17,7 +17,7 @@
 </script>
 
 <div style="margin: 6px 0px; border-bottom: 1px solid #eee; display: flex;">
-	<b>Total sips</b><span style="margin-left: auto;">{format(ps.total_sips, toBase14)}</span>
+	<b>Total sips</b><span style="margin-left: auto;">{format(ps.total_sips, toBase14)}<sub>14</sub></span>
 </div>
 <div style="margin: 6px 0px; border-bottom: 1px solid #eee; display: flex;">
 	<b>Total time</b><span style="margin-left: auto;">{format(ps.total_time, window.formatDuration)}</span>
