@@ -1,4 +1,5 @@
 import datetime
+
 from django.utils.html import format_html
 
 
@@ -11,6 +12,8 @@ def add_thousand_seperators(value):
 
 
 BASE = 14
+
+
 def _format_sips(value):
     res = []
     while value > 0:
@@ -33,7 +36,7 @@ def format_sips(value):
 
 
 def format_float_sips(value, places):
-    s = _format_sips(round(value * BASE**places))
+    s = _format_sips(round(value * BASE ** places))
     return _add_subscript(s[:-places] + "." + s[-places:])
 
 

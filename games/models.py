@@ -13,7 +13,6 @@ from django.utils.html import format_html
 from PIL import Image
 from tqdm import tqdm
 
-from .facebook import update_game_post
 from .seed import shuffle_with_seed
 
 
@@ -101,7 +100,6 @@ def recalculate_all_stats():
 def update_stats_on_game_finished(game):
     PlayerStat.update_on_game_finished(game)
     GamePlayerStat.update_on_game_finished(game)
-    update_game_post(game)
 
 
 class GamePlayerStat(models.Model):

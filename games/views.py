@@ -13,7 +13,6 @@ from rest_framework.parsers import MultiPartParser
 from rest_framework.permissions import BasePermission, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 
-from .facebook import post_game_to_page
 from .models import (
     Card,
     Chug,
@@ -33,6 +32,7 @@ from .serializers import (
     PlayerStatSerializer,
     UserSerializer,
 )
+from .tasks import post_game_to_facebook, update_facebook_post
 
 
 class CustomAuthToken(ObtainAuthToken):
@@ -156,6 +156,7 @@ def update_game(game, data):
     game.save()
 
     if game.has_ended and not game_already_ended:
+        update_facebook_post.delay(game.id)
         update_stats_on_game_finished(game)
 
 
@@ -180,7 +181,9 @@ class GameViewSet(viewsets.ReadOnlyModelViewSet):
         serializer.is_valid(raise_exception=True)
         game = serializer.save()
 
-        post_game_to_page(request, game)
+        post_game_to_facebook.delay(
+            game.id, request.build_absolute_uri(game.get_absolute_url())
+        )
 
         token = GameToken.objects.create(game=game)
         return Response({**self.serializer_class(game).data, "token": token.key})

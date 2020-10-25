@@ -1,5 +1,6 @@
 from django import template
-from games.utils import format_sips, format_float_sips
+
+from games.utils import format_float_sips, format_sips
 
 register = template.Library()
 
