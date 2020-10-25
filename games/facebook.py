@@ -7,15 +7,14 @@ GRAPH = GraphAPI(getattr(settings, "FACEBOOK_ACCESS_TOKEN", None))
 
 
 def put_object(parent_object, connection_name, **data):
+    if settings.TESTING:
+        return
+
     if settings.DEBUG:
         print(f"Facebook request to {parent_object}/{connection_name}")
         print("\n------------------------------")
         print(data)
         print("------------------------------\n")
-        return
-
-    if not GRAPH.access_token:
-        print("WARNING: missing facebook access token.")
         return
 
     try:

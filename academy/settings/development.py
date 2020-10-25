@@ -16,5 +16,5 @@ AUTOLOGIN_USERNAME = os.environ.get("AUTOLOGIN_USERNAME")
 
 CELERY_TASK_ALWAYS_EAGER = True
 
-if sys.argv[1:2] != ["test"]:
+if not TESTING:
     MIDDLEWARE += ["academy.autologin.AutologinMiddleware"]
