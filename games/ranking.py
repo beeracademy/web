@@ -2,7 +2,7 @@ from .models import PlayerStat
 from .utils import (
     add_thousand_seperators,
     format_chug_duration,
-    format_sips,
+    format_sips_html,
     format_total_time,
 )
 
@@ -60,8 +60,8 @@ class Ranking:
 
 RANKINGS = [
     Ranking("Total sips", "-total_sips"),
-    Ranking("Best game", "-best_game_sips", "best_game", format_sips),
-    Ranking("Worst game", "worst_game_sips", "worst_game", format_sips),
+    Ranking("Best game", "-best_game_sips", "best_game", format_sips_html),
+    Ranking("Worst game", "worst_game_sips", "worst_game", format_sips_html),
     Ranking("Total chugs", "-total_chugs"),
     Ranking(
         "Fastest chug",

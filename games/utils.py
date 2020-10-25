@@ -11,10 +11,10 @@ def add_thousand_seperators(value):
     return f"{value:,}"
 
 
-BASE = 14
+SIPS_BASE = 14
 
 
-def _format_sips(value):
+def format_sips(value):
     res = []
     while value > 0:
         v = value % 14
@@ -22,7 +22,7 @@ def _format_sips(value):
             res.append(str(v))
         else:
             res.append(chr(ord("A") + (v - 10)))
-        value //= BASE
+        value //= SIPS_BASE
 
     return "".join(res[::-1])
 
@@ -31,12 +31,12 @@ def _add_subscript(s):
     return format_html("{}<sub>14</sub>", s)
 
 
-def format_sips(value):
-    return _add_subscript(_format_sips(value))
+def format_sips_html(value):
+    return _add_subscript(format_sips(value))
 
 
-def format_float_sips(value, places):
-    s = _format_sips(round(value * BASE ** places))
+def format_float_sips_html(value, places):
+    s = format_sips(round(value * BASE ** places))
     return _add_subscript(s[:-places] + "." + s[-places:])
 
 
