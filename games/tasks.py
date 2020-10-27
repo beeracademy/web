@@ -1,6 +1,7 @@
 import datetime
 
 from celery import shared_task
+from django.db import transaction
 from django.utils import timezone
 
 from .facebook import post_game_to_page, update_game_post
@@ -29,6 +30,8 @@ def post_game_to_facebook(game_id, game_url):
 
 
 @shared_task
+@transaction.atomic()
 def update_facebook_post(game_id):
-    game = Game.objects.get(id=game_id)
+    # Make sure the django thread has finished updating the game
+    game = Game.objects.select_for_update().get(id=game_id)
     update_game_post(game)
