@@ -13,7 +13,7 @@ from django.utils.html import format_html
 from PIL import Image
 from tqdm import tqdm
 
-from .seed import shuffle_with_seed
+from .shuffle_indices import shuffle_with_indices
 
 
 class CaseInsensitiveUserManager(UserManager):
@@ -750,9 +750,9 @@ class Card(models.Model):
                 yield value, suit
 
     @classmethod
-    def get_shuffled_deck(cls, player_count, seed):
+    def get_shuffled_deck(cls, player_count, shuffle_indices):
         cards = list(cls.get_ordered_cards_for_players(player_count))
-        shuffle_with_seed(cards, seed)
+        shuffle_with_indices(cards, shuffle_indices)
         return cards
 
     @property

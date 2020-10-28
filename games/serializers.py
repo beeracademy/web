@@ -8,7 +8,7 @@ from rest_framework import serializers
 from rest_framework.authtoken.models import Token
 
 from .models import Card, Chug, Game, GamePlayer, PlayerStat, User
-from .seed import is_seed_valid_for_players
+from .shuffle_indices import is_shuffle_indices_valid_for_players
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -234,22 +234,22 @@ class GameSerializer(serializers.ModelSerializer):
                     }
                 )
 
-        seed = data["seed"]
-        if not is_seed_valid_for_players(seed, player_count):
+        shuffle_indices = data["seed"]
+        if not is_shuffle_indices_valid_for_players(shuffle_indices, player_count):
             raise serializers.ValidationError({"seed": "Invalid seed"})
-        seed_cards = Card.get_shuffled_deck(player_count, seed)
+        shuffled_cards = Card.get_shuffled_deck(player_count, shuffle_indices)
 
         if len(cards) > len(new_cards):
             raise serializers.ValidationError(
                 {"cards": "More cards in database than provided"}
             )
 
-        if len(new_cards) > len(seed_cards):
+        if len(new_cards) > len(shuffled_cards):
             raise serializers.ValidationError(
                 {"cards": "More cards than expected for the game"}
             )
 
-        if completed and len(new_cards) < len(seed_cards):
+        if completed and len(new_cards) < len(shuffled_cards):
             raise serializers.ValidationError(
                 {"cards": "Can't end game before drawing every card"}
             )
@@ -359,10 +359,10 @@ class GameSerializer(serializers.ModelSerializer):
                 if not chug and chug_data:
                     assert i == len(cards) - 1
 
-        for i, (seed_card, card_data) in enumerate(
-            zip(seed_cards[previous_cards:], new_cards[previous_cards:])
+        for i, (shuffled_card, card_data) in enumerate(
+            zip(shuffled_cards[previous_cards:], new_cards[previous_cards:])
         ):
-            if seed_card != (card_data["value"], card_data["suit"]):
+            if shuffled_card != (card_data["value"], card_data["suit"]):
                 raise serializers.ValidationError(
                     {
                         "cards": f"Card {previous_cards + i} has different data than seed would generate"

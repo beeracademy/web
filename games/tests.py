@@ -19,9 +19,9 @@ class ApiTest(TransactionTestCase):
     PLAYER_COUNT = 2
     TOTAL_CARDS = PLAYER_COUNT * 13
 
-    # This seed is the identity permutation
+    # These shuffle indices corresponds to the identity permutation
     # Thus it will use the same order as Card.get_ordered_cards_for_players
-    SEED = list(range(TOTAL_CARDS - 1, 0, -1))
+    SHUFFLE_INDICES = list(range(TOTAL_CARDS - 1, 0, -1))
 
     def assert_status(self, r, status):
         self.assertEqual(r.status_code, status, getattr(r, "data", None))
@@ -97,7 +97,7 @@ class ApiTest(TransactionTestCase):
         self.final_game_data = {
             "start_datetime": self.game_start,
             "official": True,
-            "seed": self.SEED,
+            "seed": self.SHUFFLE_INDICES,
             "cards": [],
             "player_ids": [self.u1.id, self.u2.id],
             "player_names": [self.u1.username, self.u2.username],
