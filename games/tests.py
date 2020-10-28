@@ -76,13 +76,15 @@ class ApiTest(TransactionTestCase):
 
         return game_state
 
-    def create_game(self, tokens):
+    def create_game(self, tokens, overwrite_shuffle_indices=True):
         r = self.client.post("/api/games/", {"tokens": tokens})
         self.assert_ok(r)
 
-        game = Game.objects.get(id=r.data["id"])
-        game.shuffle_indices = self.SHUFFLE_INDICES
-        game.save()
+        if overwrite_shuffle_indices:
+            game = Game.objects.get(id=r.data["id"])
+            game.shuffle_indices = self.SHUFFLE_INDICES
+            game.save()
+            r.data["shuffle_indices"] = self.SHUFFLE_INDICES
 
         return r.data
 
@@ -472,3 +474,7 @@ class ApiTest(TransactionTestCase):
         game_data = self.get_game_data(7)
         del game_data["dnf"]
         self.update_game(game_data)
+
+    def test_correct_shuffle_indices(self):
+        data = self.create_game([self.t1, self.t2], overwrite_shuffle_indices=False)
+        self.assertEqual(len(data["shuffle_indices"]), len(self.SHUFFLE_INDICES))
