@@ -8,7 +8,7 @@ from rest_framework import serializers
 from rest_framework.authtoken.models import Token
 
 from .models import Card, Chug, Game, GamePlayer, PlayerStat, User
-from .shuffle_indices import is_shuffle_indices_valid_for_players
+from .shuffle_indices import generate_shuffle_indices_for_players
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -48,8 +48,10 @@ class CreateGameSerializer(serializers.Serializer):
         return users
 
     def create(self, validated_data):
-        game = Game.objects.create()
-        for i, user in enumerate(validated_data["tokens"]):
+        tokens = validated_data["tokens"]
+        shuffle_indices = generate_shuffle_indices_for_players(len(tokens))
+        game = Game.objects.create(shuffle_indices=shuffle_indices)
+        for i, user in enumerate(tokens):
             GamePlayer.objects.create(game=game, user=user, position=i)
 
         return game
@@ -129,7 +131,6 @@ class GameSerializer(serializers.ModelSerializer):
             "official",
             "dnf",
             "cards",
-            "seed",
             "player_ids",
             "player_names",
             "sips_per_beer",
@@ -144,7 +145,6 @@ class GameSerializer(serializers.ModelSerializer):
     official = serializers.BooleanField(required=True)
     dnf = serializers.BooleanField(required=False, default=False)
     cards = CardSerializer(many=True)
-    seed = serializers.ListField(child=serializers.IntegerField(), write_only=True)
     player_ids = serializers.ListField(
         child=serializers.IntegerField(), write_only=True
     )
@@ -234,10 +234,7 @@ class GameSerializer(serializers.ModelSerializer):
                     }
                 )
 
-        shuffle_indices = data["seed"]
-        if not is_shuffle_indices_valid_for_players(shuffle_indices, player_count):
-            raise serializers.ValidationError({"seed": "Invalid seed"})
-        shuffled_cards = Card.get_shuffled_deck(player_count, shuffle_indices)
+        shuffled_cards = self.instance.get_shuffled_deck()
 
         if len(cards) > len(new_cards):
             raise serializers.ValidationError(
@@ -365,7 +362,7 @@ class GameSerializer(serializers.ModelSerializer):
             if shuffled_card != (card_data["value"], card_data["suit"]):
                 raise serializers.ValidationError(
                     {
-                        "cards": f"Card {previous_cards + i} has different data than seed would generate"
+                        "cards": f"Card {previous_cards + i} is different than expected from shuffle_indices"
                     }
                 )
 

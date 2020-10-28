@@ -79,6 +79,11 @@ class ApiTest(TransactionTestCase):
     def create_game(self, tokens):
         r = self.client.post("/api/games/", {"tokens": tokens})
         self.assert_ok(r)
+
+        game = Game.objects.get(id=r.data["id"])
+        game.shuffle_indices = self.SHUFFLE_INDICES
+        game.save()
+
         return r.data
 
     def setUp(self):
@@ -97,7 +102,6 @@ class ApiTest(TransactionTestCase):
         self.final_game_data = {
             "start_datetime": self.game_start,
             "official": True,
-            "seed": self.SHUFFLE_INDICES,
             "cards": [],
             "player_ids": [self.u1.id, self.u2.id],
             "player_names": [self.u1.username, self.u2.username],

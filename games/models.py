@@ -500,6 +500,7 @@ class Game(models.Model):
     location_accuracy = models.FloatField(null=True, blank=True)
     image = models.ImageField(upload_to=get_game_image_name, blank=True, null=True)
     facebook_post_id = models.CharField(max_length=64, null=True, blank=True)
+    shuffle_indices = models.JSONField(null=True, blank=True)
 
     def save(self, *args, **kwargs):
         super().save()
@@ -685,6 +686,11 @@ class Game(models.Model):
                 "time_per_sip": time_per_sip,
             }
 
+    def get_shuffled_deck(self):
+        cards = list(Card.get_ordered_cards_for_players(self.players.count()))
+        shuffle_with_indices(cards, self.shuffle_indices)
+        return cards
+
     def get_absolute_url(self):
         return reverse("game_detail", args=[self.id])
 
@@ -748,12 +754,6 @@ class Card(models.Model):
         for suit, _ in Card.SUITS[:player_count]:
             for value, _ in Card.VALUES:
                 yield value, suit
-
-    @classmethod
-    def get_shuffled_deck(cls, player_count, shuffle_indices):
-        cards = list(cls.get_ordered_cards_for_players(player_count))
-        shuffle_with_indices(cards, shuffle_indices)
-        return cards
 
     @property
     def drawn_datetime(self):

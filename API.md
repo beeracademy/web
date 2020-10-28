@@ -59,6 +59,7 @@ If a user with that username exists, but the password was wrong, the response is
 {
   "id": int,
   "token": string,
+  "shuffle_indices": int[],
   "start_datetime": datetime_string,
   ...
 }
@@ -72,7 +73,6 @@ If a user with that username exists, but the password was wrong, the response is
 // Authorization: GameToken <game_token>
 {
   "official": bool,
-  "seed": int[],
   "cards": card[], // see below
   "has_ended": bool,
   "description": string, // only at end of game
