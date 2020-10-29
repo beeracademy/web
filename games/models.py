@@ -476,7 +476,10 @@ class Game(models.Model):
     STANDARD_SIPS_PER_BEER = 14
 
     class Meta:
-        ordering = ("dnf", "-end_datetime",)
+        ordering = (
+            "dnf",
+            "-end_datetime",
+        )
 
     """
     Game data updates:

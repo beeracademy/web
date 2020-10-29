@@ -145,7 +145,9 @@ class GameSerializer(serializers.ModelSerializer):
     start_datetime = serializers.DateTimeField(required=False)
     official = serializers.BooleanField(required=True)
     dnf = serializers.BooleanField(required=False, default=False)
-    shuffle_indices = serializers.ListField(child=serializers.IntegerField(), read_only=True)
+    shuffle_indices = serializers.ListField(
+        child=serializers.IntegerField(), read_only=True
+    )
     cards = CardSerializer(many=True)
     player_ids = serializers.ListField(
         child=serializers.IntegerField(), write_only=True
