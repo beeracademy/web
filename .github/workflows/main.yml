@@ -1,57 +1,145 @@
-name: Build and Deploy
+name: Build, Test & Deploy
 
 on:
-  push:
-    branches:
-      - master
+  - push
+  - pull_request
 
 jobs:
+  pre-commit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Setup python environment
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.8"
+
+      - name: Install python dependencies
+        run: pip install -r requirements.txt -r dev-requirements.txt
+
+      - name: Run pre-commit checks
+        uses: pre-commit/action@v2.0.0
+
   build:
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
+      - name: Checkout repository
+        uses: actions/checkout@v2
 
-    - name: Pull existing images
-      run: docker-compose pull
+      - name: Pull existing images
+        run: docker-compose pull
 
-    - name: Restore docker layer cache
-      uses: satackey/action-docker-layer-caching@v0.0.8
-      continue-on-error: true
+      - name: Restore docker layer cache
+        uses: satackey/action-docker-layer-caching@v0.0.8
+        continue-on-error: true
 
-    - name: Build image
-      run: ./build
+      - name: Build image
+        run: ./build
 
-    - name: Run tests
-      run: docker run --env DJANGO_SETTINGS_MODULE=academy.settings.development beeracademy/web ./manage.py test
+      - name: Save docker image
+        run: docker save beeracademy/web | gzip > image.tar.gz
 
-    - name: Run tests using postgres
-      run: USE_DOCKER=1 ./test_postgres
+      - name: Upload docker image for other jobs
+        uses: actions/upload-artifact@v2
+        with:
+          name: image
+          path: image.tar.gz
 
-    - name: Test docker-compose
-      run: |
-        for k in "SECRET_KEY" "EMAIL_HOST_PASSWORD" "FACEBOOK_ACCESS_TOKEN"; do
-          echo "$k=foo" >> ".env"
-        done
-        docker network create traefik
-        docker-compose up -d
-        sleep 10
-        res=$(docker-compose ps)
-        echo "$res"
-        if echo "$res" | grep Exit &>/dev/null; then
-          exit 1
-        fi
+  test:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Download docker image
+        uses: actions/download-artifact@v2
+        with:
+          name: image
 
-    - name: Publish image to Docker Hub
-      run: |
-        echo "$DOCKER_PASSWORD" | docker login --username "$DOCKER_USERNAME" --password-stdin
-        docker push beeracademy/web
-      env:
-        DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-        DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Load docker image
+        run: docker load < image.tar.gz
 
-    - name: Deploy image to production
-      run: curl --fail -X POST "$WEBHOOK_URL"
-      env:
-        WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
+      - name: Run tests
+        run: docker run --env DJANGO_SETTINGS_MODULE=academy.settings.development beeracademy/web ./manage.py test
+
+  test-postgres:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Download docker image
+        uses: actions/download-artifact@v2
+        with:
+          name: image
+
+      - name: Load docker image
+        run: docker load < image.tar.gz
+
+      - name: Run tests using postgres
+        run: USE_DOCKER=1 ./test_postgres
+
+  test-docker-compose:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Download docker image
+        uses: actions/download-artifact@v2
+        with:
+          name: image
+
+      - name: Load docker image
+        run: docker load < image.tar.gz
+
+      - name: Test docker-compose
+        run: |
+          for k in "SECRET_KEY" "EMAIL_HOST_PASSWORD" "FACEBOOK_ACCESS_TOKEN"; do
+            echo "$k=foo" >> ".env"
+          done
+          docker network create traefik
+          docker-compose up -d
+          sleep 10
+          res=$(docker-compose ps)
+          echo "$res"
+          if echo "$res" | grep Exit &>/dev/null; then
+            exit 1
+          fi
+
+  release:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master'
+    needs:
+      - pre-commit
+      - build
+      - test
+      - test-postgres
+      - test-docker-compose
+    steps:
+      - name: Download docker image
+        uses: actions/download-artifact@v2
+        with:
+          name: image
+
+      - name: Load docker image
+        run: docker load < image.tar.gz
+
+      - name: Publish image to Docker Hub
+        run: |
+          echo "$DOCKER_PASSWORD" | docker login --username "$DOCKER_USERNAME" --password-stdin
+          docker push beeracademy/web
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: release
+    steps:
+      - name: Deploy image to production
+        run: curl --fail -X POST "$WEBHOOK_URL"
+        env:
+          WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
