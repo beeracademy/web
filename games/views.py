@@ -173,7 +173,7 @@ class GameViewSet(viewsets.ReadOnlyModelViewSet):
     lookup_value_regex = "\\d+"
 
     def retrieve(self, request, pk=None):
-        game = get_object_or_404(Game, pk=pk)
+        game = self.get_object()
         return Response(GameSerializerWithPlayerStats(game).data)
 
     def create(self, request):
@@ -196,12 +196,11 @@ class GameViewSet(viewsets.ReadOnlyModelViewSet):
         permission_classes=[GameUpdatePermission],
     )
     def update_state(self, request, pk=None):
+        game = self.get_object()
+
         # Lock game object
         # Note: Doesn't do anything when using SQLite
-        try:
-            game = Game.objects.select_for_update().get(pk=pk)
-        except Game.DoesNotExist:
-            raise Http404("Game does not exist")
+        Game.objects.select_for_update().get(id=pk)
 
         self.check_object_permissions(request, game)
         serializer = GameSerializer(game, data=request.data)
@@ -217,10 +216,7 @@ class GameViewSet(viewsets.ReadOnlyModelViewSet):
         parser_classes=[MultiPartParser],
     )
     def update_image(self, request, pk=None):
-        try:
-            game = Game.objects.get(pk=pk)
-        except Game.DoesNotExist:
-            raise Http404("Game does not exist")
+        game = self.get_object()
 
         f = request.data.get("image")
         if not f:
@@ -244,10 +240,7 @@ class GameViewSet(viewsets.ReadOnlyModelViewSet):
         permission_classes=[GameUpdatePermission],
     )
     def delete_image(self, request, pk=None):
-        try:
-            game = Game.objects.get(pk=pk)
-        except Game.DoesNotExist:
-            raise Http404("Game does not exist")
+        game = self.get_object()
 
         game.image.delete()
 
