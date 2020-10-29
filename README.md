@@ -15,7 +15,13 @@ Inside the virtual enviroment install [pip-tools](https://github.com/jazzband/pi
 
 ```sh
 pip install pip-tools
-pip-sync
+pip-sync requirements.txt dev-requirements.txt
+```
+
+Install pre-commit hook to ensure files are formatted correctly:
+
+```sh
+pre-commit install
 ```
 
 Then apply the database migrations:
