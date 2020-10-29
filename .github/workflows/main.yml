@@ -9,8 +9,7 @@ on:
       - master
 
 env:
-  DOCKER_REPO: docker.pkg.github.com
-  DOCKER_IMAGE_NAME: docker.pkg.github.com/beeracademy/web/web
+  DOCKER_IMAGE_NAME: ghcr.io/beeracademy/web
 
 jobs:
   pre-commit:
@@ -37,7 +36,12 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Pull existing images
-        run: docker-compose pull
+        run: |
+          echo "$GHCR_PASSWORD" | docker login ghcr.io --username "$GHCR_USERNAME" --password-stdin
+          docker-compose pull
+        env:
+          GHCR_USERNAME: ${{ secrets.GHCR_USERNAME }}
+          GHCR_PASSWORD: ${{ secrets.GHCR_PASSWORD }}
 
       - name: Restore docker layer cache
         uses: satackey/action-docker-layer-caching@v0.0.8
@@ -137,11 +141,11 @@ jobs:
 
       - name: Publish image to Docker Hub
         run: |
-          echo "$DOCKER_PASSWORD" | docker login "$DOCKER_REPO" --username "$DOCKER_USERNAME" --password-stdin
+          echo "$GHCR_PASSWORD" | docker login ghcr.io --username "$GHCR_USERNAME" --password-stdin
           docker push "$DOCKER_IMAGE_NAME"
         env:
-          DOCKER_USERNAME: ${{ github.actor }}
-          DOCKER_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+          GHCR_USERNAME: ${{ secrets.GHCR_USERNAME }}
+          GHCR_PASSWORD: ${{ secrets.GHCR_PASSWORD }}
 
   deploy:
     runs-on: ubuntu-latest
