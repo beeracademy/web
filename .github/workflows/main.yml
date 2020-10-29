@@ -139,7 +139,7 @@ jobs:
       - name: Load docker image
         run: docker load < image.tar.gz
 
-      - name: Publish image to Docker Hub
+      - name: Publish image to ghcr.io
         run: |
           echo "$GHCR_PASSWORD" | docker login ghcr.io --username "$GHCR_USERNAME" --password-stdin
           docker push "$DOCKER_IMAGE_NAME"
