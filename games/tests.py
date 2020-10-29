@@ -49,7 +49,9 @@ class ApiTest(TransactionTestCase):
             game_id = self.game_id
 
         r = self.client.post(
-            f"/api/games/{game_id}/update_state/", game_data, format="json",
+            f"/api/games/{game_id}/update_state/",
+            game_data,
+            format="json",
         )
         if expected_status:
             self.assert_status(r, expected_status)
@@ -319,7 +321,10 @@ class ApiTest(TransactionTestCase):
     def _update_games_concurrent(self, game_infos):
         def send_game_data(game_info):
             self.set_token(game_info["token"])
-            return self.update_game(game_info["data"], game_id=game_info["id"],)
+            return self.update_game(
+                game_info["data"],
+                game_id=game_info["id"],
+            )
 
         lock = Lock()
         times_called = 0
@@ -477,7 +482,9 @@ class ApiTest(TransactionTestCase):
         self.update_game(game_data)
 
         self.set_token(self.t1, token_name="Token")
-        r = self.client.post(f"/api/games/{self.game_id}/resume/",)
+        r = self.client.post(
+            f"/api/games/{self.game_id}/resume/",
+        )
         self.assert_ok(r)
 
         self.set_token(r.data["token"])
@@ -490,7 +497,9 @@ class ApiTest(TransactionTestCase):
         self.update_game(game_data)
 
         self.set_token("foobar", token_name="Token")
-        r = self.client.post(f"/api/games/{self.game_id}/resume/",)
+        r = self.client.post(
+            f"/api/games/{self.game_id}/resume/",
+        )
         self.assert_status(r, 403)
 
     def test_resume_user_not_part_of_game(self):
@@ -499,5 +508,7 @@ class ApiTest(TransactionTestCase):
         self.update_game(game_data)
 
         self.set_token(self.t3, token_name="Token")
-        r = self.client.post(f"/api/games/{self.game_id}/resume/",)
+        r = self.client.post(
+            f"/api/games/{self.game_id}/resume/",
+        )
         self.assert_status(r, 403)

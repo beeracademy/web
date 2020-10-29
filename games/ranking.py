@@ -70,7 +70,9 @@ RANKINGS = [
         format_chug_duration,
     ),
     Ranking(
-        "Total time played", "-total_time_played_seconds", formatter=format_total_time,
+        "Total time played",
+        "-total_time_played_seconds",
+        formatter=format_total_time,
     ),
 ]
 

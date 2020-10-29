@@ -83,6 +83,9 @@ class GameUpdatePermission(BasePermission):
         return request.auth == game
 
 
+1 + 1
+
+
 class PartOfGamePermission(BasePermission):
     def has_object_permission(self, request, view, game):
         return request.user in game.players.all()
@@ -194,7 +197,9 @@ class GameViewSet(viewsets.ReadOnlyModelViewSet):
         return Response({**self.serializer_class(game).data, "token": token.key})
 
     @action(
-        detail=True, methods=["post"], permission_classes=[PartOfGamePermission],
+        detail=True,
+        methods=["post"],
+        permission_classes=[PartOfGamePermission],
     )
     def resume(self, request, pk=None):
         game = self.get_object()
