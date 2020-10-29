@@ -51,7 +51,7 @@ jobs:
         run: ./build
 
       - name: Save docker image
-        run: docker save "$IMAGE" | gzip > image.tar.gz
+        run: docker save "$DOCKER_IMAGE_NAME" | gzip > image.tar.gz
 
       - name: Upload docker image for other jobs
         uses: actions/upload-artifact@v2
@@ -72,7 +72,7 @@ jobs:
         run: docker load < image.tar.gz
 
       - name: Run tests
-        run: docker run --env DJANGO_SETTINGS_MODULE=academy.settings.development "$IMAGE" ./manage.py test
+        run: docker run --env DJANGO_SETTINGS_MODULE=academy.settings.development "$DOCKER_IMAGE_NAME" ./manage.py test
 
   test-postgres:
     runs-on: ubuntu-latest
