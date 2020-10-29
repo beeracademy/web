@@ -8,6 +8,10 @@ on:
     branches:
       - master
 
+env:
+  DOCKER_REPO: docker.pkg.github.com
+  DOCKER_IMAGE_NAME: docker.pkg.github.com/beeracademy/web/web
+
 jobs:
   pre-commit:
     runs-on: ubuntu-latest
@@ -43,7 +47,7 @@ jobs:
         run: ./build
 
       - name: Save docker image
-        run: docker save beeracademy/web | gzip > image.tar.gz
+        run: docker save "$IMAGE" | gzip > image.tar.gz
 
       - name: Upload docker image for other jobs
         uses: actions/upload-artifact@v2
@@ -64,7 +68,7 @@ jobs:
         run: docker load < image.tar.gz
 
       - name: Run tests
-        run: docker run --env DJANGO_SETTINGS_MODULE=academy.settings.development beeracademy/web ./manage.py test
+        run: docker run --env DJANGO_SETTINGS_MODULE=academy.settings.development "$IMAGE" ./manage.py test
 
   test-postgres:
     runs-on: ubuntu-latest
@@ -133,11 +137,11 @@ jobs:
 
       - name: Publish image to Docker Hub
         run: |
-          echo "$DOCKER_PASSWORD" | docker login --username "$DOCKER_USERNAME" --password-stdin
-          docker push beeracademy/web
+          echo "$DOCKER_PASSWORD" | docker login "$DOCKER_REPO" --username "$DOCKER_USERNAME" --password-stdin
+          docker push "$DOCKER_IMAGE_NAME"
         env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+          DOCKER_USERNAME: ${{ github.actor }}
+          DOCKER_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
 
   deploy:
     runs-on: ubuntu-latest

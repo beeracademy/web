@@ -2,7 +2,7 @@ version: "3.7"
 
 services:
   app:
-    image: &app beeracademy/web
+    image: &app docker.pkg.github.com/beeracademy/web/web
     networks:
       - traefik
       - default
