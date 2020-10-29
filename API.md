@@ -102,6 +102,22 @@ If a user with that username exists, but the password was wrong, the response is
 {}
 ```
 
+## Resume game
+
+### Request
+```javascript
+// POST /api/games/<game_id>/resume/
+// Authorization: Token <user_token>
+{}
+```
+
+### Response
+```javascript
+{
+  "token": string,
+  ...
+}
+
 ## Update game image
 
 ### Request

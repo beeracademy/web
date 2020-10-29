@@ -83,6 +83,11 @@ class GameUpdatePermission(BasePermission):
         return request.auth == game
 
 
+class PartOfGamePermission(BasePermission):
+    def has_object_permission(self, request, view, game):
+        return request.user in game.players.all()
+
+
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
@@ -187,6 +192,18 @@ class GameViewSet(viewsets.ReadOnlyModelViewSet):
 
         token = GameToken.objects.create(game=game)
         return Response({**self.serializer_class(game).data, "token": token.key})
+
+    @action(
+        detail=True, methods=["post"], permission_classes=[PartOfGamePermission],
+    )
+    def resume(self, request, pk=None):
+        game = self.get_object()
+
+        if game.has_ended:
+            return HttpResponseBadRequest("Game has ended")
+
+        game_token = GameToken.objects.get(game=game)
+        return Response({**self.serializer_class(game).data, "token": game_token.key})
 
     @transaction.atomic()
     @action(

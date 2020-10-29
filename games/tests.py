@@ -44,21 +44,16 @@ class ApiTest(TransactionTestCase):
         token = self.authenticate(username, password)["token"]
         return u, token
 
-    def update_game(
-        self, game_data, expected_status=200, game_id=None, game_token=None
-    ):
+    def update_game(self, game_data, expected_status=200, game_id=None):
         if not game_id:
             game_id = self.game_id
 
-        extra = {}
-        if game_token:
-            extra["HTTP_AUTHORIZATION"] = "GameToken " + game_token
-
         r = self.client.post(
-            f"/api/games/{game_id}/update_state/", game_data, format="json", **extra,
+            f"/api/games/{game_id}/update_state/", game_data, format="json",
         )
         if expected_status:
             self.assert_status(r, expected_status)
+
         return r
 
     def get_game_data(self, cards_drawn, include_chug=True):
@@ -135,8 +130,8 @@ class ApiTest(TransactionTestCase):
 
         self.final_game_data["description"] = "foo"
 
-    def set_token(self, token):
-        self.client.credentials(HTTP_AUTHORIZATION="GameToken " + token)
+    def set_token(self, token, token_name="GameToken"):
+        self.client.credentials(HTTP_AUTHORIZATION=f"{token_name} {token}")
 
     def test_login(self):
         r = self.client.post(
@@ -323,11 +318,8 @@ class ApiTest(TransactionTestCase):
 
     def _update_games_concurrent(self, game_infos):
         def send_game_data(game_info):
-            return self.update_game(
-                game_info["data"],
-                game_id=game_info["id"],
-                game_token=game_info["token"],
-            )
+            self.set_token(game_info["token"])
+            return self.update_game(game_info["data"], game_id=game_info["id"],)
 
         lock = Lock()
         times_called = 0
@@ -478,3 +470,34 @@ class ApiTest(TransactionTestCase):
     def test_correct_shuffle_indices(self):
         data = self.create_game([self.t1, self.t2], overwrite_shuffle_indices=False)
         self.assertEqual(len(data["shuffle_indices"]), len(self.SHUFFLE_INDICES))
+
+    def test_resume(self):
+        self.set_token(self.game_token)
+        game_data = self.get_game_data(9)
+        self.update_game(game_data)
+
+        self.set_token(self.t1, token_name="Token")
+        r = self.client.post(f"/api/games/{self.game_id}/resume/",)
+        self.assert_ok(r)
+
+        self.set_token(r.data["token"])
+        game_data = self.get_game_data(11)
+        self.update_game(game_data)
+
+    def test_resume_invalid_token(self):
+        self.set_token(self.game_token)
+        game_data = self.get_game_data(9)
+        self.update_game(game_data)
+
+        self.set_token("foobar", token_name="Token")
+        r = self.client.post(f"/api/games/{self.game_id}/resume/",)
+        self.assert_status(r, 403)
+
+    def test_resume_user_not_part_of_game(self):
+        self.set_token(self.game_token)
+        game_data = self.get_game_data(9)
+        self.update_game(game_data)
+
+        self.set_token(self.t3, token_name="Token")
+        r = self.client.post(f"/api/games/{self.game_id}/resume/",)
+        self.assert_status(r, 403)
