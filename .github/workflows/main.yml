@@ -36,12 +36,7 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Pull existing images
-        run: |
-          echo "$GHCR_PASSWORD" | docker login ghcr.io --username "$GHCR_USERNAME" --password-stdin
-          docker-compose pull
-        env:
-          GHCR_USERNAME: ${{ secrets.GHCR_USERNAME }}
-          GHCR_PASSWORD: ${{ secrets.GHCR_PASSWORD }}
+        run: docker-compose pull
 
       - name: Restore docker layer cache
         uses: satackey/action-docker-layer-caching@v0.0.8
