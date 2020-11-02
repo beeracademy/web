@@ -14,5 +14,7 @@ PLAY_URL = "http://localhost:4200"
 
 AUTOLOGIN_USERNAME = os.environ.get("AUTOLOGIN_USERNAME")
 
-if sys.argv[1:2] != ["test"]:
+CELERY_TASK_ALWAYS_EAGER = True
+
+if not TESTING:
     MIDDLEWARE += ["academy.autologin.AutologinMiddleware"]

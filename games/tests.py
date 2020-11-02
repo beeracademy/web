@@ -19,9 +19,9 @@ class ApiTest(TransactionTestCase):
     PLAYER_COUNT = 2
     TOTAL_CARDS = PLAYER_COUNT * 13
 
-    # This seed is the identity permutation
+    # These shuffle indices corresponds to the identity permutation
     # Thus it will use the same order as Card.get_ordered_cards_for_players
-    SEED = list(range(TOTAL_CARDS - 1, 0, -1))
+    SHUFFLE_INDICES = list(range(TOTAL_CARDS - 1, 0, -1))
 
     def assert_status(self, r, status):
         self.assertEqual(r.status_code, status, getattr(r, "data", None))
@@ -44,21 +44,18 @@ class ApiTest(TransactionTestCase):
         token = self.authenticate(username, password)["token"]
         return u, token
 
-    def update_game(
-        self, game_data, expected_status=200, game_id=None, game_token=None
-    ):
+    def update_game(self, game_data, expected_status=200, game_id=None):
         if not game_id:
             game_id = self.game_id
 
-        extra = {}
-        if game_token:
-            extra["HTTP_AUTHORIZATION"] = "GameToken " + game_token
-
         r = self.client.post(
-            f"/api/games/{game_id}/update_state/", game_data, format="json", **extra,
+            f"/api/games/{game_id}/update_state/",
+            game_data,
+            format="json",
         )
         if expected_status:
             self.assert_status(r, expected_status)
+
         return r
 
     def get_game_data(self, cards_drawn, include_chug=True):
@@ -76,9 +73,16 @@ class ApiTest(TransactionTestCase):
 
         return game_state
 
-    def create_game(self, tokens):
+    def create_game(self, tokens, overwrite_shuffle_indices=True):
         r = self.client.post("/api/games/", {"tokens": tokens})
         self.assert_ok(r)
+
+        if overwrite_shuffle_indices:
+            game = Game.objects.get(id=r.data["id"])
+            game.shuffle_indices = self.SHUFFLE_INDICES
+            game.save()
+            r.data["shuffle_indices"] = self.SHUFFLE_INDICES
+
         return r.data
 
     def setUp(self):
@@ -97,11 +101,11 @@ class ApiTest(TransactionTestCase):
         self.final_game_data = {
             "start_datetime": self.game_start,
             "official": True,
-            "seed": self.SEED,
             "cards": [],
             "player_ids": [self.u1.id, self.u2.id],
             "player_names": [self.u1.username, self.u2.username],
             "has_ended": True,
+            "dnf": False,
         }
 
         delta = 0
@@ -128,8 +132,8 @@ class ApiTest(TransactionTestCase):
 
         self.final_game_data["description"] = "foo"
 
-    def set_token(self, token):
-        self.client.credentials(HTTP_AUTHORIZATION="GameToken " + token)
+    def set_token(self, token, token_name="GameToken"):
+        self.client.credentials(HTTP_AUTHORIZATION=f"{token_name} {token}")
 
     def test_login(self):
         r = self.client.post(
@@ -316,10 +320,10 @@ class ApiTest(TransactionTestCase):
 
     def _update_games_concurrent(self, game_infos):
         def send_game_data(game_info):
+            self.set_token(game_info["token"])
             return self.update_game(
                 game_info["data"],
                 game_id=game_info["id"],
-                game_token=game_info["token"],
             )
 
         lock = Lock()
@@ -398,7 +402,7 @@ class ApiTest(TransactionTestCase):
         game_data["cards"][0]["start_delta_ms"] = -1
         self.update_game(game_data, 400)
 
-    def test_dnf(self):
+    def test_dnf_players(self):
         self.set_token(self.game_token)
         game_data = self.get_game_data(5)
         game_data["dnf_player_ids"] = [self.u1.id]
@@ -439,3 +443,72 @@ class ApiTest(TransactionTestCase):
         self.assertEqual(self.u2.games.count(), 2)
         with self.assertRaises(User.DoesNotExist):
             self.u3.refresh_from_db()
+
+    def test_dnf_game(self):
+        self.set_token(self.game_token)
+        game_data = self.get_game_data(17)
+        game_data["dnf"] = True
+        game_data["has_ended"] = True
+        self.update_game(game_data)
+
+    def test_location(self):
+        self.set_token(self.game_token)
+        game_data = self.get_game_data(20)
+        game_data["location"] = {
+            "latitude": 10.5,
+            "longitude": -4.7,
+            "accuracy": 32.7,
+        }
+        self.update_game(game_data)
+
+        game = Game.objects.get(id=self.game_id)
+
+        for k, v in game_data["location"].items():
+            self.assertEqual(v, getattr(game, "location_" + k))
+
+    def test_no_dnf_key(self):
+        self.set_token(self.game_token)
+        game_data = self.get_game_data(7)
+        del game_data["dnf"]
+        self.update_game(game_data)
+
+    def test_correct_shuffle_indices(self):
+        data = self.create_game([self.t1, self.t2], overwrite_shuffle_indices=False)
+        self.assertEqual(len(data["shuffle_indices"]), len(self.SHUFFLE_INDICES))
+
+    def test_resume(self):
+        self.set_token(self.game_token)
+        game_data = self.get_game_data(9)
+        self.update_game(game_data)
+
+        self.set_token(self.t1, token_name="Token")
+        r = self.client.post(
+            f"/api/games/{self.game_id}/resume/",
+        )
+        self.assert_ok(r)
+
+        self.set_token(r.data["token"])
+        game_data = self.get_game_data(11)
+        self.update_game(game_data)
+
+    def test_resume_invalid_token(self):
+        self.set_token(self.game_token)
+        game_data = self.get_game_data(9)
+        self.update_game(game_data)
+
+        self.set_token("foobar", token_name="Token")
+        r = self.client.post(
+            f"/api/games/{self.game_id}/resume/",
+        )
+        self.assert_status(r, 403)
+
+    def test_resume_user_not_part_of_game(self):
+        self.set_token(self.game_token)
+        game_data = self.get_game_data(9)
+        self.update_game(game_data)
+
+        self.set_token(self.t3, token_name="Token")
+        r = self.client.post(
+            f"/api/games/{self.game_id}/resume/",
+        )
+        self.assert_status(r, 403)

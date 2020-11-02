@@ -23,7 +23,7 @@ echo "[-] Running tests"
 env="DJANGO_SETTINGS_MODULE=academy.settings.development_postgres"
 cmd=(./manage.py test --keepdb "$@")
 if [[ "${USE_DOCKER:-}" = "1" ]]; then
-	cmd=(docker run --net=host --env "$env" beeracademy/web "${cmd[@]}")
+	cmd=(docker run --net=host --env "$env" ghcr.io/beeracademy/web "${cmd[@]}")
 else
 	cmd=(env "$env" "${cmd[@]}")
 fi

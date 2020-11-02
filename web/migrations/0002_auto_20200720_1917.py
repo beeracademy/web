@@ -17,6 +17,8 @@ class Migration(migrations.Migration):
             field=models.DateTimeField(default=django.utils.timezone.now),
         ),
         migrations.AlterField(
-            model_name="failedgameupload", name="game_log", field=models.TextField(),
+            model_name="failedgameupload",
+            name="game_log",
+            field=models.TextField(),
         ),
     ]

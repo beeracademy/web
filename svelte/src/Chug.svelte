@@ -34,7 +34,11 @@
 		} else if (card.chug_duration_ms) {
 			durationStr = formatDuration(card.chug_duration_ms, 3);
 		} else if (card.chug_start_start_delta_ms) {
-			intervalId = setInterval(updateDuration, 10);
+			if (dnf) {
+				durationStr = "DNF";
+			} else {
+				intervalId = setInterval(updateDuration, 10);
+			}
 		} else {
 			durationStr = "Not started";
 		}

@@ -38,6 +38,10 @@ function formatDate(d) {
     return moment(d).format("MMMM D, YYYY HH:mm:ss");
 }
 
+function toBase14(n) {
+    return n.toString(14).toUpperCase();
+}
+
 if ($(".live").length) {
     setInterval(function() {
         $(".live").each(function(i, el) {

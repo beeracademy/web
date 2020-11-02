@@ -52,7 +52,7 @@
         {% for player in game.ordered_players %}
         <a href="/players/{{ player.id }}/" class="text-light">{{ player.username }}</a>{% if not forloop.last %},{% endif %}
         {% endfor %}
-  
+
         <div class="float-right col-md-auto p-0 live" data-start-time="{{ game.start_datetime.timestamp }}">
             <i class="far fa-clock d-lg-none"></i>
             <div class="duration" style="display: inline;">

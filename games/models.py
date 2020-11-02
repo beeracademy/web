@@ -13,7 +13,7 @@ from django.utils.html import format_html
 from PIL import Image
 from tqdm import tqdm
 
-from .seed import shuffle_with_seed
+from .shuffle_indices import shuffle_with_indices
 
 
 class CaseInsensitiveUserManager(UserManager):
@@ -23,6 +23,29 @@ class CaseInsensitiveUserManager(UserManager):
 
 def get_user_image_name(user, filename=None):
     return f"user_images/{user.id}.png"
+
+
+def get_game_image_name(game, filename=None):
+    return f"game_images/{game.id}.png"
+
+
+def save_force_image_name(obj, image_key, upload_to):
+    # Ensure that the image file is always saved
+    # at the location governed by get_user_image_name
+    # and deleted when the image is removed.
+    expected_image_name = upload_to(obj)
+    image = getattr(obj, image_key)
+    expected_image_path = image.storage.path(expected_image_name)
+    if image:
+        if image.path != expected_image_path:
+            os.rename(image.path, expected_image_path)
+            image.name = expected_image_name
+            super(type(obj), obj).save()
+    else:
+        try:
+            os.remove(expected_image_path)
+        except FileNotFoundError:
+            pass
 
 
 def q_between(key, lower, upper):
@@ -294,7 +317,7 @@ class PlayerStat(models.Model):
     def average_game_sips(self):
         if self.total_games == 0:
             return None
-        return round(self.total_sips / self.total_games, 1)
+        return self.total_sips / self.total_games
 
     @property
     def average_chug_time(self):
@@ -319,26 +342,13 @@ class User(AbstractUser):
     def save(self, *args, **kwargs):
         super().save()
 
-        # Ensure that the image file is always saved
-        # at the location governed by get_user_image_name
-        # and deleted when the image is removed.
-        expected_image_name = get_user_image_name(self)
-        expected_image_path = self.image.storage.path(expected_image_name)
-        if self.image:
-            if self.image.path != expected_image_path:
-                os.rename(self.image.path, expected_image_path)
-                self.image.name = expected_image_name
-                super().save()
+        save_force_image_name(self, "image", get_user_image_name)
 
+        if self.image:
             try:
-                image = Image.open(expected_image_path)
+                image = Image.open(self.image.path)
                 thumb = image.resize(self.IMAGE_SIZE)
-                thumb.save(expected_image_path)
-            except FileNotFoundError:
-                pass
-        else:
-            try:
-                os.remove(expected_image_path)
+                thumb.save(self.image.path)
             except FileNotFoundError:
                 pass
 
@@ -466,7 +476,10 @@ class Game(models.Model):
     STANDARD_SIPS_PER_BEER = 14
 
     class Meta:
-        ordering = ("-end_datetime",)
+        ordering = (
+            "dnf",
+            "-end_datetime",
+        )
 
     """
     Game data updates:
@@ -485,6 +498,16 @@ class Game(models.Model):
     description = models.CharField(max_length=1000, blank=True)
     official = models.BooleanField(default=True)
     dnf = models.BooleanField(default=False)
+    location_latitude = models.FloatField(null=True, blank=True)
+    location_longitude = models.FloatField(null=True, blank=True)
+    location_accuracy = models.FloatField(null=True, blank=True)
+    image = models.ImageField(upload_to=get_game_image_name, blank=True, null=True)
+    facebook_post_id = models.CharField(max_length=64, null=True, blank=True)
+    shuffle_indices = models.JSONField(null=True, blank=True)
+
+    def save(self, *args, **kwargs):
+        super().save()
+        save_force_image_name(self, "image", get_game_image_name)
 
     @staticmethod
     def add_durations(qs):
@@ -576,6 +599,12 @@ class Game(models.Model):
     def players_str(self):
         return ", ".join(p.username for p in self.ordered_players())
 
+    def pretty_players_str(self):
+        players = self.ordered_players()
+        return (
+            ", ".join(p.username for p in players[:-1]) + " & " + players[-1].username
+        )
+
     def ordered_cards(self):
         return self.cards.order_by("index")
 
@@ -631,7 +660,7 @@ class Game(models.Model):
             total_times = [None] * n
             total_done = [None] * n
 
-        ordered_players = self.ordered_players()
+        ordered_gameplayers = self.ordered_gameplayers()
         for i in range(n):
             full_beers = total_sips[i] // self.sips_per_beer
             extra_sips = total_sips[i] % self.sips_per_beer
@@ -645,9 +674,12 @@ class Game(models.Model):
             else:
                 time_per_sip = div_or_none(total_times[i], total_sips[i])
 
+            gp = ordered_gameplayers[i]
+
             yield {
-                "id": ordered_players[i].id,
-                "username": ordered_players[i].username,
+                "id": gp.user.id,
+                "username": gp.user.username,
+                "dnf": gp.dnf,
                 "total_sips": total_sips[i],
                 "sips_per_turn": div_or_none(total_sips[i], total_drawn[i]),
                 "full_beers": full_beers,
@@ -656,6 +688,11 @@ class Game(models.Model):
                 "time_per_turn": div_or_none(total_times[i], total_done[i]),
                 "time_per_sip": time_per_sip,
             }
+
+    def get_shuffled_deck(self):
+        cards = list(Card.get_ordered_cards_for_players(self.players.count()))
+        shuffle_with_indices(cards, self.shuffle_indices)
+        return cards
 
     def get_absolute_url(self):
         return reverse("game_detail", args=[self.id])
@@ -720,12 +757,6 @@ class Card(models.Model):
         for suit, _ in Card.SUITS[:player_count]:
             for value, _ in Card.VALUES:
                 yield value, suit
-
-    @classmethod
-    def get_shuffled_deck(cls, player_count, seed):
-        cards = list(cls.get_ordered_cards_for_players(player_count))
-        shuffle_with_seed(cards, seed)
-        return cards
 
     @property
     def drawn_datetime(self):

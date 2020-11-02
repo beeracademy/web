@@ -2,7 +2,7 @@ version: "3.7"
 
 services:
   app:
-    image: &app beeracademy/web
+    image: &app ghcr.io/beeracademy/web
     networks:
       - traefik
       - default
@@ -10,34 +10,33 @@ services:
       - ./media:/app/media
       - ./static:/app/static
       - ./.env:/app/.env
-    deploy:
-      labels:
-        - traefik.enable=true
-        - traefik.http.routers.academy-beer.rule=Host(`academy.beer`)
-        - traefik.http.services.academy-beer.loadbalancer.server.port=8000
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.academy-beer.rule=Host(`academy.beer`)
+      - traefik.http.services.academy-beer.loadbalancer.server.port=8000
     depends_on:
       - db
       - media
       - static
-      - celery
-      - celery-beat
       - redis
 
   celery:
     image: *app
-    command: ["celery", "worker", "--app=academy", "--loglevel=INFO"]
+    command: ["celery", "--app=academy", "worker", "--loglevel=INFO"]
     volumes:
       - ./.env:/app/.env
     depends_on:
+      - app
       - redis
       - db
 
   celery-beat:
     image: *app
-    command: ["celery", "beat", "--app=academy", "--loglevel=INFO", "--scheduler=django_celery_beat.schedulers:DatabaseScheduler"]
+    command: ["./wait_for_app", "celery", "--app=academy", "beat", "--loglevel=INFO", "--scheduler=django_celery_beat.schedulers:DatabaseScheduler"]
     volumes:
       - ./.env:/app/.env
     depends_on:
+      - app
       - redis
       - db
 
@@ -45,6 +44,10 @@ services:
     image: postgres:12
     volumes:
       - ./db_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=db
 
   media:
     image: nginx:alpine
@@ -53,11 +56,10 @@ services:
       - ./nginx-default.conf:/etc/nginx/conf.d/default.conf
     networks:
       - traefik
-    deploy:
-      labels:
-        - traefik.enable=true
-        - traefik.http.routers.media-academy-beer.rule=Host(`media.academy.beer`)
-        - traefik.http.services.media-academy-beer.loadbalancer.server.port=80
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.media-academy-beer.rule=Host(`media.academy.beer`)
+      - traefik.http.services.media-academy-beer.loadbalancer.server.port=80
 
   static:
     image: nginx:alpine
@@ -66,11 +68,10 @@ services:
       - ./nginx-default.conf:/etc/nginx/conf.d/default.conf
     networks:
       - traefik
-    deploy:
-      labels:
-        - traefik.enable=true
-        - traefik.http.routers.static-academy-beer.rule=Host(`static.academy.beer`)
-        - traefik.http.services.static-academy-beer.loadbalancer.server.port=80
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.static-academy-beer.rule=Host(`static.academy.beer`)
+      - traefik.http.services.static-academy-beer.loadbalancer.server.port=80
 
   redis:
     image: redis:alpine

@@ -25,7 +25,10 @@ class Migration(migrations.Migration):
             field=models.PositiveIntegerField(blank=True, null=True),
         ),
         migrations.RunPython(drawn_datetime_to_start_delta_ms),
-        migrations.RemoveField(model_name="card", name="drawn_datetime",),
+        migrations.RemoveField(
+            model_name="card",
+            name="drawn_datetime",
+        ),
         migrations.AddField(
             model_name="chug",
             name="start_start_delta_ms",

@@ -27,6 +27,7 @@ DATABASES = {
         "ENGINE": "django.db.backends.postgresql",
         "NAME": "postgres",
         "USER": "postgres",
+        "PASSWORD": "postgres",
         "HOST": "db",
         "PORT": 5432,
     }
@@ -35,7 +36,9 @@ DATABASES = {
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
-        "CONFIG": {"hosts": [("redis", 6379)],},
+        "CONFIG": {
+            "hosts": [("redis", 6379)],
+        },
     },
 }
 

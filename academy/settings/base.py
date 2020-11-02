@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 """
 
 import os
+import sys
 
 from dotenv import load_dotenv
 
@@ -82,7 +83,9 @@ TEMPLATES = [
 ASGI_APPLICATION = "academy.routing.application"
 
 CHANNEL_LAYERS = {
-    "default": {"BACKEND": "channels.layers.InMemoryChannelLayer",},
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer",
+    },
 }
 
 # Database
@@ -186,3 +189,5 @@ CONSTANCE_CONFIG = {
 load_dotenv()
 
 GIT_COMMIT_HASH = os.getenv("GIT_COMMIT_HASH")
+
+TESTING = sys.argv[1:2] == ["test"]

@@ -25,5 +25,5 @@
                 <PlayerStats player_stats={game_data.player_stats[i]} sips_per_beer={game_data.sips_per_beer}/>
             </div>
         </div>
-    </div>    
+    </div>
 {/each}

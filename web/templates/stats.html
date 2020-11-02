@@ -4,6 +4,17 @@
 
 {% block pagetitle %}Overall game stats{% endblock %}
 
+{% block styles %}
+<link href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css" rel="stylesheet" integrity="sha384-lPzjPsFQL6te2x+VxmV6q1DpRxpRk0tmnl2cpwAO5y04ESyc752tnEWPKDfl1olr" crossorigin="anonymous">
+<link href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css" rel="stylesheet" integrity="sha384-5kMSQJ6S4Qj5i09mtMNrWpSi8iXw230pKU76xTmrpezGnNJQzj0NzXjQLLg+jE7k" crossorigin="anonymous">
+<style>
+#map {
+	height: 500px;
+	margin-bottom: 2em;
+}
+</style>
+{% endblock %}
+
 {% block content %}
 
 <h2>
@@ -36,6 +47,10 @@
 </table>
 
 <div id="heatmap"></div>
+
+{% if location_data %}
+<div id="map"></div>
+{% endif %}
 
 <h3>Sips distribution ({{ sips_data.total_ys|intcomma }} data points)</h3>
 
@@ -93,6 +108,28 @@ Only shows chugs with duration less than {{ chug_duration_data.max_duration }}.
 {% endblock %}
 
 {% block scripts %}
+<script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js" integrity="sha384-RLIyj5q1b5XJTn0tqUhucRZe40nFTocRP91R/NkRJHwAe4XxnTV77FXy/vGLiec2" crossorigin="anonymous"></script>
+
+{{ location_data|json_script:"location_data" }}
+<script>
+	var locationData = JSON.parse(document.getElementById("location_data").textContent);
+	if (locationData.length > 0) {
+		var map = L.map('map');
+		L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+		  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+		}).addTo(map);
+
+		var markers = L.markerClusterGroup();
+		for (var i = 0; i < locationData.length; i++) {
+			var data = locationData[i];
+			markers.addLayer(L.marker([data.latitude, data.longitude])
+							  .bindPopup(data.popup));
+		}
+		map.addLayer(markers);
+		map.fitBounds(markers.getBounds());
+	}
+</script>
+
 {{ heatmap_data|json_script:"heatmap_data" }}
 {{ sips_data|json_script:"sips_data" }}
 {{ chugs_data|json_script:"chugs_data" }}
@@ -179,6 +216,11 @@ Only shows chugs with duration less than {{ chug_duration_data.max_duration }}.
 		};
 
 		if (charts[i].data === "sips_data" && data.probs.length !== 0) {
+      options.xaxis.labels = {
+        formatter: function(val, index) {
+          return val === undefined? "": toBase14(val);
+        }
+      };
 			var expected = [];
 			for (var j = 0; j < data.probs.length; j++) {
 				expected.push(data.probs[j] * data.total_ys);

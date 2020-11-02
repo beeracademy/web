@@ -8,7 +8,7 @@ from rest_framework import serializers
 from rest_framework.authtoken.models import Token
 
 from .models import Card, Chug, Game, GamePlayer, PlayerStat, User
-from .seed import is_seed_valid_for_players
+from .shuffle_indices import generate_shuffle_indices_for_players
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -48,8 +48,10 @@ class CreateGameSerializer(serializers.Serializer):
         return users
 
     def create(self, validated_data):
-        game = Game.objects.create()
-        for i, user in enumerate(validated_data["tokens"]):
+        tokens = validated_data["tokens"]
+        shuffle_indices = generate_shuffle_indices_for_players(len(tokens))
+        game = Game.objects.create(shuffle_indices=shuffle_indices)
+        for i, user in enumerate(tokens):
             GamePlayer.objects.create(game=game, user=user, position=i)
 
         return game
@@ -112,6 +114,12 @@ class CardSerializer(serializers.ModelSerializer):
         return data
 
 
+class LocationSerializer(serializers.Serializer):
+    latitude = serializers.FloatField(source="location_latitude")
+    longitude = serializers.FloatField(source="location_longitude")
+    accuracy = serializers.FloatField(source="location_accuracy")
+
+
 class GameSerializer(serializers.ModelSerializer):
     class Meta:
         model = Game
@@ -122,20 +130,25 @@ class GameSerializer(serializers.ModelSerializer):
             "description",
             "official",
             "dnf",
+            "shuffle_indices",
             "cards",
-            "seed",
             "player_ids",
             "player_names",
             "sips_per_beer",
             "has_ended",
             "description_html",
             "dnf_player_ids",
+            "location",
+            "image",
         ]
 
     start_datetime = serializers.DateTimeField(required=False)
     official = serializers.BooleanField(required=True)
+    dnf = serializers.BooleanField(required=False, default=False)
+    shuffle_indices = serializers.ListField(
+        child=serializers.IntegerField(), read_only=True
+    )
     cards = CardSerializer(many=True)
-    seed = serializers.ListField(child=serializers.IntegerField(), write_only=True)
     player_ids = serializers.ListField(
         child=serializers.IntegerField(), write_only=True
     )
@@ -145,6 +158,7 @@ class GameSerializer(serializers.ModelSerializer):
     dnf_player_ids = serializers.ListField(
         child=serializers.IntegerField(), write_only=True, required=False, default=[]
     )
+    location = LocationSerializer(required=False, source="*")
 
     hashtag_re = re.compile(r"#([^# ]+)")
 
@@ -192,9 +206,16 @@ class GameSerializer(serializers.ModelSerializer):
         new_cards = data["cards"]
 
         ended = data["has_ended"]
-        if not ended and data.get("description") != None:
+        dnf = data["dnf"]
+        completed = ended and not dnf
+        if not completed and data.get("description") != None:
             raise serializers.ValidationError(
                 {"description": "Can't set description before game has ended"}
+            )
+
+        if dnf and not ended:
+            raise serializers.ValidationError(
+                {"dnf": "has_ended must be true if dnf is true"}
             )
 
         previous_cards = len(cards)
@@ -217,22 +238,19 @@ class GameSerializer(serializers.ModelSerializer):
                     }
                 )
 
-        seed = data["seed"]
-        if not is_seed_valid_for_players(seed, player_count):
-            raise serializers.ValidationError({"seed": "Invalid seed"})
-        seed_cards = Card.get_shuffled_deck(player_count, seed)
+        shuffled_cards = self.instance.get_shuffled_deck()
 
         if len(cards) > len(new_cards):
             raise serializers.ValidationError(
                 {"cards": "More cards in database than provided"}
             )
 
-        if len(new_cards) > len(seed_cards):
+        if len(new_cards) > len(shuffled_cards):
             raise serializers.ValidationError(
                 {"cards": "More cards than expected for the game"}
             )
 
-        if ended and len(new_cards) < len(seed_cards):
+        if completed and len(new_cards) < len(shuffled_cards):
             raise serializers.ValidationError(
                 {"cards": "Can't end game before drawing every card"}
             )
@@ -287,12 +305,12 @@ class GameSerializer(serializers.ModelSerializer):
 
         for i, card_data in enumerate(new_cards):
             if card_data["value"] == 14 and "chug_end_start_delta_ms" not in card_data:
-                if i != len(new_cards) - 1 or ended:
+                if i != len(new_cards) - 1 or completed:
                     raise serializers.ValidationError(
                         {"cards": f"Card {i} has missing chug data"}
                     )
 
-        if ended:
+        if completed:
             last_card = new_cards[-1]
             if hasattr(self, "chug"):
                 end_start_delta_ms = (
@@ -342,13 +360,13 @@ class GameSerializer(serializers.ModelSerializer):
                 if not chug and chug_data:
                     assert i == len(cards) - 1
 
-        for i, (seed_card, card_data) in enumerate(
-            zip(seed_cards[previous_cards:], new_cards[previous_cards:])
+        for i, (shuffled_card, card_data) in enumerate(
+            zip(shuffled_cards[previous_cards:], new_cards[previous_cards:])
         ):
-            if seed_card != (card_data["value"], card_data["suit"]):
+            if shuffled_card != (card_data["value"], card_data["suit"]):
                 raise serializers.ValidationError(
                     {
-                        "cards": f"Card {previous_cards + i} has different data than seed would generate"
+                        "cards": f"Card {previous_cards + i} is different than expected from shuffle_indices"
                     }
                 )
 

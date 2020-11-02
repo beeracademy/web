@@ -59,6 +59,7 @@ If a user with that username exists, but the password was wrong, the response is
 {
   "id": int,
   "token": string,
+  "shuffle_indices": int[],
   "start_datetime": datetime_string,
   ...
 }
@@ -72,10 +73,10 @@ If a user with that username exists, but the password was wrong, the response is
 // Authorization: GameToken <game_token>
 {
   "official": bool,
-  "seed": int[],
   "cards": card[], // see below
   "has_ended": bool,
   "description": string, // only at end of game
+  "dnf": bool,
 }
 ```
 
@@ -94,6 +95,49 @@ If a user with that username exists, but the password was wrong, the response is
   // player has finished chugging:
   "chug_end_start_delta_ms": int,
 }
+```
+
+### Response
+```javascript
+{}
+```
+
+## Resume game
+
+### Request
+```javascript
+// POST /api/games/<game_id>/resume/
+// Authorization: Token <user_token>
+{}
+```
+
+### Response
+```javascript
+{
+  "token": string,
+  ...
+}
+
+## Update game image
+
+### Request
+```
+// POST /api/games/<game_id>/update_image/
+// Authorization: GameToken <game_token>
+// multipart/form-data with image field containing image
+```
+
+### Response
+```javascript
+{}
+```
+
+## Delete game image
+
+### Request
+```
+// POST /api/games/<game_id>/delete_image/
+// Authorization: GameToken <game_token>
 ```
 
 ### Response

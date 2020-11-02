@@ -22,6 +22,12 @@ export interface PlayerStatsData {
 	time_per_turn: number;
 }
 
+export interface Location {
+	latitude: number;
+	longitude: number;
+	accuracy: number;
+}
+
 export interface GameData {
 	id: number;
 	dnf: boolean;
@@ -39,6 +45,9 @@ export interface GameData {
 	description_html: string | null;
 
 	playerCount: number;
+
+	image: string | null;
+	location: Location | null;
 }
 
 export interface UserData {

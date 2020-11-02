@@ -31,6 +31,7 @@ from django.db.models import (
 )
 from django.shortcuts import render
 from django.templatetags.static import static
+from django.urls import reverse
 from django.utils import timezone
 from django.views.generic import (
     CreateView,
@@ -403,6 +404,17 @@ class PlayerDetailView(DetailView):
             otp, _ = OneTimePassword.objects.get_or_create(user=self.object)
             context["otp_data"] = otp.password
 
+        played_with_count = Counter()
+        for game in self.object.games.all():
+            for player in game.players.all():
+                if player != self.object:
+                    played_with_count[player.username] += 1
+
+        context["played_with_data"] = sorted(
+            ({"x": k, "y": v} for k, v in played_with_count.items()),
+            key=lambda x: -x["y"],
+        )[:30]
+
         return context
 
 
@@ -659,6 +671,19 @@ class StatsView(TemplateView):
             dist, _ = self.chug_count_distribution(pcount)
             for chugs in range(6 + 1):
                 row.append(dist(chugs) * 100 if chugs <= pcount else None)
+
+        context["location_data"] = []
+        for g in games.filter(
+            location_latitude__isnull=False, location_accuracy__lte=100 * 1000
+        ):
+            game_url = reverse("game_detail", args=[g.id])
+            context["location_data"].append(
+                {
+                    "latitude": g.location_latitude,
+                    "longitude": g.location_longitude,
+                    "popup": f"<a href='{game_url}'>{g.date}<br>{g.players_str()}</a>",
+                }
+            )
 
         return context
 

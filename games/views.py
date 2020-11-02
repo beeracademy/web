@@ -1,6 +1,7 @@
 from django.db import transaction
-from django.http import Http404
+from django.http import Http404, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404
+from PIL import Image
 from rest_framework import serializers, viewsets
 from rest_framework.authentication import BaseAuthentication
 from rest_framework.authtoken.models import Token
@@ -8,10 +9,10 @@ from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.decorators import action
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.parsers import MultiPartParser
 from rest_framework.permissions import BasePermission, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 
-from .facebook import post_to_page
 from .models import (
     Card,
     Chug,
@@ -31,6 +32,7 @@ from .serializers import (
     PlayerStatSerializer,
     UserSerializer,
 )
+from .tasks import post_game_to_facebook, update_facebook_post
 
 
 class CustomAuthToken(ObtainAuthToken):
@@ -79,6 +81,14 @@ class GameUpdateAuthentication(BaseAuthentication):
 class GameUpdatePermission(BasePermission):
     def has_object_permission(self, request, view, game):
         return request.auth == game
+
+
+1 + 1
+
+
+class PartOfGamePermission(BasePermission):
+    def has_object_permission(self, request, view, game):
+        return request.user in game.players.all()
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -145,9 +155,16 @@ def update_game(game, data):
     dnf_gps.update(dnf=True)
     game.gameplayer_set.exclude(id__in=dnf_gps).update(dnf=False)
 
+    game.dnf = data["dnf"]
+
+    for k, v in data.items():
+        if k.startswith("location_"):
+            setattr(game, k, v)
+
     game.save()
 
     if game.has_ended and not game_already_ended:
+        update_facebook_post.delay(game.id)
         update_stats_on_game_finished(game)
 
 
@@ -164,7 +181,7 @@ class GameViewSet(viewsets.ReadOnlyModelViewSet):
     lookup_value_regex = "\\d+"
 
     def retrieve(self, request, pk=None):
-        game = get_object_or_404(Game, pk=pk)
+        game = self.get_object()
         return Response(GameSerializerWithPlayerStats(game).data)
 
     def create(self, request):
@@ -172,13 +189,26 @@ class GameViewSet(viewsets.ReadOnlyModelViewSet):
         serializer.is_valid(raise_exception=True)
         game = serializer.save()
 
-        players_str = ", ".join(map(lambda p: p.username, game.ordered_players()))
-        game_url = request.build_absolute_uri("/games/{}/".format(game.id))
-
-        post_to_page("A game between {} just started!".format(players_str), game_url)
+        post_game_to_facebook.delay(
+            game.id, request.build_absolute_uri(game.get_absolute_url())
+        )
 
         token = GameToken.objects.create(game=game)
         return Response({**self.serializer_class(game).data, "token": token.key})
+
+    @action(
+        detail=True,
+        methods=["post"],
+        permission_classes=[PartOfGamePermission],
+    )
+    def resume(self, request, pk=None):
+        game = self.get_object()
+
+        if game.has_ended:
+            return HttpResponseBadRequest("Game has ended")
+
+        game_token = GameToken.objects.get(game=game)
+        return Response({**self.serializer_class(game).data, "token": game_token.key})
 
     @transaction.atomic()
     @action(
@@ -188,17 +218,54 @@ class GameViewSet(viewsets.ReadOnlyModelViewSet):
         permission_classes=[GameUpdatePermission],
     )
     def update_state(self, request, pk=None):
+        game = self.get_object()
+
         # Lock game object
         # Note: Doesn't do anything when using SQLite
-        try:
-            game = Game.objects.select_for_update().get(pk=pk)
-        except Game.DoesNotExist:
-            raise Http404("Game does not exist")
+        Game.objects.select_for_update().get(id=pk)
 
         self.check_object_permissions(request, game)
         serializer = GameSerializer(game, data=request.data)
         serializer.is_valid(raise_exception=True)
         update_game(game, serializer.validated_data)
+        return Response({})
+
+    @action(
+        detail=True,
+        methods=["post"],
+        authentication_classes=[GameUpdateAuthentication],
+        permission_classes=[GameUpdatePermission],
+        parser_classes=[MultiPartParser],
+    )
+    def update_image(self, request, pk=None):
+        game = self.get_object()
+
+        f = request.data.get("image")
+        if not f:
+            return HttpResponseBadRequest("image file is missing")
+
+        try:
+            image = Image.open(f)
+            image.verify()
+        except Exception as e:
+            print(e)
+            return HttpResponseBadRequest("image is not valid")
+
+        game.image.save(None, f)
+
+        return Response({})
+
+    @action(
+        detail=True,
+        methods=["post"],
+        authentication_classes=[GameUpdateAuthentication],
+        permission_classes=[GameUpdatePermission],
+    )
+    def delete_image(self, request, pk=None):
+        game = self.get_object()
+
+        game.image.delete()
+
         return Response({})
 
     @action(detail=False, methods=["get"], permission_classes=[])

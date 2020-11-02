@@ -173,7 +173,7 @@ class UploadForm(forms.ModelForm):
 
 @admin.register(Game)
 class GameAdmin(admin.ModelAdmin):
-    list_filter = ["official"]
+    list_filter = ["dnf", "official"]
     add_form_template = "admin/games/game/upload_game.html"
     save_on_top = True
 

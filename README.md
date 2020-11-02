@@ -1,6 +1,6 @@
 # Academy Web Server
 
-[![Build and Deploy](https://github.com/beeracademy/web/workflows/Build%20and%20Deploy/badge.svg?branch=master)](https://github.com/beeracademy/web/actions)
+[![Build, Test & Deploy](https://github.com/beeracademy/web/workflows/Build,%20Test%20&%20Deploy/badge.svg?branch=master)](https://github.com/beeracademy/web/actions)
 
 Frontend and api server for Academy.
 
@@ -15,7 +15,13 @@ Inside the virtual enviroment install [pip-tools](https://github.com/jazzband/pi
 
 ```sh
 pip install pip-tools
-pip-sync
+pip-sync requirements.txt dev-requirements.txt
+```
+
+Install pre-commit hook to ensure files are formatted correctly:
+
+```sh
+pre-commit install
 ```
 
 Then apply the database migrations:
@@ -40,3 +46,10 @@ To do this, run the following:
 cd svelte
 ./build_components
 ```
+
+## Generating Facebook access token
+
+- Create a Facebook app: https://developers.facebook.com/apps/ (Disable uBlock Origin)
+- Open the Graph API explorer: https://developers.facebook.com/tools/explorer
+- Generate a User Token with permission `pages_manage_posts`
+- Run `./get_facebook_access_token` with the required arguments. It will output a Page Access Token that will never expire.

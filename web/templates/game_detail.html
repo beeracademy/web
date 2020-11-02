@@ -11,82 +11,17 @@
         flex-direction: column;
     }
 
+    footer {
+        display: none;
+    }
+
     nav {
         margin-bottom: 0px !important;
         flex-grow: 0;
     }
 
-    .game-wrapper {
-        display: flex;
-        flex: 1;
-        overflow: hidden;
-    }
-
-    .game-wrapper .game {
-        flex: 1;
-        padding: 0px 48px;
-        margin: 0px 5px;
-        overflow-y: auto;
-        overflow-x: hidden;
-    }
-
-    .game-wrapper .chat, .game-wrapper .players {
-        width: 340px;
-        display: flex;
-        flex-direction: column;
-    }
-
-    .game-wrapper .players {
-        padding: 16px;
-        overflow-y: auto;
-        border-right: 1px solid #dededf;
-    }
-
-    .game-wrapper .chat {
-        border-left: 1px solid #dededf;
-    }
-
-    .game-wrapper .chat .info {
-        height: 64px;
-        border-bottom: 1px solid #dededf;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        font-size: 1.5em;
-        color: #666;
-        text-transform: uppercase;
-
-    }
-
-    .game-wrapper .chat .messages {
-        display: flex;
-        flex: 1;
-        padding: 16px;
-        justify-content: flex-end;
-        flex-direction: column;
-        overflow-y: auto;
-        overflow-x: hidden;
-    }
-
-    .game-wrapper .chat .messages .message.info-message {
-        color: #666;
-    }
-
-    .game-wrapper .chat .messages .message {
-        margin: 4px 8px;
-    }
-
-    .game-wrapper .chat .messages .message:not(.info-message) b {
-        color: #bd2130;
-    }
-
-    .game-wrapper .chat input {
-        margin: 16px;
-        padding: 8px;
-        border: none;
-        border-radius: 5px;
-        background-color: #f2f2f2;
-        outline-color: #bd2130;
+    #svelte-game_detail {
+        height: calc(100% - 64px);
     }
 
     .card-img-top {
@@ -108,17 +43,15 @@
         .game::-webkit-scrollbar, .players::-webkit-scrollbar {
             width: 10px;
         }
-    
+
         .game::-webkit-scrollbar-track, .players::-webkit-scrollbar-track {
          background: transparent;
         }
-    
+
         .game::-webkit-scrollbar-thumb, .players::-webkit-scrollbar-thumb {
             background-color: #646a7217;
         }
     }
-
-
 </style>
 <script>
     window.is_authenticated = {{ user.is_authenticated|lower }};
@@ -139,5 +72,5 @@
 </div>
 
 {% svelte_include "GameDetail" %}
- 
+
 {% endblock %}

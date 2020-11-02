@@ -6,6 +6,8 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 
+	import Map from "./Map.svelte";
+	import Image from "./Image.svelte";
 	import Players from "./Players.svelte";
 	import CardCell from "./CardCell.svelte";
 	import Chug from "./Chug.svelte";
@@ -183,6 +185,8 @@
 			elm.appendChild(textElm)
 
 			chat_messages.appendChild(elm);
+
+			chat_messages.scrollTo(0, chat_messages.scrollHeight);
 		}
 	});
 </script>
@@ -194,8 +198,7 @@
 
     .game-wrapper {
         display: flex;
-        flex: 1;
-        overflow: hidden;
+        height: 100%;
     }
 
     .game-wrapper .game {
@@ -235,7 +238,6 @@
     }
 
     .game-wrapper .chat .messages {
-        display: flex;
         flex: 1;
         padding: 16px;
         justify-content: flex-end;
@@ -355,6 +357,18 @@
 				</tr>
 			</tbody>
 			</table>
+
+			{#if game_data.location.latitude !== null}
+			<h2>Location</h2>
+			<hr>
+			<Map location={game_data.location}/>
+			{/if}
+
+			{#if game_data.image !== null}
+			<h2>Image</h2>
+			<hr>
+			<Image url={game_data.image}/>
+			{/if}
 
 			<h2>Chugs</h2>
 

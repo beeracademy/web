@@ -99,7 +99,7 @@ tr.in-game {
 }
 
 tr.in-game a {
-    color: #bd2130;    
+    color: #bd2130;
 }
 
 .rounder {
@@ -137,11 +137,6 @@ tr.in-game a {
 .academy-table.slim td {
     height: 28px;
     line-height: 28px;
-}
-
-.table-striped tbody tr:nth-of-type(odd) {
-    background-color: inherit;
-
 }
 
 .text-cetner {

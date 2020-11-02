@@ -1,20 +1,10 @@
-import datetime
-
 from .models import PlayerStat
-
-
-def add_thousand_seperators(value):
-    return f"{value:,}"
-
-
-def format_duration(ms):
-    td = datetime.timedelta(milliseconds=ms)
-    s = str(td)
-    if not "." in s:
-        s += "."
-
-    a, b = s.split(".")
-    return a.split(":", 1)[1] + "." + b.rstrip("0").ljust(3, "0")
+from .utils import (
+    add_thousand_seperators,
+    format_chug_duration,
+    format_sips_html,
+    format_total_time,
+)
 
 
 def django_getattr(obj, key):
@@ -70,14 +60,19 @@ class Ranking:
 
 RANKINGS = [
     Ranking("Total sips", "-total_sips"),
-    Ranking("Best game", "-best_game_sips", "best_game"),
-    Ranking("Worst game", "worst_game_sips", "worst_game"),
+    Ranking("Best game", "-best_game_sips", "best_game", format_sips_html),
+    Ranking("Worst game", "worst_game_sips", "worst_game", format_sips_html),
     Ranking("Total chugs", "-total_chugs"),
     Ranking(
         "Fastest chug",
         "fastest_chug__duration_ms",
         "fastest_chug__card__game",
-        format_duration,
+        format_chug_duration,
+    ),
+    Ranking(
+        "Total time played",
+        "-total_time_played_seconds",
+        formatter=format_total_time,
     ),
 ]
 
