@@ -266,7 +266,7 @@ class GameSerializer(serializers.ModelSerializer):
         previous_delta = None
         extra_time = 0
         for i, delta in enumerate(increasing_deltas):
-            if delta < 0:
+            if delta < 0 and not self.context.get("fix_times"):
                 raise serializers.ValidationError(
                     {"cards": "Card times are not non-negative"}
                 )
