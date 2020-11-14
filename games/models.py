@@ -690,6 +690,9 @@ class Game(models.Model):
             }
 
     def get_shuffled_deck(self):
+        if not self.shuffle_indices:
+            return None
+
         cards = list(Card.get_ordered_cards_for_players(self.players.count()))
         shuffle_with_indices(cards, self.shuffle_indices)
         return cards

@@ -245,15 +245,16 @@ class GameSerializer(serializers.ModelSerializer):
                 {"cards": "More cards in database than provided"}
             )
 
-        if len(new_cards) > len(shuffled_cards):
-            raise serializers.ValidationError(
-                {"cards": "More cards than expected for the game"}
-            )
+        if shuffled_cards:
+            if len(new_cards) > len(shuffled_cards):
+                raise serializers.ValidationError(
+                    {"cards": "More cards than expected for the game"}
+                )
 
-        if completed and len(new_cards) < len(shuffled_cards):
-            raise serializers.ValidationError(
-                {"cards": "Can't end game before drawing every card"}
-            )
+            if completed and len(new_cards) < len(shuffled_cards):
+                raise serializers.ValidationError(
+                    {"cards": "Can't end game before drawing every card"}
+                )
 
         increasing_deltas = []
         for card_data in new_cards:
@@ -360,15 +361,16 @@ class GameSerializer(serializers.ModelSerializer):
                 if not chug and chug_data:
                     assert i == len(cards) - 1
 
-        for i, (shuffled_card, card_data) in enumerate(
-            zip(shuffled_cards[previous_cards:], new_cards[previous_cards:])
-        ):
-            if shuffled_card != (card_data["value"], card_data["suit"]):
-                raise serializers.ValidationError(
-                    {
-                        "cards": f"Card {previous_cards + i} is different than expected from shuffle_indices"
-                    }
-                )
+        if shuffled_cards:
+            for i, (shuffled_card, card_data) in enumerate(
+                zip(shuffled_cards[previous_cards:], new_cards[previous_cards:])
+            ):
+                if shuffled_card != (card_data["value"], card_data["suit"]):
+                    raise serializers.ValidationError(
+                        {
+                            "cards": f"Card {previous_cards + i} is different than expected from shuffle_indices"
+                        }
+                    )
 
         return data
 
