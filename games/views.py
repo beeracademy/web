@@ -1,6 +1,7 @@
 from django.db import transaction
 from django.http import Http404, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from PIL import Image
 from rest_framework import serializers, viewsets
 from rest_framework.authentication import BaseAuthentication
@@ -310,3 +311,14 @@ class PlayerStatViewSet(viewsets.ViewSet):
         stats = PlayerStat.objects.filter(user=user)
         serializer = PlayerStatSerializer(stats, many=True)
         return Response(serializer.data)
+
+
+class InfoViewSet(viewsets.ViewSet):
+    permission_classes = (IsAuthenticatedOrReadOnly,)
+
+    def list(self, request):
+        return Response(
+            {
+                "datetime": timezone.now(),
+            }
+        )
