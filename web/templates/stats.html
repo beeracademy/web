@@ -183,10 +183,6 @@ Only shows chugs with duration less than {{ chug_duration_data.max_duration }}.
 		name: "Chugs",
 	}];
 
-	function normal_distribution(mu, sigma, x) {
-		return 1 / (sigma * Math.sqrt(2 * Math.PI)) * Math.exp(-1/2 * Math.pow((x - mu) / sigma, 2));
-	}
-
 	for (var i = 0; i < charts.length; i++) {
 		var data = JSON.parse(document.getElementById(charts[i].data).textContent);
 		var chart_el = document.getElementById(charts[i].chart);
