@@ -508,7 +508,7 @@ class StatsView(TemplateView):
         total_cards = 13 * player_count
         fpc = (total_cards - 13) / (total_cards - 1)
         var = SIPS_VAR * fpc
-        return norm(mean, sqrt(var)).pdf, f"N({mean}, {var:.2f})"
+        return lambda x: norm(mean, sqrt(var)).pdf(x + 0.5), f"N({mean}, {var:.2f})"
 
     @classmethod
     def chug_count_distribution(cls, player_count):
