@@ -1,7 +1,7 @@
 import datetime
 import random
 import re
-from collections import Counter
+from collections import Counter, defaultdict
 from math import sqrt
 from urllib.parse import urlencode
 
@@ -40,7 +40,7 @@ from django.views.generic import (
     TemplateView,
     UpdateView,
 )
-from scipy.stats import hypergeom, norm
+from scipy.stats import hypergeom
 
 from games.achievements import ACHIEVEMENTS
 from games.models import (
@@ -484,31 +484,33 @@ class RankingView(PaginatedListView):
         return context
 
 
-SIPS_MEAN = sum(range(2, 14 + 1))
-CARD_MEAN = SIPS_MEAN / 13
-SIPS_VAR = sum((CARD_MEAN - i) ** 2 for i in range(2, 14 + 1))
-
-
 class StatsView(TemplateView):
     template_name = "stats.html"
 
     @classmethod
     def sips_count_distribution(cls, player_count):
-        """
-        Approximate probability of getting exactly x sips.
+        # Exact probability
+        def get_outcomes(values, draws):
+            outcomes = defaultdict(int)
+            outcomes[0, 0] = 1
 
-        Approximated using a normal distribution where the mean is known,
-        but the variance is estimated using a finite population correction.
+            for v in values:
+                noutcomes = outcomes.copy()
+                for (total, used), c in outcomes.items():
+                    total += v
+                    used += 1
+                    if used <= draws:
+                        noutcomes[total, used] += c
 
-        Futhermore a continuity correction is used.
+                outcomes = noutcomes
 
-        See https://math.stackexchange.com/a/1300566/19750
-        """
-        mean = SIPS_MEAN + 0.5
-        total_cards = 13 * player_count
-        fpc = (total_cards - 13) / (total_cards - 1)
-        var = SIPS_VAR * fpc
-        return lambda x: norm(mean, sqrt(var)).pdf(x + 0.5), f"N({mean}, {var:.2f})"
+            return {total: c for (total, used), c in outcomes.items() if used == draws}
+
+        values = [i for _ in range(player_count) for i in range(2, 15)]
+        outcomes = get_outcomes(values, 13)
+        total_outcomes = sum(outcomes.values())
+
+        return lambda x: outcomes.get(x, 0) / total_outcomes, f"SumP({player_count})"
 
     @classmethod
     def chug_count_distribution(cls, player_count):
@@ -610,7 +612,7 @@ class StatsView(TemplateView):
                 "ys": ys,
                 "total_ys": sum(ys),
                 "probs": probs,
-                "probs_exact": name == "chugs_data",
+                "probs_exact": True,
                 "dist_str": dist_str,
             }
 
