@@ -41,6 +41,10 @@ jobs:
       - name: Restore docker layer cache
         uses: satackey/action-docker-layer-caching@v0.0.8
         continue-on-error: true
+        with:
+          key: docker-cache-{hash}
+          restore-keys: |
+            docker-cache-
 
       - name: Build image
         run: ./build
