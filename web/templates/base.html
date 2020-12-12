@@ -63,7 +63,12 @@
   integrity="sha512-gZwIG9x3wUXg2hdXF6+rVkLF/0Vi9U8D2Ntg4Ga5I5BZpVkVxlJWbSQtXPSiUTtC0TjtGOmxa1AJPuV0CPthew=="
   crossorigin=""></script>
 
-  		<script src="https://cdnjs.cloudflare.com/ajax/libs/Snowstorm/20131208/snowstorm-min.js"></script>
+    <script src="https://unpkg.com/magic-snowflakes@4.1.6/dist/snowflakes.min.js" integrity="sha384-jbAIB/GHy9b9yhKXwiySc2MYlOgy9yalQPKzgZ8wx0dror6JrgWh+6VEXX2aGQ1i" crossorigin="anonymous"></script><script src="https://unpkg.com/magic-snowflakes@4.1.6/dist/snowflakes.min.js" integrity="sha384-jbAIB/GHy9b9yhKXwiySc2MYlOgy9yalQPKzgZ8wx0dror6JrgWh+6VEXX2aGQ1i" crossorigin="anonymous"></script>
+    <script>
+      Snowflakes({
+        count: 500,
+      });
+    </script>
 
 		<script src="{% static "js/script.js" %}"></script>
 		{% block scripts %}{% endblock %}
