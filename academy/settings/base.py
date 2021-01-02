@@ -183,6 +183,8 @@ CONSTANCE_CONFIG = {
     "BANNER_URL": ("https://dropdu.nu/", "Banner URL", str),
     "BANNER_COLOR": ("#0094c4", "Banner color", str),
     "BANNER_BLINK": (False, "Should banner text blink?", bool),
+    "SNOWFLAKES_ENABLED": (False, "Show snowflakes", bool),
+    "SNOWFLAKES_COUNT": (50, "Number of snowflakes on the screen", int),
 }
 
 
