@@ -9,10 +9,15 @@
     .dnf {
         text-decoration: line-through;
     }
+
+    .card {
+        max-width: 275px;
+        margin: auto;
+    }
 </style>
 
 {#each ordered_gameplayers as gp, i}
-    <div class="card" style="margin-bottom: 16px; width: 100%;">
+    <div class="card" style="margin-bottom: 16px;">
         <div class="card-body">
         <a href="/players/{gp.user.id}/">
             <div style="display: flex; align-items: center; margin-bottom: 12px;">

@@ -191,51 +191,53 @@
 	}
 
     .game-wrapper {
-        display: flex;
+		display: grid;
+		grid:
+			[row1-start] "players game chat" [row1-end]
+			/ 275px auto 275px;
         height: 100%;
     }
 
     .game-wrapper .game {
-        flex: 1;
+		grid-area: game;
         padding: 0px 48px;
         margin: 0px 5px;
         overflow-y: auto;
         overflow-x: hidden;
     }
 
-    .game-wrapper .chat, .game-wrapper .players {
-        width: 340px;
-        display: flex;
-        flex-direction: column;
-    }
-
     .game-wrapper .players {
+		grid-area: players;
         padding: 16px;
         overflow-y: auto;
         border-right: 1px solid #dededf;
     }
 
     .game-wrapper .chat {
+		grid-area: chat;
         border-left: 1px solid #dededf;
+		display: grid;
+		grid:
+			[row1-start] "chat-header" 64px [row1-end]
+			[row2-start] "chat-messages" 1fr [row2-end]
+			[row3-start] "chat-input" 64px [row3-end]
+			/ auto;
+		justify-content: center;
     }
 
     .game-wrapper .chat .info {
-        height: 64px;
+		grid-area: chat-header;
         border-bottom: 1px solid #dededf;
-        display: flex;
-        justify-content: center;
-        align-items: center;
+        text-align: center;
         font-size: 1.5em;
         color: #666;
         text-transform: uppercase;
-
+		margin-top: 0.5em;
     }
 
     .game-wrapper .chat .messages {
-        flex: 1;
+		grid-area: chat-messages;
         padding: 16px;
-        justify-content: flex-end;
-        flex-direction: column;
         overflow-y: auto;
         overflow-x: hidden;
     }
@@ -253,6 +255,7 @@
     }
 
     .game-wrapper .chat input {
+		grid-area: chat-input;
         margin: 16px;
         padding: 8px;
         border: none;
@@ -266,18 +269,33 @@
         width: 156px;
     }
 
-    @media only screen and (max-width: 600px) {
-        .chat, .players {
-            display: none !important;
-        }
+    @media only screen and (max-width: 1200px) {
+		.game-wrapper {
+			display: block;
+		}
 
         .game {
             padding: 15px !important;
             margin: 0px;
         }
+
+		.players, .chat {
+			margin: auto;
+			border: none !important;
+		}
+
+		.players {
+			display: grid;
+			grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+		    grid-gap: 1rem;
+		}
+
+		.players-header {
+			margin-left: 1em;
+		}
     }
 
-    @media only screen and (min-width: 600px) {
+    @media only screen and (min-width: 1200px) {
         .game::-webkit-scrollbar, .players::-webkit-scrollbar {
             width: 10px;
         }
@@ -289,10 +307,15 @@
         .game::-webkit-scrollbar-thumb, .players::-webkit-scrollbar-thumb {
             background-color: #646a7217;
         }
+
+		.players-header {
+			display: none;
+		}
     }
 </style>
 
 <div class="game-wrapper">
+	<h2 class="players-header">Players</h2>
 	<div class="players">
 		<Players game_data={game_data} ordered_gameplayers={ordered_gameplayers}/>
 	</div>

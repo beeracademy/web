@@ -27,31 +27,6 @@
     .card-img-top {
         width: {{ IMAGE_WIDTH }}px;
     }
-
-    @media only screen and (max-width: 600px) {
-        .chat, .players {
-            display: none !important;
-        }
-
-        .game {
-            padding: 15px !important;
-            margin: 0px;
-        }
-    }
-
-    @media only screen and (min-width: 600px) {
-        .game::-webkit-scrollbar, .players::-webkit-scrollbar {
-            width: 10px;
-        }
-
-        .game::-webkit-scrollbar-track, .players::-webkit-scrollbar-track {
-         background: transparent;
-        }
-
-        .game::-webkit-scrollbar-thumb, .players::-webkit-scrollbar-thumb {
-            background-color: #646a7217;
-        }
-    }
 </style>
 <script>
     window.is_authenticated = {{ user.is_authenticated|lower }};
