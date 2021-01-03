@@ -11,7 +11,7 @@
     }
 
     .card {
-        max-width: 275px;
+        min-width: 225px;
         margin: auto;
     }
 </style>
