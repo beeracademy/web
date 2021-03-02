@@ -1,6 +1,7 @@
 import datetime
 
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
+from django.contrib.auth.models import AnonymousUser
 
 
 class ChatConsumer(AsyncJsonWebsocketConsumer):
@@ -15,8 +16,6 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         )
 
     async def connect(self):
-        from django.contrib.auth.models import AnonymousUser
-
         self.user = self.scope["user"]
         self.is_game = self.scope["query_string"] == b"game"
 
