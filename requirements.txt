@@ -5,82 +5,82 @@
 #    pip-compile requirements.in
 #
 aioredis==1.3.1           # via channels-redis
-amqp==5.0.1               # via kombu
-asgiref==3.2.10           # via channels, channels-redis, daphne, django
+amqp==5.0.5               # via kombu
+asgiref==3.3.1            # via channels, channels-redis, daphne, django
 async-timeout==3.0.1      # via aioredis
-attrs==20.2.0             # via automat, service-identity, twisted
-autobahn==20.7.1          # via daphne
+attrs==20.3.0             # via automat, service-identity, twisted
+autobahn==21.3.1          # via daphne
 automat==20.2.0           # via twisted
 backcall==0.2.0           # via ipython
 bcrypt==3.2.0             # via -r requirements.in
 beautifulsoup4==4.9.3     # via django-bootstrap4
 billiard==3.6.3.0         # via celery
-celery[redis]==5.0.1      # via -r requirements.in, django-celery-beat
-certifi==2020.6.20        # via requests
-cffi==1.14.3              # via bcrypt, cryptography
-channels-redis==3.1.0     # via -r requirements.in
-channels==2.4.0           # via -r requirements.in, channels-redis
-chardet==3.0.4            # via requests
+celery[redis]==5.0.5      # via -r requirements.in, django-celery-beat
+certifi==2020.12.5        # via requests
+cffi==1.14.5              # via bcrypt, cryptography
+channels-redis==3.2.0     # via -r requirements.in
+channels==3.0.3           # via -r requirements.in, channels-redis
+chardet==4.0.0            # via requests
 click-didyoumean==0.0.3   # via celery
+click-plugins==1.1.1      # via celery
 click-repl==0.1.6         # via celery
-click==7.1.2              # via celery, click-didyoumean, click-repl
+click==7.1.2              # via celery, click-didyoumean, click-plugins, click-repl
 constantly==15.1.0        # via twisted
-cryptography==3.2.1       # via autobahn, pyopenssl, service-identity
-daphne==2.5.0             # via channels
+cryptography==3.4.6       # via autobahn, pyopenssl, service-identity
+daphne==3.0.1             # via channels
 decorator==4.4.2          # via ipython
 django-bootstrap4==2.3.1  # via -r requirements.in
-django-celery-beat==2.1.0  # via -r requirements.in
-django-constance[database]==2.7.0  # via -r requirements.in
-django-debug-toolbar==3.1.1  # via -r requirements.in
-django-extensions==3.0.9  # via -r requirements.in
+django-celery-beat==2.2.0  # via -r requirements.in
+django-constance[database]==2.8.0  # via -r requirements.in
+django-debug-toolbar==3.2  # via -r requirements.in
+django-extensions==3.1.1  # via -r requirements.in
 django-filter==2.4.0      # via -r requirements.in
 django-picklefield==3.0.1  # via django-constance
-django-timezone-field==4.0  # via django-celery-beat
-django==3.1.2             # via -r requirements.in, channels, django-bootstrap4, django-celery-beat, django-debug-toolbar, django-filter, django-picklefield, django-timezone-field, djangorestframework
-djangorestframework==3.12.1  # via -r requirements.in
+django-timezone-field==4.1.1  # via django-celery-beat
+django==3.1.7             # via -r requirements.in, channels, django-bootstrap4, django-celery-beat, django-debug-toolbar, django-filter, django-picklefield, django-timezone-field, djangorestframework
+djangorestframework==3.12.2  # via -r requirements.in
 facebook-sdk==3.1.0       # via -r requirements.in
 hiredis==1.1.0            # via aioredis
-hyperlink==20.0.1         # via twisted
+hyperlink==21.0.0         # via autobahn, twisted
 idna==2.10                # via hyperlink, requests, twisted
-incremental==17.5.0       # via twisted
+incremental==21.3.0       # via twisted
 ipython-genutils==0.2.0   # via traitlets
-ipython==7.18.1           # via -r requirements.in
-jedi==0.17.2              # via ipython
+ipython==7.21.0           # via -r requirements.in
+jedi==0.18.0              # via ipython
 kombu==5.0.2              # via celery
-msgpack==1.0.0            # via channels-redis
-numpy==1.19.3             # via scipy
-parso==0.7.1              # via jedi
+msgpack==1.0.2            # via channels-redis
+numpy==1.20.1             # via scipy
+parso==0.8.1              # via jedi
 pexpect==4.8.0            # via ipython
 pickleshare==0.7.5        # via ipython
-pillow==8.0.1             # via -r requirements.in
-prompt-toolkit==3.0.8     # via click-repl, ipython
+pillow==8.1.1             # via -r requirements.in
+prompt-toolkit==3.0.16    # via click-repl, ipython
 psycopg2==2.8.6           # via -r requirements.in
-ptyprocess==0.6.0         # via pexpect
+ptyprocess==0.7.0         # via pexpect
 pyasn1-modules==0.2.8     # via service-identity
 pyasn1==0.4.8             # via pyasn1-modules, service-identity
 pycparser==2.20           # via cffi
-pygments==2.7.2           # via ipython
-pyhamcrest==2.0.2         # via twisted
-pyopenssl==19.1.0         # via twisted
+pygments==2.8.0           # via ipython
+pyopenssl==20.0.1         # via twisted
 python-crontab==2.5.1     # via django-celery-beat
 python-dateutil==2.8.1    # via python-crontab
 python-dotenv==0.15.0     # via -r requirements.in
-pytz==2020.1              # via celery, django, django-timezone-field
+pytz==2021.1              # via celery, django, django-timezone-field
 redis==3.5.3              # via celery
-requests==2.24.0          # via facebook-sdk
-scipy==1.5.3              # via -r requirements.in
+requests==2.25.1          # via facebook-sdk
+scipy==1.6.1              # via -r requirements.in
 service-identity==18.1.0  # via twisted
-six==1.15.0               # via automat, bcrypt, click-repl, cryptography, pyopenssl, python-dateutil
-soupsieve==2.0.1          # via beautifulsoup4
+six==1.15.0               # via automat, bcrypt, click-repl, pyopenssl, python-dateutil
+soupsieve==2.2            # via beautifulsoup4
 sqlparse==0.4.1           # via django, django-debug-toolbar
-tqdm==4.51.0              # via -r requirements.in
+tqdm==4.58.0              # via -r requirements.in
 traitlets==5.0.5          # via ipython
-twisted[tls]==20.3.0      # via daphne
-txaio==20.4.1             # via autobahn
-urllib3==1.25.11          # via requests
+twisted[tls]==21.2.0      # via daphne
+txaio==21.2.1             # via autobahn
+urllib3==1.26.3           # via requests
 vine==5.0.0               # via amqp, celery
 wcwidth==0.2.5            # via prompt-toolkit
-zope.interface==5.1.2     # via twisted
+zope.interface==5.2.0     # via twisted
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools
