@@ -242,6 +242,7 @@ class GameListView(PaginatedListView):
                     default="end_datetime",
                     output_field=DateTimeField(),
                 ).desc(),
+                "id",
             )
             if self.order.reverse:
                 qs = qs.reverse()
@@ -250,9 +251,9 @@ class GameListView(PaginatedListView):
 
             # Always show games with unknown duration last
             if self.order.reverse:
-                qs = qs.order_by(F("duration").desc(nulls_last=True))
+                qs = qs.order_by(F("duration").desc(nulls_last=True), "id")
             else:
-                qs = qs.order_by(F("duration").asc(nulls_last=True))
+                qs = qs.order_by(F("duration").asc(nulls_last=True), "id")
 
         return qs
 
@@ -291,7 +292,7 @@ class PlayerListView(PaginatedListView):
         return (
             User.objects.filter(username__icontains=query)
             .annotate(total_games=Count("gameplayer"))
-            .order_by("-total_games")
+            .order_by("-total_games", "id")
         )
 
     def get_context_data(self, **kwargs):
