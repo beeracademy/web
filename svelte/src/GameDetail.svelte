@@ -112,8 +112,19 @@
 				var data = JSON.parse(e.data);
 
 				var username = data["username"];
-				if (!username) {
+				if (data.is_game) {
+					username = "Game";
+				} else if (!username) {
 					username = "Guest";
+				}
+
+				var userUrl;
+				if (data.user_id) {
+					userUrl = `/players/${data.user_id}`;
+				} else if (data.is_game) {
+					userUrl = window.location.href;
+				} else {
+					userUrl = '#';
 				}
 
 				var message = null;
@@ -136,7 +147,7 @@
 					var d = new Date(data["datetime"]);
 					var time = moment(d).format("HH:mm:ss");
 
-					addMessage(username, message, isInfo, time)
+					addMessage(username, userUrl, message, isInfo, time)
 				} else {
 					console.error("Unknown message received:");
 					console.error(data);
@@ -159,7 +170,7 @@
 			setTimeout(startSocket, 1000);
 		}
 
-		function addMessage(user, msg, isInfo, time) {
+		function addMessage(user, userUrl, msg, isInfo, time) {
 			var elm = document.createElement("div");
 			elm.classList += "message";
 
@@ -167,13 +178,16 @@
 				elm.classList += " info-message";
 			}
 
-			var userElm = document.createElement("B");
+			var userElm = document.createElement("a");
+			userElm.href = userUrl;
+			userElm.target = "_blank";
 			userElm.innerText = user;
 			if (!isInfo) {
 				userElm.innerText += ":";
 			}
-			userElm.innerText += " ";
 			elm.appendChild(userElm);
+
+			elm.appendChild(document.createTextNode(" "));
 
 			var textElm = document.createTextNode(msg);
 			elm.appendChild(textElm)
