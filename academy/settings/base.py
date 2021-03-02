@@ -80,7 +80,7 @@ TEMPLATES = [
     }
 ]
 
-ASGI_APPLICATION = "academy.routing.application"
+ASGI_APPLICATION = "academy.asgi.application"
 
 CHANNEL_LAYERS = {
     "default": {
