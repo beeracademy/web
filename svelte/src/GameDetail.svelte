@@ -229,6 +229,7 @@
 
     .game-wrapper .chat {
 		grid-area: chat;
+		min-height: 0; /* Fix scrolling */
         border-left: 1px solid #dededf;
 		display: grid;
 		grid:
