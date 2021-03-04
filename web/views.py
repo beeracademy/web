@@ -85,44 +85,26 @@ def get_ranking_url(ranking, user, season):
     )
 
 
-def get_recent_players(n, min_sample_size=10):
-    recent_players = {}
-    for game in Game.objects.order_by(F("end_datetime").desc(nulls_last=True)):
-        for p in game.players.all():
-            if p in recent_players or not p.image:
-                continue
-
-            recent_players[
-                p
-            ] = f"For playing game on {game.date} with {game.players_str()}"
-
-        if len(recent_players) >= min_sample_size:
-            break
-
-    recent_players = random.sample(recent_players.items(), min(n, len(recent_players)))
-    random.shuffle(recent_players)
-    return recent_players
+def get_recent_players(n, min_sample_size=20):
+    qs = GamePlayer.objects.filter(game__dnf=False).order_by(
+        F("game__end_datetime").desc(nulls_last=True)
+    )
+    gps = random.sample(set(qs[:min_sample_size]), n)
+    return [
+        (gp.user, f"For playing game on {gp.game.date} with {gp.game.players_str()}")
+        for gp in gps
+    ]
 
 
-def get_bad_chuggers(n, min_sample_size=10):
-    bad_chuggers = {}
-    for chug in Chug.objects.filter(duration_ms__gte=20 * 1000).order_by(
-        F("card__game__start_datetime").desc(nulls_last=True)
-    ):
-        u = chug.card.get_user()
-        if u in bad_chuggers or not u.image:
-            continue
-
-        bad_chuggers[
-            u
-        ] = f"For chugging an ace in {chug.duration_ms / 1000} seconds on {chug.card.game.date}"
-
-        if len(bad_chuggers) >= min_sample_size:
-            break
-
-    bad_chuggers = random.sample(bad_chuggers.items(), min(n, len(bad_chuggers)))
-    random.shuffle(bad_chuggers)
-    return bad_chuggers
+def get_recent_dnf_players(n, min_sample_size=10):
+    qs = GamePlayer.objects.filter(dnf=True, game__dnf=False).order_by(
+        F("game__end_datetime").desc(nulls_last=True)
+    )
+    dnf_gps = random.sample(list(qs[:min_sample_size]), n)
+    return [
+        (gp.user, f"For dnf'ing game on {gp.game.date} with {gp.game.players_str()}")
+        for gp in dnf_gps
+    ]
 
 
 def index(request):
@@ -133,7 +115,7 @@ def index(request):
         "total_beers": total_players * BEERS_PER_PLAYER,
         "total_games": Game.objects.all().count(),
         "recent_players": get_recent_players(4),
-        "wall_of_shame_players": get_bad_chuggers(4),
+        "wall_of_shame_players": get_recent_dnf_players(4),
         "live_games": Game.objects.filter(
             end_datetime__isnull=True, dnf=False
         ).order_by("-start_datetime")[:5],
