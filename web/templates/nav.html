@@ -1,5 +1,6 @@
 {% load static %}
 {% load bootstrap4 %}
+{% load webpush_notifications %}
 
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
     <div class="container">
@@ -29,6 +30,10 @@
                 <a class="nav-item nav-link d-lg-none" href="{{ PLAY_URL }}">Play!<i class="fas fa-play float-right"></i></a>
             </div>
         </div>
+        <span id="notification-button" class="text-light text-bg btn btn-lg">
+          <i class="fas fa-bell" title="Notify me when games start"></i>
+          <i class="fas fa-bell-slash" title="Unsubscribe from notifications"></i>
+        </span>
         <a href="{{ PLAY_URL }}" class="btn btn-danger btn-lg active d-none d-lg-block" role="button" aria-pressed="true">Play!</a>
     </div>
 </nav>

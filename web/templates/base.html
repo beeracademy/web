@@ -1,5 +1,6 @@
 {% load static %}
 {% load bootstrap4 %}
+{% load webpush_notifications %}
 <!doctype html>
 <html>
 	<head>
@@ -45,8 +46,53 @@
 		</style>
 
 		{% block styles %}{% endblock %}
+
+    <script>
+      var _isPushEnabled;
+      var notificationButton;
+
+      function updateNotificationButton() {
+        if (_isPushEnabled) {
+          notificationButton.classList.add("subscribed");
+        } else {
+          notificationButton.classList.remove("subscribed");
+        }
+      }
+
+      Object.defineProperty(window, 'isPushEnabled', {
+        get: function() { return _isPushEnabled; },
+        set: function(v) {
+          _isPushEnabled = v;
+
+          if (notificationButton) {
+            updateNotificationButton();
+          }
+        }
+      });
+
+      window.addEventListener("DOMContentLoaded", function() {
+        var webpushButton = document.getElementById("webpush-subscribe-button");
+        notificationButton = document.getElementById("notification-button");
+        notificationButton.addEventListener("click", function() {
+          webpushButton.click();
+        });
+        updateNotificationButton();
+      });
+    </script>
+    <style>
+      #notification-button.subscribed .fa-bell {
+        display: none;
+      }
+      #notification-button:not(.subscribed) .fa-bell-slash {
+        display: none;
+      }
+    </style>
+    {% webpush_header %}
 	</head>
 	<body class="{% if user.is_staff %}staff-user{% endif %}">
+    <div style="display: none;">
+      {% webpush_button %}
+    </div>
 
 		{% block body %}{% endblock %}
 

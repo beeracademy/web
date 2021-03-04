@@ -1,6 +1,7 @@
 from django.db import transaction
 from django.http import Http404, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404
+from django.templatetags.static import static
 from django.utils import timezone
 from PIL import Image
 from rest_framework import serializers, viewsets
@@ -33,7 +34,11 @@ from .serializers import (
     PlayerStatSerializer,
     UserSerializer,
 )
-from .tasks import post_game_to_facebook, update_facebook_post
+from .tasks import (
+    post_game_to_facebook,
+    send_webpush_notification,
+    update_facebook_post,
+)
 
 
 class CustomAuthToken(ObtainAuthToken):
@@ -190,8 +195,10 @@ class GameViewSet(viewsets.ReadOnlyModelViewSet):
         serializer.is_valid(raise_exception=True)
         game = serializer.save()
 
-        post_game_to_facebook.delay(
-            game.id, request.build_absolute_uri(game.get_absolute_url())
+        game_url = request.build_absolute_uri(game.get_absolute_url())
+        post_game_to_facebook.delay(game.id, game_url)
+        send_webpush_notification.delay(
+            game.id, game_url, request.build_absolute_uri(static("favicon.ico"))
         )
 
         token = GameToken.objects.create(game=game)

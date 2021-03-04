@@ -43,6 +43,7 @@ urlpatterns = [
     path("api-auth/", include("rest_framework.urls", namespace="rest_framework")),
     path("api-token-auth/", CustomAuthToken.as_view()),
     path("__debug__/", include(debug_toolbar.urls)),
+    path("webpush/", include("webpush.urls")),
 ]
 
 if settings.DEBUG:

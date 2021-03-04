@@ -17,3 +17,4 @@ django-constance[database]
 scipy
 channels
 channels_redis
+django-webpush
