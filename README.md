@@ -6,7 +6,7 @@ Frontend and api server for Academy.
 
 ## Installation
 
-Install Python 3.8 and create a virtual environment:
+Install Python 3.9 and create a virtual environment:
 ```sh
 python -mvenv ~/.cache/venvs/academy-web
 ```
