@@ -39,7 +39,7 @@ jobs:
         run: docker-compose pull
 
       - name: Restore docker layer cache
-        uses: satackey/action-docker-layer-caching@v0.0.8
+        uses: satackey/action-docker-layer-caching@v0.0.11
         continue-on-error: true
         with:
           key: docker-cache-{hash}
