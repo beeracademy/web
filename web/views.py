@@ -85,11 +85,15 @@ def get_ranking_url(ranking, user, season):
     )
 
 
+def sample_max(population, k):
+    return random.sample(population, min(k, len(population)))
+
+
 def get_recent_players(n, min_sample_size=20):
     qs = GamePlayer.objects.filter(game__dnf=False).order_by(
         F("game__end_datetime").desc(nulls_last=True)
     )
-    gps = random.sample(set(qs[:min_sample_size]), n)
+    gps = sample_max(set(qs[:min_sample_size]), n)
     return [
         (gp.user, f"For playing game on {gp.game.date} with {gp.game.players_str()}")
         for gp in gps
@@ -100,7 +104,7 @@ def get_recent_dnf_players(n, min_sample_size=10):
     qs = GamePlayer.objects.filter(dnf=True, game__dnf=False).order_by(
         F("game__end_datetime").desc(nulls_last=True)
     )
-    dnf_gps = random.sample(list(qs[:min_sample_size]), n)
+    dnf_gps = sample_max(list(qs[:min_sample_size]), n)
     return [
         (gp.user, f"For dnf'ing game on {gp.game.date} with {gp.game.players_str()}")
         for gp in dnf_gps
