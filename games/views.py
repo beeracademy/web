@@ -136,6 +136,7 @@ def update_game(game, data):
     update_field("end_datetime")
     update_field("official")
     update_field("description")
+    update_field("shuffle_indices")
 
     cards = game.ordered_cards()
     new_cards = data["cards"]

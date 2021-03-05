@@ -202,6 +202,30 @@ class GameSerializer(serializers.ModelSerializer):
         check_field("official")
         check_field("description", "")
 
+        if self.context.get("fix_player_ids"):
+            for i, (player_id, player_name) in enumerate(
+                zip(data["player_ids"], data["player_names"])
+            ):
+                if player_id == -1:
+                    try:
+                        data["player_ids"][i] = User.objects.get(
+                            username=player_name
+                        ).id
+                    except User.DoestNotExist:
+                        raise serializers.ValidationError(
+                            {
+                                "player_name": f"Player with username {player_name} not found"
+                            }
+                        )
+
+        for i, player_id in enumerate(data["player_ids"]):
+            try:
+                User.objects.get(id=player_id)
+            except User.DoesNotExist:
+                raise serializers.ValidationError(
+                    {"player_ids": f"Player with id {player_id} not found"}
+                )
+
         cards = self.instance.ordered_cards()
         new_cards = data["cards"]
 
