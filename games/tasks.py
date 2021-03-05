@@ -2,6 +2,7 @@ import datetime
 
 from celery import shared_task
 from django.conf import settings
+from django.conf.urls.static import static
 from django.db import transaction
 from django.utils import timezone
 from webpush import send_group_notification
@@ -44,15 +45,16 @@ def update_facebook_post(game_id):
 @shared_task
 def send_webpush_notification(game_id):
     game = Game.objects.get(id=game_id)
+    payload = {
+        "head": "New Academy game started",
+        "body": f"A game between {game.pretty_players_str()} just started!",
+        "icon": get_absolute_url(static("favicon.ico")),
+        "url": game.get_absolute_url(),
+    }
     try:
         send_group_notification(
             group_name=settings.WEBPUSH_GROUP,
-            payload={
-                "head": "New Academy game started",
-                "body": f"A game between {game.pretty_players_str()} just started!",
-                "icon": get_absolute_url(static("favicon.ico")),
-                "url": game.get_absolute_url(),
-            },
+            payload=payload,
             ttl=24 * 60 * 60,
         )
     except:
