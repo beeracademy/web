@@ -18,6 +18,7 @@ EMAIL_HOST_PASSWORD = os.environ["EMAIL_HOST_PASSWORD"]
 SERVER_EMAIL = "no-reply@academy.beer"
 DEFAULT_FROM_EMAIL = "no-reply@academy.beer"
 
+SERVER_URL = "https://academy.beer/"
 PLAY_URL = "https://game.academy.beer/"
 STATIC_URL = "https://static.academy.beer/"
 MEDIA_URL = "https://media.academy.beer/"

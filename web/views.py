@@ -691,7 +691,7 @@ class FailedGameUploadView(CreateView):
         mail_admins(
             "[academy.beer] Game log uploaded",
             f"""A game has been uploaded to
-https://academy.beer{get_admin_object_url(form.instance)}
+{get_admin_object_url(form.instance)}
 by {self.request.user}.
 
 Notes:

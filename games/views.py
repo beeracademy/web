@@ -48,7 +48,7 @@ class CustomAuthToken(ObtainAuthToken):
             token = Token.objects.get(key=response.data["token"])
             user = token.user
             response.data["id"] = user.id
-            response.data["image"] = request.build_absolute_uri(user.image_url())
+            response.data["image"] = user.image_url()
             return response
         except serializers.ValidationError as e:
             # If username doesn't exist return with code 404,
@@ -195,11 +195,8 @@ class GameViewSet(viewsets.ReadOnlyModelViewSet):
         serializer.is_valid(raise_exception=True)
         game = serializer.save()
 
-        game_url = request.build_absolute_uri(game.get_absolute_url())
-        post_game_to_facebook.delay(game.id, game_url)
-        send_webpush_notification.delay(
-            game.id, game_url, request.build_absolute_uri(static("favicon.ico"))
-        )
+        post_game_to_facebook.delay(game.id)
+        send_webpush_notification.delay(game.id)
 
         token = GameToken.objects.create(game=game)
         return Response({**self.serializer_class(game).data, "token": token.key})

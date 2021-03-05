@@ -42,12 +42,12 @@ def get_post_message(game):
     return message
 
 
-def post_game_to_page(game, game_url):
+def post_game_to_page(game):
     r = put_object(
         getattr(settings, "FACEBOOK_PAGE_ID", None),
         "feed",
         message=get_post_message(game),
-        link=game_url,
+        link=game.get_absolute_url(),
     )
     if not r:
         return

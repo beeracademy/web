@@ -2,6 +2,7 @@ import datetime
 
 from django.urls import reverse
 
+from academy.utils import get_absolute_url
 from games.models import Season, all_time_season
 from games.ranking import RANKINGS, get_ranking_from_key
 
@@ -189,7 +190,7 @@ def get_admin_url(obj_or_model, page="changelist", args=[]):
     url_name = (
         f"admin:{obj_or_model._meta.app_label}_{obj_or_model._meta.model_name}_{page}"
     )
-    return reverse(url_name, args=args)
+    return get_absolute_url(reverse(url_name, args=args))
 
 
 def get_admin_object_url(obj, page="change"):

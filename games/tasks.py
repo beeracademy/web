@@ -6,6 +6,8 @@ from django.db import transaction
 from django.utils import timezone
 from webpush import send_group_notification
 
+from academy.utils import get_absolute_url
+
 from .facebook import post_game_to_page, update_game_post
 from .models import Game, recalculate_all_stats
 
@@ -26,9 +28,9 @@ def recalculate_stats():
 
 
 @shared_task
-def post_game_to_facebook(game_id, game_url):
+def post_game_to_facebook(game_id):
     game = Game.objects.get(id=game_id)
-    post_game_to_page(game, game_url)
+    post_game_to_page(game)
 
 
 @shared_task
@@ -40,7 +42,7 @@ def update_facebook_post(game_id):
 
 
 @shared_task
-def send_webpush_notification(game_id, game_url, icon_url):
+def send_webpush_notification(game_id):
     game = Game.objects.get(id=game_id)
     try:
         send_group_notification(
@@ -48,8 +50,8 @@ def send_webpush_notification(game_id, game_url, icon_url):
             payload={
                 "head": "New Academy game started",
                 "body": f"A game between {game.pretty_players_str()} just started!",
-                "icon": icon_url,
-                "url": game_url,
+                "icon": get_absolute_url(static("favicon.ico")),
+                "url": game.get_absolute_url(),
             },
             ttl=24 * 60 * 60,
         )
