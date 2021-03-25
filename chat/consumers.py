@@ -50,11 +50,6 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
 
     async def receive_json(self, content):
-        # Only allow logged in users to write to the chat,
-        # but allow all to view it
-        if not self.user.id and not self.is_game:
-            return
-
         message = content.get("message")
         if not message:
             return

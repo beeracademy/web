@@ -93,9 +93,7 @@
 			socket = new WebSocket(scheme + "://" + window.location.host + "/ws/chat/" + game_data.id + "/");
 
 			socket.addEventListener("open", function (e) {
-				if (window.is_authenticated) {
-					chat_input.disabled = false;
-				}
+				chat_input.disabled = false;
 			});
 
 			socket.addEventListener("close", function(e) {
@@ -465,6 +463,6 @@
 		<div class="messages" id="chat-messages" bind:this={chat_messages}>
         </div>
 		<input id="chat-input" autocomplete="off" type="text" disabled
-			placeholder={window.is_authenticated? "Send a message": "Login to chat"} bind:this={chat_input}>
+			placeholder="Send a message" bind:this={chat_input}>
 	</div>
 </div>
