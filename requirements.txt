@@ -39,7 +39,7 @@ django-picklefield==3.0.1  # via django-constance
 django-timezone-field==4.1.2  # via django-celery-beat
 git+https://github.com/Tyilo/django-webpush.git@fix_duplicate#egg=django-webpush  # via -r requirements.in
 django==3.1.7             # via -r requirements.in, channels, django-bootstrap4, django-celery-beat, django-debug-toolbar, django-filter, django-picklefield, django-timezone-field, djangorestframework
-djangorestframework==3.12.2  # via -r requirements.in
+djangorestframework==3.12.3  # via -r requirements.in
 facebook-sdk==3.1.0       # via -r requirements.in
 hiredis==1.1.0            # via aioredis
 http-ece==1.1.0           # via pywebpush
@@ -72,7 +72,7 @@ pytz==2021.1              # via celery, django, django-timezone-field
 pywebpush==1.9.4          # via django-webpush
 redis==3.5.3              # via celery
 requests==2.25.1          # via facebook-sdk, pywebpush
-scipy==1.6.1              # via -r requirements.in
+scipy==1.6.2              # via -r requirements.in
 service-identity==18.1.0  # via twisted
 six==1.15.0               # via automat, bcrypt, click-repl, pyopenssl, python-dateutil
 soupsieve==2.2.1          # via beautifulsoup4
