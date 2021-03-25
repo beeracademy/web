@@ -24,6 +24,15 @@ def mark_dnf_games():
 
 
 @shared_task
+def delete_empty_games():
+    THRESHOLD = datetime.timedelta(hours=12)
+
+    for game in Game.objects.filter(cards=None):
+        if timezone.now() - game.get_last_activity_time() >= THRESHOLD:
+            game.delete()
+
+
+@shared_task
 def recalculate_stats():
     recalculate_all_stats()
 
