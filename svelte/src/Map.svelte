@@ -1,5 +1,7 @@
-<script>
-  export let location;
+<script lang="ts">
+  import type { Location } from "./types";
+
+  export let location: Location;
 
   import { onMount } from 'svelte';
   const L = window.L;
