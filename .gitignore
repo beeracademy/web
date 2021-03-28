@@ -9,7 +9,7 @@
 /dump/tables/
 /svelte/node_modules/
 /svelte/static/svelte/
-/svelte/build/
-/svelte/web_modules/
+/svelte/dist/
+/svelte/templates/svelte_include_generated.html
 *.pyc
 __pycache__/
