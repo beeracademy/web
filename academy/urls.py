@@ -22,6 +22,7 @@ from rest_framework import routers
 from games.views import (
     CustomAuthToken,
     GameViewSet,
+    InfoViewSet,
     PlayerStatViewSet,
     RankedFacecardsView,
     UserViewSet,
@@ -32,6 +33,7 @@ router.register("users", UserViewSet)
 router.register("games", GameViewSet)
 router.register("ranked_cards", RankedFacecardsView, basename="ranked_cards")
 router.register("stats", PlayerStatViewSet, basename="stats")
+router.register("info", InfoViewSet, basename="info")
 
 
 urlpatterns = [
@@ -41,6 +43,7 @@ urlpatterns = [
     path("api-auth/", include("rest_framework.urls", namespace="rest_framework")),
     path("api-token-auth/", CustomAuthToken.as_view()),
     path("__debug__/", include(debug_toolbar.urls)),
+    path("webpush/", include("webpush.urls")),
 ]
 
 if settings.DEBUG:

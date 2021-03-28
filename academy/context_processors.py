@@ -11,3 +11,9 @@ def constants(request):
         "IMAGE_HEIGHT": height,
         "GIT_COMMIT_HASH": settings.GIT_COMMIT_HASH,
     }
+
+
+def webpush(request):
+    return {
+        "webpush": {"group": settings.WEBPUSH_GROUP},
+    }

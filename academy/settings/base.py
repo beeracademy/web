@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     "rest_framework.authtoken",
     "bootstrap4",
     "django_celery_beat",
+    "webpush",
     "svelte",
     "chat",
     "games",
@@ -73,6 +74,7 @@ TEMPLATES = [
                 "django.contrib.messages.context_processors.messages",
                 "constance.context_processors.config",
                 "academy.context_processors.constants",
+                "academy.context_processors.webpush",
                 "games.context_processors.seasons",
                 "web.context_processors.admin_url",
             ]
@@ -80,7 +82,7 @@ TEMPLATES = [
     }
 ]
 
-ASGI_APPLICATION = "academy.routing.application"
+ASGI_APPLICATION = "academy.asgi.application"
 
 CHANNEL_LAYERS = {
     "default": {
@@ -183,11 +185,21 @@ CONSTANCE_CONFIG = {
     "BANNER_URL": ("https://dropdu.nu/", "Banner URL", str),
     "BANNER_COLOR": ("#0094c4", "Banner color", str),
     "BANNER_BLINK": (False, "Should banner text blink?", bool),
+    "SNOWFLAKES_ENABLED": (False, "Show snowflakes", bool),
+    "SNOWFLAKES_COUNT": (50, "Number of snowflakes on the screen", int),
 }
 
 
 load_dotenv()
 
 GIT_COMMIT_HASH = os.getenv("GIT_COMMIT_HASH")
+
+WEBPUSH_SETTINGS = {
+    "VAPID_ADMIN_EMAIL": "asgerdrewsen@gmail.com",
+}
+for k in ["VAPID_PUBLIC_KEY", "VAPID_PRIVATE_KEY"]:
+    WEBPUSH_SETTINGS[k] = os.getenv(k)
+
+WEBPUSH_GROUP = "new_games"
 
 TESTING = sys.argv[1:2] == ["test"]

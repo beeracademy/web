@@ -150,6 +150,7 @@ class UploadForm(forms.ModelForm):
             game,
             data=data,
             context={
+                "fix_player_ids": True,
                 "fix_times": self.cleaned_data["fix_times"],
                 "ignore_finished": True,
             },

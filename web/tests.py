@@ -112,3 +112,42 @@ class ViewTest(TestCase):
         create_game(self)
         r = self.client.get(f"/players/{self.player1.id}/")
         self.assertEqual(r.status_code, 200)
+
+
+class WebPushTest(TestCase):
+    def post_subscribe(self):
+        return self.client.post(
+            "/webpush/save_information",
+            {
+                "status_type": "subscribe",
+                "subscription": {
+                    "endpoint": "https://example.org/",
+                    "keys": {
+                        "auth": "AAA",
+                        "p256dh": "AAAA",
+                    },
+                },
+                "browser": "firefox",
+                "group": "new_games",
+            },
+            content_type="application/json",
+        )
+
+    def test_subscribe(self):
+        u = User(username="test")
+        u.set_password("test")
+        u.save()
+
+        r = self.post_subscribe()
+        self.assertEqual(r.status_code, 201)
+
+        r = self.client.login(username="test", password="test")
+        self.assertTrue(r)
+
+        r = self.post_subscribe()
+        self.assertEqual(r.status_code, 201)
+
+        self.client.logout()
+
+        r = self.post_subscribe()
+        self.assertEqual(r.status_code, 201)

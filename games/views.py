@@ -1,6 +1,8 @@
 from django.db import transaction
 from django.http import Http404, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404
+from django.templatetags.static import static
+from django.utils import timezone
 from PIL import Image
 from rest_framework import serializers, viewsets
 from rest_framework.authentication import BaseAuthentication
@@ -32,7 +34,11 @@ from .serializers import (
     PlayerStatSerializer,
     UserSerializer,
 )
-from .tasks import post_game_to_facebook, update_facebook_post
+from .tasks import (
+    post_game_to_facebook,
+    send_webpush_notification,
+    update_facebook_post,
+)
 
 
 class CustomAuthToken(ObtainAuthToken):
@@ -42,7 +48,7 @@ class CustomAuthToken(ObtainAuthToken):
             token = Token.objects.get(key=response.data["token"])
             user = token.user
             response.data["id"] = user.id
-            response.data["image"] = request.build_absolute_uri(user.image_url())
+            response.data["image"] = user.image_url()
             return response
         except serializers.ValidationError as e:
             # If username doesn't exist return with code 404,
@@ -130,6 +136,7 @@ def update_game(game, data):
     update_field("end_datetime")
     update_field("official")
     update_field("description")
+    update_field("shuffle_indices")
 
     cards = game.ordered_cards()
     new_cards = data["cards"]
@@ -189,9 +196,8 @@ class GameViewSet(viewsets.ReadOnlyModelViewSet):
         serializer.is_valid(raise_exception=True)
         game = serializer.save()
 
-        post_game_to_facebook.delay(
-            game.id, request.build_absolute_uri(game.get_absolute_url())
-        )
+        post_game_to_facebook.delay(game.id)
+        send_webpush_notification.delay(game.id)
 
         token = GameToken.objects.create(game=game)
         return Response({**self.serializer_class(game).data, "token": token.key})
@@ -310,3 +316,14 @@ class PlayerStatViewSet(viewsets.ViewSet):
         stats = PlayerStat.objects.filter(user=user)
         serializer = PlayerStatSerializer(stats, many=True)
         return Response(serializer.data)
+
+
+class InfoViewSet(viewsets.ViewSet):
+    permission_classes = (IsAuthenticatedOrReadOnly,)
+
+    def list(self, request):
+        return Response(
+            {
+                "datetime": timezone.now(),
+            }
+        )

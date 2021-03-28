@@ -202,6 +202,30 @@ class GameSerializer(serializers.ModelSerializer):
         check_field("official")
         check_field("description", "")
 
+        if self.context.get("fix_player_ids"):
+            for i, (player_id, player_name) in enumerate(
+                zip(data["player_ids"], data["player_names"])
+            ):
+                if player_id == -1:
+                    try:
+                        data["player_ids"][i] = User.objects.get(
+                            username=player_name
+                        ).id
+                    except User.DoestNotExist:
+                        raise serializers.ValidationError(
+                            {
+                                "player_name": f"Player with username {player_name} not found"
+                            }
+                        )
+
+        for i, player_id in enumerate(data["player_ids"]):
+            try:
+                User.objects.get(id=player_id)
+            except User.DoesNotExist:
+                raise serializers.ValidationError(
+                    {"player_ids": f"Player with id {player_id} not found"}
+                )
+
         cards = self.instance.ordered_cards()
         new_cards = data["cards"]
 
@@ -245,15 +269,16 @@ class GameSerializer(serializers.ModelSerializer):
                 {"cards": "More cards in database than provided"}
             )
 
-        if len(new_cards) > len(shuffled_cards):
-            raise serializers.ValidationError(
-                {"cards": "More cards than expected for the game"}
-            )
+        if shuffled_cards:
+            if len(new_cards) > len(shuffled_cards):
+                raise serializers.ValidationError(
+                    {"cards": "More cards than expected for the game"}
+                )
 
-        if completed and len(new_cards) < len(shuffled_cards):
-            raise serializers.ValidationError(
-                {"cards": "Can't end game before drawing every card"}
-            )
+            if completed and len(new_cards) < len(shuffled_cards):
+                raise serializers.ValidationError(
+                    {"cards": "Can't end game before drawing every card"}
+                )
 
         increasing_deltas = []
         for card_data in new_cards:
@@ -266,7 +291,7 @@ class GameSerializer(serializers.ModelSerializer):
         previous_delta = None
         extra_time = 0
         for i, delta in enumerate(increasing_deltas):
-            if delta < 0:
+            if delta < 0 and not self.context.get("fix_times"):
                 raise serializers.ValidationError(
                     {"cards": "Card times are not non-negative"}
                 )
@@ -360,15 +385,16 @@ class GameSerializer(serializers.ModelSerializer):
                 if not chug and chug_data:
                     assert i == len(cards) - 1
 
-        for i, (shuffled_card, card_data) in enumerate(
-            zip(shuffled_cards[previous_cards:], new_cards[previous_cards:])
-        ):
-            if shuffled_card != (card_data["value"], card_data["suit"]):
-                raise serializers.ValidationError(
-                    {
-                        "cards": f"Card {previous_cards + i} is different than expected from shuffle_indices"
-                    }
-                )
+        if shuffled_cards:
+            for i, (shuffled_card, card_data) in enumerate(
+                zip(shuffled_cards[previous_cards:], new_cards[previous_cards:])
+            ):
+                if shuffled_card != (card_data["value"], card_data["suit"]):
+                    raise serializers.ValidationError(
+                        {
+                            "cards": f"Card {previous_cards + i} is different than expected from shuffle_indices"
+                        }
+                    )
 
         return data
 

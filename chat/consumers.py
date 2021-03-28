@@ -1,6 +1,7 @@
 import datetime
 
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
+from django.contrib.auth.models import AnonymousUser
 
 
 class ChatConsumer(AsyncJsonWebsocketConsumer):
@@ -16,6 +17,10 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 
     async def connect(self):
         self.user = self.scope["user"]
+        self.is_game = self.scope["query_string"] == b"game"
+
+        if self.is_game:
+            self.user = AnonymousUser()
 
         self.room_name = self.scope["url_route"]["kwargs"]["game_id"]
         self.room_group_name = f"chat_{self.room_name}"
@@ -28,6 +33,8 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             {
                 "event": "connect",
                 "username": self.user.username,
+                "user_id": self.user.id,
+                "is_game": self.is_game,
             }
         )
 
@@ -36,17 +43,14 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             {
                 "event": "disconnect",
                 "username": self.user.username,
+                "user_id": self.user.id,
+                "is_game": self.is_game,
             }
         )
         await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
 
     async def receive_json(self, content):
-        # Only allow logged in users to write to the chat,
-        # but allow all to view it
-        if not self.user.id:
-            return
-
-        message = content["message"]
+        message = content.get("message")
         if not message:
             return
 
@@ -55,6 +59,8 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
                 "event": "message",
                 "message": message,
                 "username": self.user.username,
+                "user_id": self.user.id,
+                "is_game": self.is_game,
             }
         )
 

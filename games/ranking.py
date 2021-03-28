@@ -46,7 +46,7 @@ class Ranking:
                 "total_games__gt": 0,
                 f"{self.value_key}__isnull": False,
             }
-        ).order_by(self.ordering)
+        ).order_by(self.ordering, "id")
 
     def get_rank(self, user, season):
         stats = user.stats_for_season(season)

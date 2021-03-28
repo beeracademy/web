@@ -98,10 +98,8 @@
 		function startSocket() {
 			socket = new WebSocket(scheme + "://" + window.location.host + "/ws/chat/" + game_data.id + "/");
 
-			socket.addEventListener("open", function() {
-				if (is_authenticated) {
-					chat_input.disabled = false;
-				}
+			socket.addEventListener("open", function (e) {
+				chat_input.disabled = false;
 			});
 
 			socket.addEventListener("close", function() {
@@ -118,8 +116,19 @@
 				var data = JSON.parse(e.data);
 
 				var username = data["username"];
-				if (!username) {
+				if (data.is_game) {
+					username = "Game";
+				} else if (!username) {
 					username = "Guest";
+				}
+
+				var userUrl;
+				if (data.user_id) {
+					userUrl = `/players/${data.user_id}`;
+				} else if (data.is_game) {
+					userUrl = window.location.href;
+				} else {
+					userUrl = '#';
 				}
 
 				var message = null;
@@ -142,7 +151,7 @@
 					var d = new Date(data["datetime"]);
 					var time = moment(d).format("HH:mm:ss");
 
-					addMessage(username, message, isInfo, time)
+					addMessage(username, userUrl, message, isInfo, time)
 				} else {
 					console.error("Unknown message received:");
 					console.error(data);
@@ -173,13 +182,16 @@
 				elm.classList.add("info-message");
 			}
 
-			var userElm = document.createElement("B");
+			var userElm = document.createElement("a");
+			userElm.href = userUrl;
+			userElm.target = "_blank";
 			userElm.innerText = user;
 			if (!isInfo) {
 				userElm.innerText += ":";
 			}
-			userElm.innerText += " ";
 			elm.appendChild(userElm);
+
+			elm.appendChild(document.createTextNode(" "));
 
 			var textElm = document.createTextNode(msg);
 			elm.appendChild(textElm)
@@ -197,51 +209,54 @@
 	}
 
     .game-wrapper {
-        display: flex;
+		display: grid;
+		grid:
+			[row1-start] "players game chat" [row1-end]
+			/ 275px auto 275px;
         height: 100%;
     }
 
     .game-wrapper .game {
-        flex: 1;
+		grid-area: game;
         padding: 0px 48px;
         margin: 0px 5px;
         overflow-y: auto;
         overflow-x: hidden;
     }
 
-    .game-wrapper .chat, .game-wrapper .players {
-        width: 340px;
-        display: flex;
-        flex-direction: column;
-    }
-
     .game-wrapper .players {
+		grid-area: players;
         padding: 16px;
         overflow-y: auto;
         border-right: 1px solid #dededf;
     }
 
     .game-wrapper .chat {
+		grid-area: chat;
+		min-height: 0; /* Fix scrolling */
         border-left: 1px solid #dededf;
+		display: grid;
+		grid:
+			[row1-start] "chat-header" 64px [row1-end]
+			[row2-start] "chat-messages" 1fr [row2-end]
+			[row3-start] "chat-input" 64px [row3-end]
+			/ auto;
+		justify-content: center;
     }
 
     .game-wrapper .chat .info {
-        height: 64px;
+		grid-area: chat-header;
         border-bottom: 1px solid #dededf;
-        display: flex;
-        justify-content: center;
-        align-items: center;
+        text-align: center;
         font-size: 1.5em;
         color: #666;
         text-transform: uppercase;
-
+		margin-top: 0.5em;
     }
 
     .game-wrapper .chat .messages {
-        flex: 1;
+		grid-area: chat-messages;
         padding: 16px;
-        justify-content: flex-end;
-        flex-direction: column;
         overflow-y: auto;
         overflow-x: hidden;
     }
@@ -259,6 +274,7 @@
     }
 
     .game-wrapper .chat input {
+		grid-area: chat-input;
         margin: 16px;
         padding: 8px;
         border: none;
@@ -267,18 +283,38 @@
         outline-color: #bd2130;
     }
 
-    @media only screen and (max-width: 600px) {
-        .chat, .players {
-            display: none !important;
-        }
+    .card-img-top {
+		/* IMAGE_WIDTH: */
+        width: 156px;
+    }
+
+    @media only screen and (max-width: 1200px) {
+		.game-wrapper {
+			display: block;
+		}
 
         .game {
             padding: 15px !important;
             margin: 0px;
         }
+
+		.players, .chat {
+			margin: auto;
+			border: none !important;
+		}
+
+		.players {
+			display: grid;
+			grid-template-columns: repeat(auto-fill, minmax(275px, 1fr));
+		    grid-gap: 1rem;
+		}
+
+		.players-header {
+			margin-left: 1em;
+		}
     }
 
-    @media only screen and (min-width: 600px) {
+    @media only screen and (min-width: 1200px) {
         .game::-webkit-scrollbar, .players::-webkit-scrollbar {
             width: 10px;
         }
@@ -290,10 +326,15 @@
         .game::-webkit-scrollbar-thumb, .players::-webkit-scrollbar-thumb {
             background-color: #646a7217;
         }
+
+		.players-header {
+			display: none;
+		}
     }
 </style>
 
 <div class="game-wrapper">
+	<h2 class="players-header">Players</h2>
 	<div class="players">
 		<Players game_data={game_data} ordered_gameplayers={ordered_gameplayers}/>
 	</div>
@@ -430,6 +471,6 @@
 		<div class="messages" id="chat-messages" bind:this={chat_messages}>
         </div>
 		<input id="chat-input" autocomplete="off" type="text" disabled
-			placeholder={is_authenticated? "Send a message": "Login to chat"} bind:this={chat_input}>
+			placeholder="Send a message" bind:this={chat_input}>
 	</div>
 </div>

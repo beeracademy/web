@@ -1,7 +1,7 @@
 import datetime
 import random
 import re
-from collections import Counter
+from collections import Counter, defaultdict
 from math import sqrt
 from urllib.parse import urlencode
 
@@ -40,7 +40,7 @@ from django.views.generic import (
     TemplateView,
     UpdateView,
 )
-from scipy.stats import hypergeom, norm
+from scipy.stats import hypergeom
 
 from games.achievements import ACHIEVEMENTS
 from games.models import (
@@ -85,44 +85,30 @@ def get_ranking_url(ranking, user, season):
     )
 
 
-def get_recent_players(n, min_sample_size=10):
-    recent_players = {}
-    for game in Game.objects.order_by(F("end_datetime").desc(nulls_last=True)):
-        for p in game.players.all():
-            if p in recent_players or not p.image:
-                continue
-
-            recent_players[
-                p
-            ] = f"For playing game on {game.date} with {game.players_str()}"
-
-        if len(recent_players) >= min_sample_size:
-            break
-
-    recent_players = random.sample(recent_players.items(), min(n, len(recent_players)))
-    random.shuffle(recent_players)
-    return recent_players
+def sample_max(population, k):
+    return random.sample(population, min(k, len(population)))
 
 
-def get_bad_chuggers(n, min_sample_size=10):
-    bad_chuggers = {}
-    for chug in Chug.objects.filter(duration_ms__gte=20 * 1000).order_by(
-        F("card__game__start_datetime").desc(nulls_last=True)
-    ):
-        u = chug.card.get_user()
-        if u in bad_chuggers or not u.image:
-            continue
+def get_recent_players(n, min_sample_size=20):
+    qs = GamePlayer.objects.filter(game__dnf=False).order_by(
+        F("game__end_datetime").desc(nulls_last=True)
+    )
+    gps = sample_max(set(qs[:min_sample_size]), n)
+    return [
+        (gp.user, f"For playing game on {gp.game.date} with {gp.game.players_str()}")
+        for gp in gps
+    ]
 
-        bad_chuggers[
-            u
-        ] = f"For chugging an ace in {chug.duration_ms / 1000} seconds on {chug.card.game.date}"
 
-        if len(bad_chuggers) >= min_sample_size:
-            break
-
-    bad_chuggers = random.sample(bad_chuggers.items(), min(n, len(bad_chuggers)))
-    random.shuffle(bad_chuggers)
-    return bad_chuggers
+def get_recent_dnf_players(n, min_sample_size=10):
+    qs = GamePlayer.objects.filter(dnf=True, game__dnf=False).order_by(
+        F("game__end_datetime").desc(nulls_last=True)
+    )
+    dnf_gps = sample_max(list(qs[:min_sample_size]), n)
+    return [
+        (gp.user, f"For dnf'ing game on {gp.game.date} with {gp.game.players_str()}")
+        for gp in dnf_gps
+    ]
 
 
 def index(request):
@@ -133,7 +119,7 @@ def index(request):
         "total_beers": total_players * BEERS_PER_PLAYER,
         "total_games": Game.objects.all().count(),
         "recent_players": get_recent_players(4),
-        "wall_of_shame_players": get_bad_chuggers(4),
+        "wall_of_shame_players": get_recent_dnf_players(4),
         "live_games": Game.objects.filter(
             end_datetime__isnull=True, dnf=False
         ).order_by("-start_datetime")[:5],
@@ -242,6 +228,7 @@ class GameListView(PaginatedListView):
                     default="end_datetime",
                     output_field=DateTimeField(),
                 ).desc(),
+                "id",
             )
             if self.order.reverse:
                 qs = qs.reverse()
@@ -250,9 +237,9 @@ class GameListView(PaginatedListView):
 
             # Always show games with unknown duration last
             if self.order.reverse:
-                qs = qs.order_by(F("duration").desc(nulls_last=True))
+                qs = qs.order_by(F("duration").desc(nulls_last=True), "id")
             else:
-                qs = qs.order_by(F("duration").asc(nulls_last=True))
+                qs = qs.order_by(F("duration").asc(nulls_last=True), "id")
 
         return qs
 
@@ -291,7 +278,7 @@ class PlayerListView(PaginatedListView):
         return (
             User.objects.filter(username__icontains=query)
             .annotate(total_games=Count("gameplayer"))
-            .order_by("-total_games")
+            .order_by("-total_games", "id")
         )
 
     def get_context_data(self, **kwargs):
@@ -484,31 +471,33 @@ class RankingView(PaginatedListView):
         return context
 
 
-SIPS_MEAN = sum(range(2, 14 + 1))
-CARD_MEAN = SIPS_MEAN / 13
-SIPS_VAR = sum((CARD_MEAN - i) ** 2 for i in range(2, 14 + 1))
-
-
 class StatsView(TemplateView):
     template_name = "stats.html"
 
     @classmethod
     def sips_count_distribution(cls, player_count):
-        """
-        Approximate probability of getting exactly x sips.
+        # Exact probability
+        def get_outcomes(values, draws):
+            outcomes = defaultdict(int)
+            outcomes[0, 0] = 1
 
-        Approximated using a normal distribution where the mean is known,
-        but the variance is estimated using a finite population correction.
+            for v in values:
+                noutcomes = outcomes.copy()
+                for (total, used), c in outcomes.items():
+                    total += v
+                    used += 1
+                    if used <= draws:
+                        noutcomes[total, used] += c
 
-        Futhermore a continuity correction is used.
+                outcomes = noutcomes
 
-        See https://math.stackexchange.com/a/1300566/19750
-        """
-        mean = SIPS_MEAN + 0.5
-        total_cards = 13 * player_count
-        fpc = (total_cards - 13) / (total_cards - 1)
-        var = SIPS_VAR * fpc
-        return norm(mean, sqrt(var)).pdf, f"N({mean}, {var:.2f})"
+            return {total: c for (total, used), c in outcomes.items() if used == draws}
+
+        values = [i for _ in range(player_count) for i in range(2, 15)]
+        outcomes = get_outcomes(values, 13)
+        total_outcomes = sum(outcomes.values())
+
+        return lambda x: outcomes.get(x, 0) / total_outcomes, f"SumP({player_count})"
 
     @classmethod
     def chug_count_distribution(cls, player_count):
@@ -610,7 +599,7 @@ class StatsView(TemplateView):
                 "ys": ys,
                 "total_ys": sum(ys),
                 "probs": probs,
-                "probs_exact": name == "chugs_data",
+                "probs_exact": True,
                 "dist_str": dist_str,
             }
 
@@ -702,7 +691,7 @@ class FailedGameUploadView(CreateView):
         mail_admins(
             "[academy.beer] Game log uploaded",
             f"""A game has been uploaded to
-https://academy.beer{get_admin_object_url(form.instance)}
+{get_admin_object_url(form.instance)}
 by {self.request.user}.
 
 Notes:

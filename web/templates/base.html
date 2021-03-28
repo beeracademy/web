@@ -1,5 +1,6 @@
 {% load static %}
 {% load bootstrap4 %}
+{% load webpush_notifications %}
 <!doctype html>
 <html>
 	<head>
@@ -45,8 +46,66 @@
 		</style>
 
 		{% block styles %}{% endblock %}
+
+    <script>
+      var _isPushEnabled;
+      var notificationButton;
+      var notificationButtonClicked = false;
+
+      function updateNotificationButton() {
+        if (_isPushEnabled) {
+          notificationButton.classList.add("subscribed");
+        } else {
+          notificationButton.classList.remove("subscribed");
+        }
+      }
+
+      Object.defineProperty(window, 'isPushEnabled', {
+        get: function() { return _isPushEnabled; },
+        set: function(v) {
+          _isPushEnabled = v;
+
+          if (notificationButton) {
+            updateNotificationButton();
+          }
+        }
+      });
+
+      window.addEventListener("DOMContentLoaded", function() {
+        var webpushButton = document.getElementById("webpush-subscribe-button");
+        notificationButton = document.getElementById("notification-button");
+        notificationButton.addEventListener("click", function() {
+          notificationButtonClicked = true;
+          if (!registration) {
+            showMessage('Service Worker is not supported in your Browser!');
+            return;
+          }
+          webpushButton.click();
+        });
+        updateNotificationButton();
+      });
+    </script>
+    <style>
+      #notification-button.subscribed .fa-bell {
+        display: none;
+      }
+      #notification-button:not(.subscribed) .fa-bell-slash {
+        display: none;
+      }
+    </style>
+    {% webpush_header %}
+    <script>
+      function showMessage(message) {
+        if (notificationButtonClicked) {
+          alert(message);
+        }
+      }
+    </script>
 	</head>
 	<body class="{% if user.is_staff %}staff-user{% endif %}">
+    <div style="display: none;">
+      {% webpush_button %}
+    </div>
 
 		{% block body %}{% endblock %}
 
@@ -63,7 +122,19 @@
   integrity="sha512-gZwIG9x3wUXg2hdXF6+rVkLF/0Vi9U8D2Ntg4Ga5I5BZpVkVxlJWbSQtXPSiUTtC0TjtGOmxa1AJPuV0CPthew=="
   crossorigin=""></script>
 
+		{% if config.SNOWFLAKES_ENABLED %}
+    <script src="https://unpkg.com/magic-snowflakes@4.1.6/dist/snowflakes.min.js" integrity="sha384-jbAIB/GHy9b9yhKXwiySc2MYlOgy9yalQPKzgZ8wx0dror6JrgWh+6VEXX2aGQ1i" crossorigin="anonymous"></script><script src="https://unpkg.com/magic-snowflakes@4.1.6/dist/snowflakes.min.js" integrity="sha384-jbAIB/GHy9b9yhKXwiySc2MYlOgy9yalQPKzgZ8wx0dror6JrgWh+6VEXX2aGQ1i" crossorigin="anonymous"></script>
+    <script>
+      Snowflakes({
+        count: {{ config.SNOWFLAKES_COUNT }},
+      });
+    </script>
+		{% endif %}
+
 		<script src="{% static "js/script.js" %}"></script>
 		{% block scripts %}{% endblock %}
+
+    <script data-goatcounter="https://academy.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
 	</body>
 </html>

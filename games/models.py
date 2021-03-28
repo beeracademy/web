@@ -13,6 +13,8 @@ from django.utils.html import format_html
 from PIL import Image
 from tqdm import tqdm
 
+from academy.utils import get_absolute_url
+
 from .shuffle_indices import shuffle_with_indices
 
 
@@ -366,12 +368,13 @@ class User(AbstractUser):
 
     def image_url(self):
         if self.image:
-            return self.image.url
+            url = self.image.url
         else:
-            return static("user.png")
+            url = static("user.png")
+        return get_absolute_url(url)
 
     def get_absolute_url(self):
-        return reverse("player_detail", args=[self.id])
+        return get_absolute_url(reverse("player_detail", args=[self.id]))
 
     def merge_with(self, other_user):
         other_user.gameplayer_set.update(user_id=self)
@@ -690,12 +693,15 @@ class Game(models.Model):
             }
 
     def get_shuffled_deck(self):
+        if not self.shuffle_indices:
+            return None
+
         cards = list(Card.get_ordered_cards_for_players(self.players.count()))
         shuffle_with_indices(cards, self.shuffle_indices)
         return cards
 
     def get_absolute_url(self):
-        return reverse("game_detail", args=[self.id])
+        return get_absolute_url(reverse("game_detail", args=[self.id]))
 
 
 class GameToken(models.Model):
