@@ -9,6 +9,7 @@ FROM python:3.9
 WORKDIR /app
 
 COPY --from=builder static /app/svelte/static
+COPY --from=builder templates/svelte_include_generated.html /app/svelte/templates/svelte_include_generated.html
 
 COPY requirements.txt /app/
 RUN pip install --no-cache-dir -r requirements.txt
