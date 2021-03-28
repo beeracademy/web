@@ -14,13 +14,13 @@
 
   const yaxis = {
     title: {
-      text: "Sips (base 14)"
+      text: "Sips (base 14)",
     },
     min: 0,
     labels: {
-      formatter: function(val, index) {
+      formatter: function (val, index) {
         return window.toBase14(val);
-      }
+      },
     },
   };
 
@@ -33,7 +33,7 @@
     for (let i = 0; i < game_data.playerCount; i++) {
       series.push({
         name: ordered_gameplayers[i].user.username,
-        data: [[0, 0]]
+        data: [[0, 0]],
       });
     }
 
@@ -41,7 +41,7 @@
       const data = series[i % game_data.playerCount].data;
       data.push([
         data.length,
-        data[data.length - 1][1] + game_data.cards[i].value
+        data[data.length - 1][1] + game_data.cards[i].value,
       ]);
     }
 
@@ -67,26 +67,26 @@
     const options = {
       chart: {
         type: "line",
-        height: 500
+        height: 500,
       },
       stroke: {
-        curve: "straight"
+        curve: "straight",
       },
       xaxis: {
         type: "numeric",
         title: {
-          text: "Round"
+          text: "Round",
         },
         tickAmount: "dataPoints",
         labels: {
-          formatter: function(value: number, _timestamp: any, _index: any) {
+          formatter: function (value: number, _timestamp: any, _index: any) {
             return Math.round(value);
-          }
-        }
+          },
+        },
       },
       yaxis: yaxis,
       colors: userColors,
-      series: []
+      series: [],
     };
 
     chart = new ApexCharts(container, options);

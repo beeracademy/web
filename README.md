@@ -7,6 +7,7 @@ Frontend and api server for Academy.
 ## Installation
 
 Install Python 3.9 and create a virtual environment:
+
 ```sh
 python -mvenv ~/.cache/venvs/academy-web
 ```
@@ -42,6 +43,7 @@ To start the server locally run:
 
 Some views uses [Svelte](https://svelte.dev/) components, which needs to be compiled.
 To do this, run the following:
+
 ```sh
 cd svelte
 ./build_components

@@ -1,166 +1,168 @@
-html, body {
-    height: 100%;
-    margin: 0;
-    overflow-wrap: break-word;
+html,
+body {
+  height: 100%;
+  margin: 0;
+  overflow-wrap: break-word;
 }
 
 body:not(.staff-user) .staff-only {
-    display: none;
+  display: none;
 }
 
 .wrapper {
-    min-height: 100%;
-    margin-bottom: -170px;
+  min-height: 100%;
+  margin-bottom: -170px;
 }
 
 footer {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    color: #666;
-    border-top: 1px solid rgba(0,0,0,.1)
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: #666;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
 }
 
-footer, .push {
-    margin-top: 50px;
-    height: 120px;
+footer,
+.push {
+  margin-top: 50px;
+  height: 120px;
 }
 
 footer i {
-    font-size: 24px;
-    margin: 0px 12px;
+  font-size: 24px;
+  margin: 0px 12px;
 }
 
 footer span {
-    font-size: 16px;
-    margin: 0px 12px;
+  font-size: 16px;
+  margin: 0px 12px;
 }
 
 tr[data-href] {
-    cursor: pointer;
+  cursor: pointer;
 }
 
 nav {
-    margin-bottom: 2rem;
+  margin-bottom: 2rem;
 }
 
 h2 {
-    margin-top: 2rem;
-    margin-bottom: 1rem;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
 }
 
 a {
-    outline: none;
-    color: #bd2130;
+  outline: none;
+  color: #bd2130;
 }
 
 a:hover {
-    color: #9b0615;
+  color: #9b0615;
 }
 
 a.nolink {
-    color: unset;
-    text-decoration: unset;
+  color: unset;
+  text-decoration: unset;
 }
 
 tr.live {
-    background-color: #bd2130 !important;
-    color: #fff;
+  background-color: #bd2130 !important;
+  color: #fff;
 }
 
 tr.live a {
-    color: #fff;
+  color: #fff;
 }
 
 tr.dnf {
-    text-decoration: line-through;
+  text-decoration: line-through;
 }
 
 a.dnf {
-    text-decoration: line-through;
+  text-decoration: line-through;
 }
 
 .dnf-img-text {
-    font-size: 4em;
-    position: absolute;
-    -webkit-text-stroke: 2px #fff;
-    font-weight: 900;
-    z-index: 1;
+  font-size: 4em;
+  position: absolute;
+  -webkit-text-stroke: 2px #fff;
+  font-weight: 900;
+  z-index: 1;
 }
 
 .dnf-img-text + img {
-    filter: grayscale(1);
+  filter: grayscale(1);
 }
 
 tr.in-game {
-    background-color: rgba(52, 152, 219,0.4) !important;
-    color: #000;
+  background-color: rgba(52, 152, 219, 0.4) !important;
+  color: #000;
 }
 
 tr.in-game a {
-    color: #bd2130;
+  color: #bd2130;
 }
 
 .rounder {
-    border-radius: 5px;
+  border-radius: 5px;
 }
 
 .round-image {
-    height: 48px;
-    width: 48px;
-    border-radius: 100%;
-    background-size: contain;
-    background-position: center;
-    margin-left: auto;
-    margin-right: auto;
-    background-color: #f0f0f0;
+  height: 48px;
+  width: 48px;
+  border-radius: 100%;
+  background-size: contain;
+  background-position: center;
+  margin-left: auto;
+  margin-right: auto;
+  background-color: #f0f0f0;
 }
 
 .academy-table th {
-    border: none;
-    height: 48px;
-    font-size: 100;
+  border: none;
+  height: 48px;
+  font-size: 100;
 }
 
 .academy-table.slim th {
-    height: 28px;
+  height: 28px;
 }
 
 .academy-table td {
-    border: none;
-    border-bottom: 2px solid #dee2e6;
-    height: 48px;
-    line-height: 48px;
+  border: none;
+  border-bottom: 2px solid #dee2e6;
+  height: 48px;
+  line-height: 48px;
 }
 
 .academy-table.slim td {
-    height: 28px;
-    line-height: 28px;
+  height: 28px;
+  line-height: 28px;
 }
 
 .text-cetner {
-    text-align: center;
+  text-align: center;
 }
 
 .achievements {
-    display: flex;
-    justify-content: space-around;
-    flex-wrap: wrap;
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: wrap;
 }
 
 .achievements img {
-    margin: 12px;
-    height: 90px;
-    width: 90px;
-    opacity: 0.2;
+  margin: 12px;
+  height: 90px;
+  width: 90px;
+  opacity: 0.2;
 }
 
 .achievements img.active {
-    opacity: 1;
+  opacity: 1;
 }
 
 .invalid-feedback {
-    /* wtf bootstrap??? */
-    display: block !important;
+  /* wtf bootstrap??? */
+  display: block !important;
 }

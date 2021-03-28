@@ -17,17 +17,15 @@
     if (game_data.cards.length === lastLength) return;
     lastLength = game_data.cards.length;
 
-    const series: { name: string, data: number[] }[] = [
+    const series: { name: string; data: number[] }[] = [
       {
         name: "Time",
-        data: []
-      }
+        data: [],
+      },
     ];
 
     for (let i = 0; i < game_data.cards.length; i++) {
-      series[0].data.push(
-        game_data.cards[i].start_delta_ms
-      );
+      series[0].data.push(game_data.cards[i].start_delta_ms);
     }
 
     chart.updateSeries(series);
@@ -39,41 +37,41 @@
     const options = {
       chart: {
         type: "line",
-        height: 500
+        height: 500,
       },
       stroke: {
-        curve: "straight"
+        curve: "straight",
       },
       xaxis: {
         type: "numeric",
         title: {
-          text: "Turn"
+          text: "Turn",
         },
         tickAmount: "dataPoints",
         labels: {
-          formatter: function(value: number, _timestamp: any, _index: any) {
+          formatter: function (value: number, _timestamp: any, _index: any) {
             return Math.round(value);
-          }
-        }
+          },
+        },
       },
       yaxis: {
         type: "datetime",
         title: {
-          text: "Time"
+          text: "Time",
         },
         min: 0,
         labels: {
-          formatter: function(val: number, _index: any) {
+          formatter: function (val: number, _index: any) {
             return formatDuration(val);
-          }
-        }
+          },
+        },
       },
       markers: {
-        size: 1
+        size: 1,
       },
       tooltip: {
         x: {
-          formatter: function(value: number, _index: any) {
+          formatter: function (value: number, _index: any) {
             const player_name =
               ordered_gameplayers[(value - 1) % game_data.playerCount].user
                 .username;
@@ -82,20 +80,21 @@
               "'s turn " +
               Math.floor((value - 1) / game_data.playerCount + 1)
             );
-          }
+          },
         },
         y: {
-          formatter: function(val: number, { series, dataPointIndex } : { series: any, dataPointIndex: number }) {
+          formatter: function (
+            val: number,
+            { series, dataPointIndex }: { series: any; dataPointIndex: number }
+          ) {
             const previous =
-              dataPointIndex === 0
-                ? 0
-                : series[0][dataPointIndex - 1];
+              dataPointIndex === 0 ? 0 : series[0][dataPointIndex - 1];
             const msDiff = val - previous;
             return "Turn time " + formatDuration(msDiff);
-          }
-        }
+          },
+        },
       },
-      series: []
+      series: [],
     };
 
     chart = new ApexCharts(container, options);

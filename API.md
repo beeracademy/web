@@ -3,6 +3,7 @@
 ## Create user
 
 ### Request
+
 ```javascript
 // POST /api/users/
 {
@@ -12,6 +13,7 @@
 ```
 
 ### Response
+
 ```javascript
 {
   "id": int,
@@ -22,6 +24,7 @@
 ## Authenticate
 
 ### Request
+
 ```javascript
 // POST /api-token-auth/`
 {
@@ -31,7 +34,9 @@
 ```
 
 ### Response
+
 On success:
+
 ```javascript
 {
   "id": int,
@@ -47,6 +52,7 @@ If a user with that username exists, but the password was wrong, the response is
 ## Start game
 
 ### Request
+
 ```javascript
 // POST /api/games/
 {
@@ -55,6 +61,7 @@ If a user with that username exists, but the password was wrong, the response is
 ```
 
 ### Response
+
 ```javascript
 {
   "id": int,
@@ -68,6 +75,7 @@ If a user with that username exists, but the password was wrong, the response is
 ## Update game
 
 ### Request
+
 ```javascript
 // POST /api/games/<game_id>/update_state/
 // Authorization: GameToken <game_token>
@@ -81,6 +89,7 @@ If a user with that username exists, but the password was wrong, the response is
 ```
 
 `card` type definition:
+
 ```javascript
 {
   "value": int,
@@ -98,20 +107,25 @@ If a user with that username exists, but the password was wrong, the response is
 ```
 
 ### Response
+
 ```javascript
-{}
+{
+}
 ```
 
 ## Resume game
 
 ### Request
+
 ```javascript
 // POST /api/games/<game_id>/resume/
 // Authorization: Token <user_token>
-{}
+{
+}
 ```
 
 ### Response
+
 ```javascript
 {
   "token": string,
@@ -122,38 +136,46 @@ If a user with that username exists, but the password was wrong, the response is
 
 ### Request
 ```
+
 // POST /api/games/<game_id>/update_image/
 // Authorization: GameToken <game_token>
 // multipart/form-data with image field containing image
-```
+
+````
 
 ### Response
 ```javascript
 {}
-```
+````
 
 ## Delete game image
 
 ### Request
+
 ```
 // POST /api/games/<game_id>/delete_image/
 // Authorization: GameToken <game_token>
 ```
 
 ### Response
+
 ```javascript
-{}
+{
+}
 ```
 
 ## Get list of ranked users for face cards
 
 ### Request
+
 ```javascript
 // GET /api/ranked_cards/
-{}
+{
+}
 ```
 
 ### Response
+
 ```javascript
 {
   "{suit}-{value}": { // example: S-12
@@ -171,12 +193,15 @@ If a user with that username exists, but the password was wrong, the response is
 ## Get stats for a user
 
 ### Request
+
 ```javascript
 // GET /api/stats/<user_id>/
-{}
+{
+}
 ```
 
 ### Response
+
 ```javascript
 [
     {

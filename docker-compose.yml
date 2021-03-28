@@ -35,7 +35,15 @@ services:
   celery-beat:
     image: *app
     restart: always
-    command: ["./wait_for_app", "celery", "--app=academy", "beat", "--loglevel=INFO", "--scheduler=django_celery_beat.schedulers:DatabaseScheduler"]
+    command:
+      [
+        "./wait_for_app",
+        "celery",
+        "--app=academy",
+        "beat",
+        "--loglevel=INFO",
+        "--scheduler=django_celery_beat.schedulers:DatabaseScheduler",
+      ]
     volumes:
       - ./.env:/app/.env
     depends_on:
