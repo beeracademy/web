@@ -480,10 +480,14 @@
       margin: 0px;
     }
 
-    .players,
-    .chat {
-      margin: auto;
-      border: none !important;
+    .game-wrapper .chat input {
+		grid-area: chat-input;
+        margin: 16px;
+        padding: 8px;
+        border: none;
+        border-radius: 5px;
+        background-color: #f2f2f2;
+        outline-color: #bd2130;
     }
 
     .players {
@@ -492,29 +496,189 @@
       grid-gap: 1rem;
     }
 
-    .players-header {
-      margin-left: 1em;
-    }
-  }
+    @media only screen and (max-width: 1200px) {
+		.game-wrapper {
+			display: block;
+		}
 
-  @media only screen and (min-width: 1200px) {
-    .game::-webkit-scrollbar,
-    .players::-webkit-scrollbar {
-      width: 10px;
+        .game {
+            padding: 15px !important;
+            margin: 0px;
+        }
+
+		.players, .chat {
+			margin: auto;
+			border: none !important;
+		}
+
+		.players {
+			display: grid;
+			grid-template-columns: repeat(auto-fill, minmax(275px, 1fr));
+		    grid-gap: 1rem;
+		}
+
+		.players-header {
+			margin-left: 1em;
+		}
     }
 
-    .game::-webkit-scrollbar-track,
-    .players::-webkit-scrollbar-track {
-      background: transparent;
-    }
+    @media only screen and (min-width: 1200px) {
+        .game::-webkit-scrollbar, .players::-webkit-scrollbar {
+            width: 10px;
+        }
 
     .game::-webkit-scrollbar-thumb,
     .players::-webkit-scrollbar-thumb {
       background-color: #646a7217;
     }
 
-    .players-header {
-      display: none;
+        .game::-webkit-scrollbar-thumb, .players::-webkit-scrollbar-thumb {
+            background-color: #646a7217;
+        }
+
+		.players-header {
+			display: none;
+		}
     }
   }
 </style>
+
+<div class="game-wrapper">
+	<h2 class="players-header">Players</h2>
+	<div class="players">
+		<Players game_data={game_data} ordered_gameplayers={ordered_gameplayers}/>
+	</div>
+	<div class="game">
+		<div class="container">
+			<h2>
+				Meta
+		        {#if window.is_staff}
+                <a class="btn btn-primary float-right text-light col-md-auto" href="/admin/games/game/{game_data.id}/change/">Edit</a>
+                <br><br class="d-lg-none">
+				{/if}
+			</h2>
+
+			<hr>
+
+			<p class="description">{@html game_data.description_html}</p>
+
+			<table class="table">
+			<thead>
+				<tr>
+				<th scope="col">Game id</th>
+				<th scope="col">Start Time</th>
+				<th scope="col">End Time</th>
+				<th scope="col">Duration</th>
+				{#if durationSinceLastActivity !== null}
+				<th scope="col">Time since last activity</th>
+				{/if}
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+				<td>{game_data.id}</td>
+				<td id="game_start_datetime">
+					{#if game_data.start_datetime}
+						{window.formatDate(new Date(game_data.start_datetime))}
+					{:else}
+						?
+					{/if}
+				</td>
+				<td id="game_end_datetime">
+					{#if game_data.dnf}
+						DNF
+					{:else if game_data.end_datetime}
+						{window.formatDate(new Date(game_data.end_datetime))}
+					{:else}
+						-
+					{/if}
+				</td>
+				<td id="game_duration">
+					{#if duration}
+						{window.formatDuration(duration)}
+					{:else}
+						?
+					{/if}
+				</td>
+				{#if durationSinceLastActivity !== null}
+				<td>
+					{window.formatDuration(durationSinceLastActivity)}
+				</td>
+				{/if}
+				</tr>
+			</tbody>
+			</table>
+
+			{#if game_data.location.latitude !== null}
+			<h2>Location</h2>
+			<hr>
+			<Map location={game_data.location}/>
+			{/if}
+
+			{#if game_data.image !== null}
+			<h2>Image</h2>
+			<hr>
+			<Image url={game_data.image}/>
+			{/if}
+
+			<h2>Chugs</h2>
+
+			<hr>
+
+			<div class="container">
+				<div id="chugs_container" class="row justify-content-md-center">
+					{#each chugs as chug}
+						<Chug start_datetime={game_data.start_datetime} chug={chug} dnf={game_data.dnf}/>
+					{/each}
+				</div>
+			</div>
+
+			<h2>Round overview</h2>
+
+			<hr>
+
+			<table id="cards_table" class="table table-bordered table-striped table-hover table-sm">
+				<thead>
+					<tr>
+						<th scope="col">Round</th>
+						{#each ordered_gameplayers as gp}
+						<th scope="col">{gp.user.username}</th>
+						{/each}
+					</tr>
+				</thead>
+				<tbody>
+					{#each Array(13) as _, i}
+					<tr>
+						<td>{i + 1}</td>
+						{#each ordered_gameplayers as _, j}
+						<CardCell card={game_data.cards[i * ordered_gameplayers.length + j]} />
+						{/each}
+					</tr>
+					{/each}
+				</tbody>
+			</table>
+
+			<h2>Graphs</h2>
+
+			<hr>
+
+			<br>
+			<br>
+			<SipsGraph game_data={game_data} ordered_gameplayers={ordered_gameplayers}/>
+			<br>
+			<br>
+			<br>
+			<TimeGraph game_data={game_data} ordered_gameplayers={ordered_gameplayers}/>
+		</div>
+	</div>
+
+	<div class="chat">
+        <div class="info">
+            Chat
+        </div>
+		<div class="messages" id="chat-messages" bind:this={chat_messages}>
+        </div>
+		<input id="chat-input" autocomplete="off" type="text" disabled
+			placeholder="Send a message" bind:this={chat_input}>
+	</div>
+</div>
