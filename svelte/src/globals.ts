@@ -10,10 +10,12 @@ export const userColors = [
 	"#c0392b",
 ];
 
-export declare const is_authenticated: boolean;
-export declare const is_staff: boolean;
-export declare const formatDate: (d: Date) => string;
-export declare const formatDuration: (ms: number, second_decimals?: number) => string;
+const _window = window as any;
 
-export declare const moment: any;
-export declare const ApexCharts: any;
+export const is_authenticated = _window.is_authenticated as boolean;
+export const is_staff = _window.is_staff as boolean;
+export const formatDate = _window.formatDate as (d: Date) => string;
+export const formatDuration = _window.formatDuration as (ms: number, second_decimals?: number) => string;
+
+export const moment = _window.moment;
+export const ApexCharts = _window.ApexCharts;

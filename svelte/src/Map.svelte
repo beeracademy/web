@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import type { Location } from "./types";
 
   export let location: Location;

@@ -5,7 +5,7 @@
   export let ordered_gameplayers: GamePlayerData[];
 
   import { onMount } from "svelte";
-  import { userColors, ApexCharts } from "./globals.js";
+  import { userColors, ApexCharts } from "./globals";
 
   let container: HTMLElement;
   let chart: any;
