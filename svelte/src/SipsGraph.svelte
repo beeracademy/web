@@ -52,7 +52,6 @@
     }
 
     const maxRounded = Math.ceil(max / 14) * 14;
-    console.error(max, maxRounded, maxRounded / 14);
 
     yaxis.max = maxRounded;
     yaxis.tickAmount = maxRounded / 14;
