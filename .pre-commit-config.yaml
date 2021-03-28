@@ -24,7 +24,8 @@ repos:
     hooks:
       - id: prettier
         additional_dependencies:
-          - prettier-plugin-svelte
+          - prettier@2.2.1
+          - prettier-plugin-svelte@2.2.0
 
   - repo: https://github.com/Tyilo/pre-commit-django-migrations
     rev: d3a23e91aeb76b3c6b0f934d734c0dca237840ae
