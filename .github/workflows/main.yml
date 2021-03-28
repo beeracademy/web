@@ -1,12 +1,6 @@
 name: Build, Test & Deploy
 
-on:
-  push:
-    branches:
-      - master
-  pull_request:
-    branches:
-      - master
+on: [push, pull_request]
 
 env:
   DOCKER_IMAGE_NAME: ghcr.io/beeracademy/web
