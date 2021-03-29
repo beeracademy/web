@@ -472,22 +472,12 @@
 
   @media only screen and (max-width: 1200px) {
     .game-wrapper {
-      display: block;
+      display: block; /* Disable grid */
     }
 
     .game {
       padding: 15px !important;
       margin: 0px;
-    }
-
-    .game-wrapper .chat input {
-      grid-area: chat-input;
-      margin: 16px;
-      padding: 8px;
-      border: none;
-      border-radius: 5px;
-      background-color: #f2f2f2;
-      outline-color: #bd2130;
     }
 
     .players {
