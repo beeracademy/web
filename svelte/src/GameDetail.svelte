@@ -226,6 +226,21 @@
       chat_messages.scrollTo(0, chat_messages.scrollHeight);
     }
   });
+
+  onMount(() => {
+    const footer = document.querySelector("footer");
+    const game = document.querySelector(".game");
+    const gameWrapper = document.querySelector(".game-wrapper");
+
+    function handleResize() {
+      const parent = window.innerWidth <= 1024 ? gameWrapper : game;
+      parent.appendChild(footer);
+    }
+
+    window.addEventListener("resize", handleResize);
+
+    handleResize();
+  });
 </script>
 
 <div class="game-wrapper">
