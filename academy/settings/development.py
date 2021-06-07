@@ -35,6 +35,12 @@ LOGGING = {
         ],
         "level": "INFO",
     },
+    "": {
+        "handlers": [
+            "console",
+        ],
+        "level": "INFO",
+    },
 }
 
 if not TESTING:
