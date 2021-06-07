@@ -16,7 +16,7 @@ asgiref==3.3.4
     #   django
 async-timeout==3.0.1
     # via aioredis
-attrs==20.3.0
+attrs==21.2.0
     # via
     #   automat
     #   service-identity
@@ -33,11 +33,11 @@ beautifulsoup4==4.9.3
     # via django-bootstrap4
 billiard==3.6.4.0
     # via celery
-celery[redis]==5.0.5
+celery[redis]==5.1.0
     # via
     #   -r requirements.in
     #   django-celery-beat
-certifi==2020.12.5
+certifi==2021.5.30
     # via requests
 cffi==1.14.5
     # via
@@ -55,7 +55,7 @@ click-didyoumean==0.0.3
     # via celery
 click-plugins==1.1.1
     # via celery
-click-repl==0.1.6
+click-repl==0.2.0
     # via celery
 click==7.1.2
     # via
@@ -75,9 +75,9 @@ cryptography==3.4.7
     #   service-identity
 daphne==3.0.2
     # via channels
-decorator==5.0.7
+decorator==5.0.9
     # via ipython
-django-bootstrap4==3.0.0
+django-bootstrap4==3.0.1
     # via -r requirements.in
 django-celery-beat==2.2.0
     # via -r requirements.in
@@ -95,7 +95,7 @@ django-timezone-field==4.1.2
     # via django-celery-beat
 git+https://github.com/Tyilo/django-webpush.git@fix_duplicate#egg=django-webpush
     # via -r requirements.in
-django==3.2
+django==3.2.4
     # via
     #   -r requirements.in
     #   channels
@@ -128,15 +128,17 @@ incremental==21.3.0
     # via twisted
 ipython-genutils==0.2.0
     # via traitlets
-ipython==7.22.0
+ipython==7.24.1
     # via -r requirements.in
 jedi==0.18.0
     # via ipython
-kombu==5.0.2
+kombu==5.1.0
     # via celery
+matplotlib-inline==0.1.2
+    # via ipython
 msgpack==1.0.2
     # via channels-redis
-numpy==1.20.2
+numpy==1.20.3
     # via scipy
 parso==0.8.2
     # via jedi
@@ -164,7 +166,7 @@ pyasn1==0.4.8
     #   service-identity
 pycparser==2.20
     # via cffi
-pygments==2.8.1
+pygments==2.9.0
     # via ipython
 pyopenssl==20.0.1
     # via twisted
@@ -172,7 +174,7 @@ python-crontab==2.5.1
     # via django-celery-beat
 python-dateutil==2.8.1
     # via python-crontab
-python-dotenv==0.17.0
+python-dotenv==0.17.1
     # via -r requirements.in
 pytz==2021.1
     # via
@@ -187,37 +189,41 @@ requests==2.25.1
     # via
     #   facebook-sdk
     #   pywebpush
-scipy==1.6.2
+scipy==1.6.3
     # via -r requirements.in
-service-identity==18.1.0
+service-identity==21.1.0
     # via twisted
-six==1.15.0
+six==1.16.0
     # via
     #   automat
     #   bcrypt
     #   click-repl
     #   pyopenssl
     #   python-dateutil
+    #   service-identity
 soupsieve==2.2.1
     # via beautifulsoup4
 sqlparse==0.4.1
     # via
     #   django
     #   django-debug-toolbar
-tqdm==4.60.0
+tqdm==4.61.0
     # via -r requirements.in
 traitlets==5.0.5
-    # via ipython
+    # via
+    #   ipython
+    #   matplotlib-inline
 twisted[tls]==21.2.0
     # via daphne
 txaio==21.2.1
     # via autobahn
-urllib3==1.26.4
+urllib3==1.26.5
     # via requests
 vine==5.0.0
     # via
     #   amqp
     #   celery
+    #   kombu
 wcwidth==0.2.5
     # via prompt-toolkit
 zope.interface==5.4.0
