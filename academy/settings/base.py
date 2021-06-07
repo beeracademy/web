@@ -161,7 +161,7 @@ AUTHENTICATION_BACKENDS = [
     "games.auth.OneTimePasswordBackend",
 ]
 
-DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
 REST_FRAMEWORK = {
     # Use Django's standard `django.contrib.auth` permissions,
