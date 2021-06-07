@@ -104,9 +104,11 @@
   }
 
   let chat_messages: HTMLDivElement, chat_input: HTMLInputElement;
+  let toastContainer: HTMLDivElement;
   onMount(function () {
     const scheme = window.location.protocol === "https:" ? "wss" : "ws";
     let socket: WebSocket | null = null;
+    let myChatId: string | null = null;
 
     startSocket();
 
@@ -132,12 +134,19 @@
       socket.addEventListener("message", function (e) {
         var data = JSON.parse(e.data);
 
+        if (data.event === "chat_id") {
+          myChatId = data.chat_id;
+          return;
+        }
+
         var username = data["username"];
         if (data.is_game) {
           username = "Game";
         } else if (!username) {
           username = "Guest";
         }
+
+        let chatId = data.chat_id;
 
         var userUrl;
         if (data.user_id) {
@@ -168,7 +177,7 @@
           var d = new Date(data["datetime"]);
           var time = moment(d).format("HH:mm:ss");
 
-          addMessage(username, userUrl, message, isInfo, time);
+          addMessage(username, userUrl, message, isInfo, time, chatId);
         } else {
           console.error("Unknown message received:");
           console.error(data);
@@ -198,7 +207,8 @@
       userUrl: string,
       msg: string,
       isInfo: boolean,
-      _time: string
+      _time: string,
+      chatId: string
     ) {
       let elm = document.createElement("div");
       elm.classList.add("message");
@@ -224,6 +234,30 @@
       chat_messages.appendChild(elm);
 
       chat_messages.scrollTo(0, chat_messages.scrollHeight);
+
+      if (!isInfo && chatId !== myChatId) {
+        const toastHeader = document.createElement("div");
+        toastHeader.classList.add("toast-header");
+        toastHeader.textContent = user;
+
+        const toastBody = document.createElement("div");
+        toastBody.classList.add("toast-body");
+        toastBody.textContent = msg;
+
+        const toastElm = document.createElement("div");
+        toastElm.appendChild(toastHeader);
+        toastElm.appendChild(toastBody);
+
+        toastContainer.appendChild(toastElm);
+
+        (window as any)
+          .jQuery(toastElm)
+          .toast({ delay: 2000 })
+          .on("hidden.bs.toast", function () {
+            toastContainer.removeChild(this);
+          })
+          .toast("show");
+      }
     }
   });
 
@@ -400,7 +434,27 @@
   </div>
 </div>
 
+<div
+  aria-live="polite"
+  aria-atomic="true"
+  class="d-flex justify-content-center align-items-center"
+  style="min-height: 200px"
+>
+  <div
+    style="position: absolute; top: 100px; right: 100px; z-index: 10000;"
+    bind:this={toastContainer}
+  />
+</div>
+
 <style>
+  :global(.toast-body) {
+    background-color: white;
+  }
+
+  :global(.toast-header, .toast-body) {
+    border: 1px solid black;
+  }
+
   .description {
     min-height: 1.5em;
   }

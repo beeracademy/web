@@ -1,4 +1,5 @@
 import datetime
+import uuid
 
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
 from django.contrib.auth.models import AnonymousUser
@@ -12,12 +13,17 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
                 **data,
                 "type": "chat_event",
                 "datetime": datetime.datetime.now().isoformat(),
+                "chat_id": self.chat_id,
+                "username": self.user.username,
+                "user_id": self.user.id,
+                "is_game": self.is_game,
             },
         )
 
     async def connect(self):
         self.user = self.scope["user"]
         self.is_game = self.scope["query_string"] == b"game"
+        self.chat_id = str(uuid.uuid4())
 
         if self.is_game:
             self.user = AnonymousUser()
@@ -29,12 +35,16 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 
         await self.accept()
 
+        await self.send_json(
+            {
+                "event": "chat_id",
+                "chat_id": self.chat_id,
+            }
+        )
+
         await self.send_to_group(
             {
                 "event": "connect",
-                "username": self.user.username,
-                "user_id": self.user.id,
-                "is_game": self.is_game,
             }
         )
 
@@ -42,9 +52,6 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         await self.send_to_group(
             {
                 "event": "disconnect",
-                "username": self.user.username,
-                "user_id": self.user.id,
-                "is_game": self.is_game,
             }
         )
         await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
@@ -58,9 +65,6 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             {
                 "event": "message",
                 "message": message,
-                "username": self.user.username,
-                "user_id": self.user.id,
-                "is_game": self.is_game,
             }
         )
 
