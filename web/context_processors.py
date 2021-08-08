@@ -1,6 +1,5 @@
 from django.urls import Resolver404, resolve, reverse
 from django.views.generic.detail import SingleObjectMixin
-from django.views.generic.list import MultipleObjectMixin
 
 from .utils import get_admin_object_url, get_admin_url
 

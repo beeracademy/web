@@ -1,7 +1,6 @@
 from django.db import transaction
-from django.http import Http404, HttpResponseBadRequest
+from django.http import HttpResponseBadRequest
 from django.shortcuts import get_object_or_404
-from django.templatetags.static import static
 from django.utils import timezone
 from PIL import Image
 from rest_framework import serializers, viewsets

@@ -2,7 +2,6 @@ import datetime
 import random
 import re
 from collections import Counter, defaultdict
-from math import sqrt
 from urllib.parse import urlencode
 
 from django.contrib import messages
