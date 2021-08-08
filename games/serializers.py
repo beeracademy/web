@@ -211,7 +211,7 @@ class GameSerializer(serializers.ModelSerializer):
                         data["player_ids"][i] = User.objects.get(
                             username=player_name
                         ).id
-                    except User.DoestNotExist:
+                    except User.DoesNotExist:
                         raise serializers.ValidationError(
                             {
                                 "player_name": f"Player with username {player_name} not found"
