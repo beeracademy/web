@@ -3,7 +3,6 @@ import json
 from django import forms
 from django.contrib import admin, messages
 from django.contrib.admin.views.decorators import staff_member_required
-from django.contrib.admin.widgets import AutocompleteSelect
 from django.contrib.auth.admin import UserAdmin
 from django.urls import path, reverse_lazy
 from django.utils.decorators import method_decorator
@@ -15,29 +14,25 @@ from .serializers import GameSerializer
 from .views import update_game
 
 
-class AutocompleteModelChoiceField(forms.ModelChoiceField):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        # Hack to make AutocompleteSelect work for non-foreign key
-        class FakeRemoteField:
-            model = self.queryset.model
-
-        self.widget = AutocompleteSelect(FakeRemoteField, admin.site)
-
-
 class MergeUsersForm(forms.Form):
-    user1 = AutocompleteModelChoiceField(label="User 1", queryset=User.objects.all())
-    user2 = AutocompleteModelChoiceField(
+    user1 = forms.ModelChoiceField(label="User 1", queryset=User.objects.all())
+    user2 = forms.ModelChoiceField(
         label="User 2", help_text="(will be deleted)", queryset=User.objects.all()
     )
 
     def clean(self):
         super().clean()
-        if "user1" in self.cleaned_data and self.cleaned_data.get(
-            "user1"
-        ) == self.cleaned_data.get("user2"):
+        user1 = self.cleaned_data.get("user1")
+        user2 = self.cleaned_data.get("user2")
+        if user1 != None and user1 == user2:
             raise forms.ValidationError("Please pick two different users.")
+
+        if user1 != None and user2 != None:
+            same_games = user1.games.filter(id__in=user2.games.all())
+            if same_games.exists():
+                raise forms.ValidationError(
+                    f"{user1} and {user2} are in the same games: {same_games.count()}"
+                )
 
     def merge_users(self):
         self.cleaned_data["user1"].merge_with(self.cleaned_data["user2"])
