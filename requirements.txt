@@ -43,26 +43,26 @@ cffi==1.14.5
     # via
     #   bcrypt
     #   cryptography
-channels-redis==3.2.0
-    # via -r requirements.in
 channels==3.0.3
     # via
     #   -r requirements.in
     #   channels-redis
+channels-redis==3.2.0
+    # via -r requirements.in
 chardet==4.0.0
     # via requests
-click-didyoumean==0.0.3
-    # via celery
-click-plugins==1.1.1
-    # via celery
-click-repl==0.2.0
-    # via celery
 click==7.1.2
     # via
     #   celery
     #   click-didyoumean
     #   click-plugins
     #   click-repl
+click-didyoumean==0.0.3
+    # via celery
+click-plugins==1.1.1
+    # via celery
+click-repl==0.2.0
+    # via celery
 constantly==15.1.0
     # via twisted
 cryptography==3.4.7
@@ -77,6 +77,18 @@ daphne==3.0.2
     # via channels
 decorator==5.0.9
     # via ipython
+django==3.2.4
+    # via
+    #   -r requirements.in
+    #   channels
+    #   django-bootstrap4
+    #   django-celery-beat
+    #   django-debug-toolbar
+    #   django-extensions
+    #   django-filter
+    #   django-picklefield
+    #   django-timezone-field
+    #   djangorestframework
 django-bootstrap4==3.0.1
     # via -r requirements.in
 django-celery-beat==2.2.0
@@ -95,18 +107,6 @@ django-timezone-field==4.1.2
     # via django-celery-beat
 git+https://github.com/Tyilo/django-webpush.git@fix_duplicate#egg=django-webpush
     # via -r requirements.in
-django==3.2.4
-    # via
-    #   -r requirements.in
-    #   channels
-    #   django-bootstrap4
-    #   django-celery-beat
-    #   django-debug-toolbar
-    #   django-extensions
-    #   django-filter
-    #   django-picklefield
-    #   django-timezone-field
-    #   djangorestframework
 djangorestframework==3.12.4
     # via -r requirements.in
 facebook-sdk==3.1.0
@@ -126,10 +126,10 @@ idna==2.10
     #   twisted
 incremental==21.3.0
     # via twisted
-ipython-genutils==0.2.0
-    # via traitlets
 ipython==7.24.1
     # via -r requirements.in
+ipython-genutils==0.2.0
+    # via traitlets
 jedi==0.18.0
     # via ipython
 kombu==5.1.0
@@ -158,12 +158,12 @@ ptyprocess==0.7.0
     # via pexpect
 py-vapid==1.8.2
     # via pywebpush
-pyasn1-modules==0.2.8
-    # via service-identity
 pyasn1==0.4.8
     # via
     #   pyasn1-modules
     #   service-identity
+pyasn1-modules==0.2.8
+    # via service-identity
 pycparser==2.20
     # via cffi
 pygments==2.9.0
@@ -203,7 +203,7 @@ six==1.16.0
     #   service-identity
 soupsieve==2.2.1
     # via beautifulsoup4
-sqlparse==0.4.1
+sqlparse==0.4.2
     # via
     #   django
     #   django-debug-toolbar
