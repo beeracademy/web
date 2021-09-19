@@ -4,19 +4,21 @@
 #
 #    pip-compile dev-requirements.in
 #
-appdirs==1.4.4
+backports.entry-points-selectable==1.1.0
     # via virtualenv
-cfgv==3.3.0
+cfgv==3.3.1
     # via pre-commit
 distlib==0.3.2
     # via virtualenv
 filelock==3.0.12
     # via virtualenv
-identify==2.2.10
+identify==2.2.14
     # via pre-commit
 nodeenv==1.6.0
     # via pre-commit
-pre-commit==2.13.0
+platformdirs==2.3.0
+    # via virtualenv
+pre-commit==2.15.0
     # via -r dev-requirements.in
 pyyaml==5.4.1
     # via pre-commit
@@ -26,5 +28,5 @@ six==1.16.0
     #   virtualenv
 toml==0.10.2
     # via pre-commit
-virtualenv==20.4.7
+virtualenv==20.8.0
     # via pre-commit

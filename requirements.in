@@ -17,4 +17,4 @@ django-constance[database]
 scipy
 channels
 channels_redis
-git+https://github.com/Tyilo/django-webpush.git@fix_duplicate#egg=django-webpush
+git+https://github.com/safwanrahman/django-webpush.git#egg=django-webpush

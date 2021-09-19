@@ -438,10 +438,9 @@
   aria-live="polite"
   aria-atomic="true"
   class="d-flex justify-content-center align-items-center"
-  style="min-height: 200px"
 >
   <div
-    style="position: absolute; top: 100px; right: 100px; z-index: 10000;"
+    style="position: absolute; top: 100px; right: 100px; z-index: 10000; min-height: 200px;"
     bind:this={toastContainer}
   />
 </div>
