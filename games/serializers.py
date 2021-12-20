@@ -209,7 +209,7 @@ class GameSerializer(serializers.ModelSerializer):
                 if player_id == -1:
                     try:
                         data["player_ids"][i] = User.objects.get(
-                            username=player_name
+                            username_iexact=player_name
                         ).id
                     except User.DoesNotExist:
                         raise serializers.ValidationError(
