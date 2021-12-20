@@ -10,29 +10,29 @@ repos:
       - id: check-added-large-files
 
   - repo: https://github.com/psf/black
-    rev: 21.9b0
+    rev: 21.12b0
     hooks:
       - id: black
 
   - repo: https://github.com/hadialqattan/pycln
-    rev: v1.0.3
+    rev: v1.1.0
     hooks:
       - id: pycln
         args: [--config=pyproject.toml]
 
   - repo: https://github.com/PyCQA/isort
-    rev: 5.9.3
+    rev: 5.10.1
     hooks:
       - id: isort
 
   - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: v2.4.1
+    rev: v2.5.1
     hooks:
       - id: prettier
         additional_dependencies:
-          - prettier@2.4.0
-          - prettier-plugin-svelte@2.4.0
-          - svelte@3.42.6
+          - prettier@2.5.1
+          - prettier-plugin-svelte@2.5.1
+          - svelte@3.44.3
 
   - repo: https://github.com/Tyilo/pre-commit-django-migrations
     rev: d3a23e91aeb76b3c6b0f934d734c0dca237840ae

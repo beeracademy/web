@@ -1,10 +1,10 @@
-FROM node:12-alpine as builder
+FROM node:16-alpine as builder
 
 COPY /svelte .
 
 RUN ./build_components
 
-FROM python:3.9
+FROM python:3.10
 
 WORKDIR /app
 
