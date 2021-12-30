@@ -34,6 +34,17 @@ class UserSettingsForm(forms.ModelForm):
     new_image_data_url = forms.CharField(required=False)
     image_deleted = forms.BooleanField(required=False)
 
+    def clean_username(self):
+        username = self.cleaned_data["username"]
+        if (
+            User.objects.filter(username__iexact=username)
+            .exclude(id=self.instance.id)
+            .exists()
+        ):
+            raise forms.ValidationError("A user with that username already exists.")
+
+        return username
+
     def clean_new_image_data_url(self):
         data_url = self.cleaned_data["new_image_data_url"]
         if not data_url:
