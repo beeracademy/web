@@ -127,6 +127,7 @@ class WebPushTest(TestCase):
                         "p256dh": "AAAA",
                     },
                 },
+                "user_agent": "Foo Bar",
                 "browser": "firefox",
                 "group": "new_games",
             },
