@@ -36,7 +36,7 @@ def format_sips_html(value):
 
 
 def format_float_sips_html(value, places):
-    s = format_sips(round(value * SIPS_BASE ** places))
+    s = format_sips(round(value * SIPS_BASE**places))
     return _add_subscript(s[:-places] + "." + s[-places:])
 
 
