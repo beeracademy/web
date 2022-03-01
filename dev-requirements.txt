@@ -8,16 +8,14 @@ cfgv==3.3.1
     # via pre-commit
 distlib==0.3.4
     # via virtualenv
-filelock==3.4.2
+filelock==3.6.0
     # via virtualenv
-identify==2.4.5
+identify==2.4.11
     # via pre-commit
 nodeenv==1.6.0
     # via pre-commit
-platformdirs==2.4.1
-    # via
-    #   -c requirements.txt
-    #   virtualenv
+platformdirs==2.5.1
+    # via virtualenv
 pre-commit==2.17.0
     # via -r dev-requirements.in
 pyyaml==6.0
@@ -28,5 +26,5 @@ six==1.16.0
     #   virtualenv
 toml==0.10.2
     # via pre-commit
-virtualenv==20.13.0
+virtualenv==20.13.2
     # via pre-commit
