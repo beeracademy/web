@@ -81,7 +81,7 @@ decorator==5.1.1
     # via ipython
 deprecated==1.2.13
     # via redis
-django==3.2.12
+django==3.2.13
     # via
     #   -r requirements.in
     #   channels
@@ -243,7 +243,7 @@ wcwidth==0.2.5
     # via prompt-toolkit
 wrapt==1.13.3
     # via deprecated
-zope.interface==5.4.0
+zope-interface==5.4.0
     # via twisted
 
 # The following packages are considered to be unsafe in a requirements file:
