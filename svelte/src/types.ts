@@ -63,5 +63,5 @@ export interface GamePlayerData {
 
 export interface ChugData {
   card: CardData;
-  player: UserData;
+  gameplayer: GamePlayerData;
 }
