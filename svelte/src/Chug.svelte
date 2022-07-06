@@ -6,11 +6,11 @@
 <script lang="ts">
   export let start_datetime: string;
   export let chug: ChugData;
-  export let dnf: boolean;
 
   import ColoredSuit from "./ColoredSuit.svelte";
 
-  const player = chug.player!;
+  const gameplayer = chug.gameplayer;
+  const user = gameplayer.user;
   $: card = chug.card;
 
   let intervalId: number | null = null;
@@ -32,16 +32,12 @@
       clearInterval(intervalId);
     }
 
-    if (dnf) {
+    if (gameplayer.dnf) {
       durationStr = "DNF";
     } else if (card.chug_duration_ms) {
       durationStr = formatDuration(card.chug_duration_ms, 3);
     } else if (card.chug_start_start_delta_ms) {
-      if (dnf) {
-        durationStr = "DNF";
-      } else {
-        intervalId = setInterval(updateDuration, 10);
-      }
+      intervalId = setInterval(updateDuration, 10);
     } else {
       durationStr = "Not started";
     }
@@ -55,8 +51,8 @@
     </div>
     <ul class="list-group list-group-flush">
       <li class="list-group-item">
-        <a href="/players/{player.id}/">
-          {player.username}
+        <a href="/players/{user.id}/">
+          {user.username}
         </a>
       </li>
       <li class="list-group-item">

@@ -91,9 +91,10 @@
     for (let i = 0; i < game_data.cards.length; i++) {
       const card = game_data.cards[i];
       if (card.value === 14) {
+        const gameplayer = ordered_gameplayers[i % ordered_gameplayers.length];
         chugs.push({
           card: card,
-          player: ordered_gameplayers[i % ordered_gameplayers.length].user,
+          gameplayer: gameplayer,
         });
       }
     }
@@ -366,11 +367,7 @@
         <div id="chugs_container" class="row justify-content-md-center">
           {#each chugs as chug}
             {#if game_data.start_datetime}
-              <Chug
-                start_datetime={game_data.start_datetime}
-                {chug}
-                dnf={game_data.dnf}
-              />
+              <Chug start_datetime={game_data.start_datetime} {chug} />
             {/if}
           {/each}
         </div>
