@@ -124,6 +124,7 @@ class UploadForm(forms.ModelForm):
 
     game_log = forms.CharField(widget=forms.Textarea(attrs={"rows": 30, "cols": 55}))
     fix_times = forms.BooleanField(required=False)
+    allow_overwrite = forms.BooleanField(required=False)
 
     def clean(self):
         log = self.cleaned_data["game_log"]
@@ -148,6 +149,7 @@ class UploadForm(forms.ModelForm):
                 "fix_player_ids": True,
                 "fix_times": self.cleaned_data["fix_times"],
                 "ignore_finished": True,
+                "allow_overwrite": self.cleaned_data["allow_overwrite"],
             },
         )
         if not s.is_valid():

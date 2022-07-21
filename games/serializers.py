@@ -172,6 +172,7 @@ class GameSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         DEFAULT = object()
+        allow_overwrite = self.context.get("allow_overwrite")
 
         def check_field(field, default=None, new_value=DEFAULT):
             value = getattr(self.instance, field)
@@ -182,7 +183,7 @@ class GameSerializer(serializers.ModelSerializer):
                     raise serializers.ValidationError(
                         {field: "Missing even though server has it"}
                     )
-                else:
+                elif not allow_overwrite:
                     raise serializers.ValidationError(
                         {
                             field: f"Differs from server value: {repr(value)} != {repr(new_value)}"
@@ -353,7 +354,7 @@ class GameSerializer(serializers.ModelSerializer):
                 card_data["value"],
                 card_data["suit"],
                 card_data["start_delta_ms"],
-            ):
+            ) and not allow_overwrite:
                 raise serializers.ValidationError(
                     {"cards": f"Card {i} has different data than server"}
                 )
@@ -377,7 +378,7 @@ class GameSerializer(serializers.ModelSerializer):
                         chug_data[f]
                         and new_chug_data[f]
                         and chug_data[f] != new_chug_data
-                    ):
+                    ) and not allow_overwrite:
                         raise serializers.ValidationError(
                             {"cards": f"Card {i} has different chug data than server"}
                         )
