@@ -6,9 +6,9 @@
     "serve": "vite preview"
   },
   "devDependencies": {
-    "@sveltejs/vite-plugin-svelte": "1.0.0-next.38",
+    "@sveltejs/vite-plugin-svelte": "*",
     "svelte": "*",
-    "svelte-preprocess": "^*",
+    "svelte-preprocess": "*",
     "typescript": "*",
     "vite": "*"
   }
