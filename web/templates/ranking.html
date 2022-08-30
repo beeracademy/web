@@ -48,7 +48,7 @@
 	<td>{{ user_ranking.rank }}</td>
 	<td>
 		<div class="round-image" style="display: inline-block; background-image: url({{ user_ranking.user.image_url }});"></div>
-		<div style="display: inline-block; vertical-align: top; padding-top: 12px; padding-left: 12px;">{{ user_ranking.user.username }}</div>
+		<div class="username" style="display: inline-block; vertical-align: top; padding-top: 12px; padding-left: 12px;">{{ user_ranking.user.username }}</div>
 	</td>
 	<td>{% include "utils/link.html" with text=user_ranking.value prefix="/games" id=user_ranking.game.id %}</td>
 </tr>

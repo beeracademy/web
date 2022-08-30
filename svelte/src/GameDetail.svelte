@@ -535,6 +535,14 @@
     width: 156px;
   }
 
+  th,
+  td {
+    max-width: 150px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
   @media only screen and (max-width: 1200px) {
     .game-wrapper {
       display: block; /* Disable grid */

@@ -104,6 +104,15 @@ tr.in-game a {
   color: #bd2130;
 }
 
+.username {
+  max-width: 200px;
+  display: inline-block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+}
+
 .rounder {
   border-radius: 5px;
 }

@@ -35,8 +35,7 @@
 <tr data-href="/games/{{ game.id }}/" class="academy-table slim {% if user in game.ordered_players %}in-game {% endif %}{% if game.is_live %}live {% endif %}{% if game.dnf %}dnf {% endif %}" data-start-time="{{ game.start_datetime.timestamp }}">
 	<td>
 		{% for gp in game.ordered_gameplayers %}
-		<a href="/players/{{ gp.user.id }}/" class="{% if gp.dnf %}dnf{% endif %}">{{ gp.user.username }}</a>{% if not forloop.last %},{% endif %}
-		{% endfor %}
+		<a href="/players/{{ gp.user.id }}/" class="{% if gp.dnf %}dnf{% endif %}"><span class="username">{{ gp.user.username }}</span></a>{% if not forloop.last %},{% endif %}{% endfor %}
 	</td>
 	<td>{{ game.season_number_str }}</td>
 	<td>{{ game.end_str }}</td>

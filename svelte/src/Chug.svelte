@@ -51,7 +51,7 @@
     </div>
     <ul class="list-group list-group-flush">
       <li class="list-group-item">
-        <a href="/players/{user.id}/">
+        <a href="/players/{user.id}/" class="username">
           {user.username}
         </a>
       </li>
