@@ -28,6 +28,12 @@ def updated_query_url(request, updates):
     return url
 
 
+def get_all_seasons() -> list[Season]:
+    return [all_time_season] + list(
+        map(Season, range(Season.current_season().number, 0, -1))
+    )
+
+
 class ChooserData:
     key = None
     reset_keys = []
@@ -77,9 +83,7 @@ class SeasonChooser(ChooserData):
 
     @property
     def values(self):
-        return [all_time_season] + list(
-            map(Season, range(Season.current_season().number, 0, -1))
-        )
+        return get_all_seasons()
 
     def from_str(self, s):
         if Season.is_valid_season_number(s):

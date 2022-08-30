@@ -1,7 +1,6 @@
-import datetime
 import random
 import re
-from collections import Counter, defaultdict
+from collections import Counter
 from urllib.parse import urlencode
 
 from django.contrib import messages
@@ -18,20 +17,9 @@ from django.contrib.auth.views import (
 from django.core.files import File
 from django.core.mail import mail_admins
 from django.core.paginator import Paginator
-from django.db.models import (
-    Case,
-    Count,
-    DateTimeField,
-    F,
-    IntegerField,
-    Sum,
-    Value,
-    When,
-)
+from django.db.models import Case, Count, DateTimeField, F, IntegerField, Value, When
 from django.shortcuts import render
 from django.templatetags.static import static
-from django.urls import reverse
-from django.utils import timezone
 from django.views.generic import (
     CreateView,
     DetailView,
@@ -39,26 +27,15 @@ from django.views.generic import (
     TemplateView,
     UpdateView,
 )
-from scipy.stats import hypergeom
 
 from games.achievements import ACHIEVEMENTS
-from games.models import (
-    Card,
-    Chug,
-    Game,
-    GamePlayer,
-    GamePlayerStat,
-    OneTimePassword,
-    User,
-    all_time_season,
-    filter_season,
-    filter_season_and_player_count,
-)
+from games.models import Card, Game, GamePlayer, OneTimePassword, User, filter_season
 from games.ranking import RANKINGS, get_ranking_from_key
 from games.serializers import GameSerializerWithPlayerStats, UserSerializer
-from games.utils import get_milliseconds
+from web import stats
 
 from .forms import FailedGameUploadForm, UserSettingsForm
+from .heatmap import games_heatmap_data
 from .models import FailedGameUpload
 from .utils import (
     GameOrder,
@@ -66,7 +43,6 @@ from .utils import (
     RankingChooser,
     SeasonChooser,
     get_admin_object_url,
-    round_timedelta,
     updated_query_url,
 )
 
@@ -286,71 +262,6 @@ class PlayerListView(PaginatedListView):
         return context
 
 
-def games_heatmap_data(games, season):
-    if season == all_time_season:
-        last_date = timezone.now().date()
-        first_date = last_date - datetime.timedelta(days=53 * 7 - 1)
-    else:
-        last_date = season.end_datetime.date()
-        first_date = season.start_datetime.date()
-
-    games_played = Counter()
-    for g in filter_season(games, season):
-        if g.end_datetime:
-            games_played[g.end_datetime.date()] += 1
-
-    weekday = last_date.weekday()
-
-    DAY_NAMES = [
-        "Monday",
-        "Tuesday",
-        "Wednesday",
-        "Thursday",
-        "Friday",
-        "Saturday",
-        "Sunday",
-    ]
-    DAY_NAMES = DAY_NAMES[weekday + 1 :] + DAY_NAMES[: weekday + 1]
-
-    series = []
-    dates = []
-    categories = []
-    for d in DAY_NAMES:
-        series.append({"name": d, "data": []})
-        dates.append([])
-
-    # Ensure we have a whole number of weeks
-    rounded_first_date = (
-        first_date
-        + (last_date - first_date) % datetime.timedelta(days=7)
-        - datetime.timedelta(days=6)
-    )
-    date = rounded_first_date
-    i = 0
-    while date <= last_date:
-        if i % 7 == 0:
-            if date.day <= 7:
-                categories.append(date.strftime("%b"))
-            else:
-                categories.append("")
-
-        if date >= first_date:
-            played = games_played[date]
-        else:
-            played = None
-
-        series[i % 7]["data"].append(played)
-        dates[i % 7].append(date)
-        date += datetime.timedelta(days=1)
-        i += 1
-
-    return {
-        "series": series,
-        "categories": categories,
-        "dates": dates,
-    }
-
-
 class PlayerDetailView(DetailView):
     model = User
     template_name = "player_detail.html"
@@ -473,57 +384,6 @@ class RankingView(PaginatedListView):
 class StatsView(TemplateView):
     template_name = "stats.html"
 
-    @classmethod
-    def sips_count_distribution(cls, player_count):
-        # Exact probability
-        def get_outcomes(values, draws):
-            outcomes = defaultdict(int)
-            outcomes[0, 0] = 1
-
-            for v in values:
-                noutcomes = outcomes.copy()
-                for (total, used), c in outcomes.items():
-                    total += v
-                    used += 1
-                    if used <= draws:
-                        noutcomes[total, used] += c
-
-                outcomes = noutcomes
-
-            return {total: c for (total, used), c in outcomes.items() if used == draws}
-
-        values = [i for _ in range(player_count) for i in range(2, 15)]
-        outcomes = get_outcomes(values, 13)
-        total_outcomes = sum(outcomes.values())
-
-        return lambda x: outcomes.get(x, 0) / total_outcomes, f"SumP({player_count})"
-
-    @classmethod
-    def chug_count_distribution(cls, player_count):
-        # Exact probability
-        N = 13 * player_count
-        K = player_count
-        n = 13
-        rv = hypergeom(N, K, n)
-        return rv.pmf, f"HyperGeometric({N}, {K}, {n})"
-
-    @classmethod
-    def combined_distribution(cls, season, dist_f):
-        ds = []
-        ws = []
-        for player_count in range(2, 6 + 1):
-            ds.append(dist_f(player_count))
-            ws.append(
-                GamePlayerStat.get_stats_with_player_count(season, player_count).count()
-            )
-
-        total_ws = sum(ws)
-
-        return (
-            lambda x: sum(d[0](x) * w / total_ws for d, w in zip(ds, ws)),
-            "\n" + " + \n".join(f"{w / total_ws:.2f} * {d[1]}" for d, w in zip(ds, ws)),
-        )
-
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         season = SeasonChooser(self.request).current
@@ -532,146 +392,7 @@ class StatsView(TemplateView):
         context["player_count_chooser"] = chooser
         player_count = chooser.current
 
-        games = filter_season_and_player_count(Game.objects, season, player_count)
-
-        total_sips = (
-            Card.objects.filter(game__id__in=games).aggregate(total_sips=Sum("value"))[
-                "total_sips"
-            ]
-            or 0
-        )
-
-        games_with_durations = Game.add_durations(games)
-
-        total_duration = games_with_durations.aggregate(total_duration=Sum("duration"))[
-            "total_duration"
-        ] or datetime.timedelta(0)
-
-        context["game_stats"] = {
-            "total_games": games.count(),
-            "total_dnf": games.filter(dnf=True).count(),
-            "total_sips": total_sips,
-            "total_beers": total_sips / 14,
-            "total_duration": str(round_timedelta(total_duration)),
-        }
-
-        games_played = Counter()
-        for g in games.all():
-            if g.end_datetime:
-                games_played[g.end_datetime.date()] += 1
-
-        context["heatmap_data"] = games_heatmap_data(games, season)
-
-        stat_types = {
-            "sips_data": (
-                GamePlayerStat.get_sips_distribution(season, player_count),
-                self.sips_count_distribution,
-            ),
-            "chugs_data": (
-                GamePlayerStat.get_chugs_distribution(season, player_count),
-                self.chug_count_distribution,
-            ),
-        }
-
-        for name, (stats, prob_f) in stat_types.items():
-            xs = []
-            ys = []
-            probs = []
-            dist_str = None
-            if stats.exists():
-                d = {s["value"]: s["value__count"] for s in stats}
-                if prob_f:
-                    if player_count == None:
-                        dist, dist_str = self.combined_distribution(season, prob_f)
-                    else:
-                        dist, dist_str = prob_f(player_count)
-
-                for x in range(stats.first()["value"], stats.last()["value"] + 1):
-                    xs.append(x)
-                    ys.append(d.get(x, 0))
-
-                    if dist:
-                        probs.append(dist(x))
-
-            context[name] = {
-                "xs": xs,
-                "ys": ys,
-                "total_ys": sum(ys),
-                "probs": probs,
-                "probs_exact": True,
-                "dist_str": dist_str,
-            }
-
-        BUCKETS = 60
-        chugs = filter_season_and_player_count(
-            Chug.objects, season, player_count, key="card__game"
-        )
-        duration_data = [
-            {
-                "name": "duration_data",
-                "max_duration": 4,
-                "max_duration_unit": "hours",
-                "durations": lambda max_duration: (
-                    g["duration"]
-                    for g in games_with_durations.filter(
-                        dnf=False, duration__lte=max_duration
-                    ).values("duration")
-                ),
-                "format": str,
-            },
-            {
-                "name": "chug_duration_data",
-                "max_duration": 15,
-                "max_duration_unit": "seconds",
-                "durations": lambda max_duration: (
-                    datetime.timedelta(milliseconds=c["duration_ms"])
-                    for c in chugs.filter(
-                        duration_ms__lte=get_milliseconds(max_duration)
-                    ).values("duration_ms")
-                ),
-                "format": lambda td: f"{td.total_seconds():.2f}",
-            },
-        ]
-
-        for d in duration_data:
-            max_duration = datetime.timedelta(
-                **{d["max_duration_unit"]: d["max_duration"]}
-            )
-            bucket_span = max_duration / BUCKETS
-            occurrences = Counter()
-            for duration in d["durations"](max_duration):
-                x = int(duration / bucket_span)
-                occurrences[x] += 1
-
-            context[d["name"]] = {
-                "total_ys": sum(occurrences.values()),
-                "bucket_span_seconds": bucket_span.total_seconds(),
-                "max_duration": f"{d['max_duration']} {d['max_duration_unit']}",
-                "xs": [d["format"]((i + 1) * bucket_span) for i in range(BUCKETS)],
-                "ys": [occurrences[i] for i in range(BUCKETS)],
-            }
-
-        context["chug_table_header"] = ["Players\xa0\\\xa0Chugs", *range(6 + 1)]
-        context["chug_table"] = []
-        for pcount in range(2, 6 + 1):
-            row = [pcount]
-            context["chug_table"].append(row)
-            dist, _ = self.chug_count_distribution(pcount)
-            for chugs in range(6 + 1):
-                row.append(dist(chugs) * 100 if chugs <= pcount else None)
-
-        context["location_data"] = []
-        for g in games.filter(
-            location_latitude__isnull=False, location_accuracy__lte=100 * 1000
-        ):
-            game_url = reverse("game_detail", args=[g.id])
-            context["location_data"].append(
-                {
-                    "latitude": g.location_latitude,
-                    "longitude": g.location_longitude,
-                    "popup": f"<a href='{game_url}'>{g.date}<br>{g.players_str()}</a>",
-                }
-            )
+        context |= stats.get_context_data(season, player_count)
 
         return context
 

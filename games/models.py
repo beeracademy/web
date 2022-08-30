@@ -420,6 +420,9 @@ class Season:
     def __neq__(self, other):
         return self.number != other.number
 
+    def __hash__(self) -> int:
+        return hash(self.number)
+
     @property
     def start_datetime(self):
         extra_half_years = self.number - 1
@@ -459,16 +462,20 @@ class Season:
         return 1 <= number <= Season.current_season().number
 
 
-class _AllTimeSeason:
-    number = 0
-    start_datetime = Season(1).start_datetime
+class _AllTimeSeason(Season):
+    def __init__(self):
+        super().__init__(0)
+
+    def __str__(self):
+        return "All time"
+
+    @property
+    def start_datetime(self):
+        return Season(1).start_datetime
 
     @property
     def end_datetime(self):
         return Season.current_season().end_datetime
-
-    def __str__(self):
-        return "All time"
 
 
 all_time_season = _AllTimeSeason()
