@@ -1,4 +1,5 @@
 import os
+import sys
 from urllib.parse import urljoin
 
 from django.conf import settings
@@ -12,4 +13,10 @@ def is_running_real_server() -> bool:
     if settings.TESTING:
         return False
 
-    return "RUN_MAIN" in os.environ or not settings.DEBUG
+    if "RUN_MAIN" in os.environ:
+        return True
+
+    if sys.argv[0].endswith("daphne"):
+        return True
+
+    return False

@@ -17,6 +17,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . /app
 
 ENV DJANGO_SETTINGS_MODULE=academy.settings.production
+ENV PYTHONUNBUFFERED=1
 
 ARG GIT_COMMIT_HASH
 ENV GIT_COMMIT_HASH $GIT_COMMIT_HASH
