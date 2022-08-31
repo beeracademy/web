@@ -67,7 +67,7 @@ def chug_count_distribution(player_count: int) -> Distribution:
     n = 13
     rv = hypergeom(N, K, n)
     pmf = rv.pmf  # type: ignore
-    return Distribution(name="HyperGeometric({N}, {K}, {n})", prob_f=pmf)
+    return Distribution(name=f"HyperGeometric({N}, {K}, {n})", prob_f=pmf)
 
 
 def combined_distribution(
