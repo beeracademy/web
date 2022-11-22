@@ -1,8 +1,6 @@
 from django.conf import settings
 from facebook import GraphAPI, GraphAPIError
 
-from .utils import format_sips
-
 GRAPH = GraphAPI(getattr(settings, "FACEBOOK_ACCESS_TOKEN", None))
 
 
@@ -27,17 +25,7 @@ def get_post_message(game):
     message = f"A game between {game.pretty_players_str()} just started!"
     if game.has_ended:
         message += "\n\n"
-        if game.dnf:
-            message += f"Game DNF after {game.duration_str()}."
-        else:
-            message += f"Game finished after {game.duration_str()}."
-            message += "\n\nTotal sips:"
-            for stats in game.get_player_stats():
-                message += f"\n- {stats['username']}: "
-                if stats["dnf"]:
-                    message += "DNF"
-                else:
-                    message += f"{format_sips(stats['total_sips'])}"
+        message += game.game_state_description()
 
     return message
 

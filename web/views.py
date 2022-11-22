@@ -1,6 +1,8 @@
+import datetime
 import random
 import re
 from collections import Counter
+from collections.abc import Iterable
 from urllib.parse import urlencode
 
 from django.contrib import messages
@@ -14,6 +16,7 @@ from django.contrib.auth.views import (
     PasswordResetDoneView,
     PasswordResetView,
 )
+from django.contrib.syndication.views import Feed
 from django.core.files import File
 from django.core.mail import mail_admins
 from django.core.paginator import Paginator
@@ -419,3 +422,24 @@ Notes:
         )
         messages.success(self.request, "Game log successfully uploaded.")
         return response
+
+
+class GamesFeed(Feed):
+    title = "Academy games"
+    link = "/games/"
+    decription = "Feed for every game of Academy started."
+
+    def items(self) -> Iterable[Game]:
+        return Game.objects.all()[:50]
+
+    def item_title(self, item: Game) -> str:
+        return str(item)
+
+    def item_description(self, item) -> str:
+        return item.game_state_description().replace("\n", "<br>")
+
+    def item_pubdate(self, item: Game) -> datetime.datetime:
+        return item.start_datetime
+
+    def item_updateddate(self, item: Game) -> datetime.datetime:
+        return item.get_last_activity_time()

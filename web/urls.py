@@ -6,6 +6,7 @@ urlpatterns = [
     path("", views.index, name="index"),
     path("about/", views.about, name="about"),
     path("games/", views.GameListView.as_view(), name="game_list"),
+    path("games/rss/", views.GamesFeed(), name="games_feed"),
     path("games/<int:pk>/", views.GameDetailView.as_view(), name="game_detail"),
     path("upload_game/", views.FailedGameUploadView.as_view(), name="upload_game"),
     path("players/", views.PlayerListView.as_view(), name="player_list"),

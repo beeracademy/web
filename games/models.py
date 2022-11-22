@@ -16,6 +16,7 @@ from tqdm import tqdm
 from academy.utils import get_absolute_url
 
 from .shuffle_indices import shuffle_with_indices
+from .utils import format_sips
 
 
 class CaseInsensitiveUserManager(UserManager):
@@ -529,6 +530,22 @@ class Game(models.Model):
 
     def __str__(self):
         return f"{self.datetime}: {self.players_str()}"
+
+    def game_state_description(self):
+        if self.dnf:
+            return f"Game DNF after {self.duration_str()}."
+        elif not self.is_completed:
+            return f"Game live with duration {self.duration_str()}."
+        else:
+            message = f"Game finished after {self.duration_str()}."
+            message += "\n\nTotal sips:"
+            for stats in self.get_player_stats():
+                message += f"\n- {stats['username']}: "
+                if stats["dnf"]:
+                    message += "DNF"
+                else:
+                    message += f"{format_sips(stats['total_sips'])}"
+            return message
 
     @property
     def is_completed(self):
