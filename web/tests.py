@@ -77,6 +77,7 @@ class ViewTest(TestCase):
             "/",
             "/about/",
             "/games/",
+            "/games/rss/",
             "/upload_game/",
             "/players/",
             "/ranking/",
