@@ -10,11 +10,21 @@ asgiref==3.5.2
     # via
     #   channels
     #   channels-redis
+    #   daphne
     #   django
 asttokens==2.1.0
     # via stack-data
 async-timeout==4.0.2
     # via redis
+attrs==22.1.0
+    # via
+    #   automat
+    #   service-identity
+    #   twisted
+autobahn==22.7.1
+    # via daphne
+automat==22.10.0
+    # via twisted
 backcall==0.2.0
     # via ipython
 bcrypt==4.0.1
@@ -51,11 +61,18 @@ click-plugins==1.1.1
     # via celery
 click-repl==0.2.0
     # via celery
+constantly==15.1.0
+    # via twisted
 cryptography==38.0.3
     # via
+    #   autobahn
     #   http-ece
     #   py-vapid
+    #   pyopenssl
     #   pywebpush
+    #   service-identity
+daphne==4.0.0
+    # via -r requirements.in
 decorator==5.1.1
     # via ipython
 django==3.2.16
@@ -95,8 +112,17 @@ facebook-sdk==3.1.0
     # via -r requirements.in
 http-ece==1.1.0
     # via pywebpush
+hyperlink==21.0.0
+    # via
+    #   autobahn
+    #   twisted
 idna==3.4
-    # via requests
+    # via
+    #   hyperlink
+    #   requests
+    #   twisted
+incremental==22.10.0
+    # via twisted
 ipython==8.6.0
     # via -r requirements.in
 jedi==0.18.2
@@ -131,10 +157,18 @@ pure-eval==0.2.2
     # via stack-data
 py-vapid==1.8.2
     # via pywebpush
+pyasn1==0.4.8
+    # via
+    #   pyasn1-modules
+    #   service-identity
+pyasn1-modules==0.2.8
+    # via service-identity
 pycparser==2.21
     # via cffi
 pygments==2.13.0
     # via ipython
+pyopenssl==22.1.0
+    # via twisted
 pyparsing==3.0.9
     # via packaging
 python-crontab==2.6.0
@@ -161,11 +195,15 @@ requests==2.28.1
     #   pywebpush
 scipy==1.9.3
     # via -r requirements.in
+service-identity==21.1.0
+    # via twisted
 six==1.16.0
     # via
     #   asttokens
+    #   automat
     #   click-repl
     #   python-dateutil
+    #   service-identity
 soupsieve==2.3.2.post1
     # via beautifulsoup4
 sqlparse==0.4.3
@@ -180,6 +218,12 @@ traitlets==5.5.0
     # via
     #   ipython
     #   matplotlib-inline
+twisted[tls]==22.10.0
+    # via daphne
+txaio==22.2.1
+    # via autobahn
+typing-extensions==4.4.0
+    # via twisted
 tzdata==2022.6
     # via django-celery-beat
 urllib3==1.26.12
@@ -191,3 +235,8 @@ vine==5.0.0
     #   kombu
 wcwidth==0.2.5
     # via prompt-toolkit
+zope-interface==5.5.2
+    # via twisted
+
+# The following packages are considered to be unsafe in a requirements file:
+# setuptools
