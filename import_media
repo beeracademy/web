@@ -1,2 +1,2 @@
 #!/bin/bash
-rsync -ah --info=progress2 academy.beer:web/academy.beer/media .
+rsync -ah --info=progress2 academy.beer:docker/web/academy.beer/media .
