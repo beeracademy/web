@@ -113,6 +113,33 @@ If a user with that username exists, but the password was wrong, the response is
 }
 ```
 
+## Resumable games
+
+### Request
+
+```javascript
+// GET /api/games/resumable/
+// Authorization: Token <user_token>
+{
+}
+```
+
+### Response
+
+```javascript
+[{
+  "id": int,
+  "players": [{
+    "id": int,
+    "username": string,
+    ...
+  },
+  ...,
+},
+...
+]
+```
+
 ## Resume game
 
 ### Request

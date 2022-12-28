@@ -11,7 +11,11 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.parsers import MultiPartParser
-from rest_framework.permissions import BasePermission, IsAuthenticatedOrReadOnly
+from rest_framework.permissions import (
+    BasePermission,
+    IsAuthenticated,
+    IsAuthenticatedOrReadOnly,
+)
 from rest_framework.response import Response
 
 from .models import (
@@ -277,6 +281,17 @@ class GameViewSet(viewsets.ReadOnlyModelViewSet):
     def live_games(self, request):
         return Response(
             Game.objects.filter(end_datetime__isnull=True, dnf=False).values("id")
+        )
+
+    @action(detail=False, methods=["get"], permission_classes=[IsAuthenticated])
+    def resumable(self, request):
+        return Response(
+            [
+                self.serializer_class(game).data
+                for game in Game.objects.filter(
+                    end_datetime__isnull=True, dnf=False, gameplayer__user=request.user
+                ).all()
+            ]
         )
 
 
