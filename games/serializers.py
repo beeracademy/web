@@ -134,6 +134,7 @@ class GameSerializer(serializers.ModelSerializer):
             "cards",
             "player_ids",
             "player_names",
+            "players",
             "sips_per_beer",
             "has_ended",
             "description_html",
@@ -153,6 +154,7 @@ class GameSerializer(serializers.ModelSerializer):
         child=serializers.IntegerField(), write_only=True
     )
     player_names = serializers.ListField(child=serializers.CharField(), write_only=True)
+    players = serializers.SerializerMethodField()
     has_ended = serializers.BooleanField(required=True)
     description_html = serializers.SerializerMethodField()
     dnf_player_ids = serializers.ListField(
@@ -169,6 +171,9 @@ class GameSerializer(serializers.ModelSerializer):
             return format_html("<a href='{}'>{}</a>", url, s)
 
         return self.hashtag_re.sub(hashtag_link, obj.description)
+
+    def get_players(self, obj):
+        return [UserSerializer(p).data for p in obj.ordered_players()]
 
     def validate(self, data):
         DEFAULT = object()
