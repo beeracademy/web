@@ -75,7 +75,7 @@ daphne==4.0.0
     # via -r requirements.in
 decorator==5.1.1
     # via ipython
-django==3.2.16
+django==4.1.4
     # via
     #   -r requirements.in
     #   channels
@@ -176,7 +176,6 @@ python-dotenv==0.21.0
 pytz==2022.7
     # via
     #   celery
-    #   django
     #   django-timezone-field
     #   djangorestframework
 pywebpush==1.9.4

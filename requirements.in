@@ -1,4 +1,4 @@
-django==3.*
+django
 django-extensions
 ipython
 pillow
