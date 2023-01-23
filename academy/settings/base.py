@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     "bootstrap4",
     "django_celery_beat",
     "webpush",
+    "corsheaders",
     "svelte",
     "chat",
     "games",
@@ -50,13 +51,13 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "debug_toolbar.middleware.DebugToolbarMiddleware",
-    "academy.cors.CorsMiddleware",
 ]
 
 ROOT_URLCONF = "academy.urls"
@@ -205,3 +206,9 @@ for k in ["VAPID_PUBLIC_KEY", "VAPID_PRIVATE_KEY"]:
 WEBPUSH_GROUP = "new_games"
 
 TESTING = sys.argv[1:2] == ["test"]
+
+CORS_ALLOWED_ORIGINS = [
+    "https://game.academy.beer",
+    "https://beta.academy.beer",
+]
+CORS_URLS_REGEX = r"^/(api|api-token-auth)/.*$"

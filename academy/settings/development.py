@@ -38,3 +38,4 @@ LOGGING = {
 
 if not TESTING:
     MIDDLEWARE += ["academy.autologin.AutologinMiddleware"]
+    # CORS_ALLOW_ALL_ORIGINS = True
