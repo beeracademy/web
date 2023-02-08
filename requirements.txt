@@ -63,7 +63,7 @@ click-repl==0.2.0
     # via celery
 constantly==15.1.0
     # via twisted
-cryptography==39.0.0
+cryptography==39.0.1
     # via
     #   autobahn
     #   http-ece
