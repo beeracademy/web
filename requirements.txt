@@ -126,7 +126,7 @@ idna==3.4
     #   twisted
 incremental==22.10.0
     # via twisted
-ipython==8.8.0
+ipython==8.10.0
     # via -r requirements.in
 jedi==0.18.2
     # via ipython
