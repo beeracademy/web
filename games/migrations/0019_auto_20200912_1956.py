@@ -12,7 +12,6 @@ def fix_invalid_hashes(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("games", "0018_game_image"),
     ]

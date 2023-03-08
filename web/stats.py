@@ -250,7 +250,6 @@ def get_context_data(season: Season, player_count: Optional[int]) -> dict[str, A
 
 
 def populate_cache(season: Season, player_count: Optional[int]) -> dict[str, Any]:
-
     context = CONTEXT_DATA_CACHE[season, player_count] = generate_context_data(
         season, player_count
     )

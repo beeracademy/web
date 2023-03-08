@@ -4,7 +4,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [("games", "0003_auto_20190809_2339")]
 
     operations = [migrations.RemoveField(model_name="user", name="old_password_hash")]

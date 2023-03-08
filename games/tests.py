@@ -371,7 +371,6 @@ class ApiTest(TransactionTestCase):
 
     @skipUnlessDBFeature("has_select_for_update")
     def test_concurrent_update_different_game(self):
-
         orig_game_data2 = self.create_game([self.t1, self.t2])
         game_id2 = orig_game_data2["id"]
         game_token2 = orig_game_data2["token"]

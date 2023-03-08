@@ -10,7 +10,6 @@ class AutologinMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
-
         if self.first_request:
             self.first_request = False
 

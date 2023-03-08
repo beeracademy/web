@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [("games", "0004_remove_user_old_password_hash")]
 
     operations = [

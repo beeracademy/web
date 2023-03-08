@@ -6,7 +6,6 @@ import games.models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("games", "0017_auto_20200806_1941"),
     ]

@@ -13,7 +13,6 @@ def drawn_datetime_to_start_delta_ms(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("games", "0008_game_dnf"),
     ]
