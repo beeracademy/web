@@ -155,7 +155,7 @@ LOGOUT_REDIRECT_URL = "/"
 AUTH_USER_MODEL = "games.User"
 
 # Server admins (get an email when server errors happen)
-ADMINS = [("Asger Hautop Drewsen", "asgerdrewsen@gmail.com")]
+ADMINS = [("Asger Hautop Drewsen", "asger@tyilo.com")]
 
 AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
