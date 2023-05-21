@@ -71,7 +71,7 @@ def get_recent_players(n, min_sample_size=20):
     qs = GamePlayer.objects.filter(game__dnf=False).order_by(
         F("game__end_datetime").desc(nulls_last=True)
     )
-    gps = sample_max(set(qs[:min_sample_size]), n)
+    gps = sample_max(list(set(qs[:min_sample_size])), n)
     return [
         (gp.user, f"For playing game on {gp.game.date} with {gp.game.players_str()}")
         for gp in gps

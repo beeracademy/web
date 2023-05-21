@@ -16,7 +16,7 @@ repos:
         args: [--config=pyproject.toml]
 
   - repo: https://github.com/psf/black
-    rev: 23.1.0
+    rev: 23.3.0
     hooks:
       - id: black
 
@@ -30,9 +30,9 @@ repos:
     hooks:
       - id: prettier
         additional_dependencies:
-          - prettier@2.8.3
-          - prettier-plugin-svelte@2.9.0
-          - svelte@3.55.1
+          - prettier@2.8.8
+          - prettier-plugin-svelte@2.10.0
+          - svelte@3.59.1
 
   - repo: https://github.com/Tyilo/pre-commit-django-migrations
     rev: d3a23e91aeb76b3c6b0f934d734c0dca237840ae
