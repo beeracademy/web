@@ -2,8 +2,8 @@ import datetime
 
 from celery import shared_task
 from django.conf import settings
-from django.conf.urls.static import static
 from django.db import transaction
+from django.templatetags.static import static
 from django.utils import timezone
 from webpush import send_group_notification
 
