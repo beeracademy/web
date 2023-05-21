@@ -10,10 +10,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Setup python environment
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: "3.11"
 
@@ -21,13 +21,13 @@ jobs:
         run: pip install -r requirements.txt -r dev-requirements.txt
 
       - name: Run pre-commit checks
-        uses: pre-commit/action@v2.0.0
+        uses: pre-commit/action@v3.0.0
 
   build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Pull existing images
         run: docker-compose pull
@@ -47,7 +47,7 @@ jobs:
         run: docker save "$DOCKER_IMAGE_NAME" | gzip > image.tar.gz
 
       - name: Upload docker image for other jobs
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: image
           path: image.tar.gz
@@ -57,7 +57,7 @@ jobs:
     needs: build
     steps:
       - name: Download docker image
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: image
 
@@ -72,10 +72,10 @@ jobs:
     needs: build
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Download docker image
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: image
 
@@ -90,10 +90,10 @@ jobs:
     needs: build
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Download docker image
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: image
 
@@ -125,7 +125,7 @@ jobs:
       - test-docker-compose
     steps:
       - name: Download docker image
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: image
 
