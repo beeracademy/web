@@ -75,7 +75,7 @@ tr.live a {
   color: #fff;
 }
 
-tr.dnf {
+tr.dnf * {
   text-decoration: line-through;
 }
 
