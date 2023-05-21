@@ -79,7 +79,7 @@ tr.dnf {
   text-decoration: line-through;
 }
 
-a.dnf {
+a.dnf * {
   text-decoration: line-through;
 }
 
