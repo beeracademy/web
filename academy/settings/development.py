@@ -1,5 +1,7 @@
 import os
 
+from django.db.backends.signals import connection_created
+
 from .base import *
 
 ALLOWED_HOSTS = ["*"]
@@ -35,6 +37,14 @@ LOGGING = {
         "level": "INFO",
     },
 }
+
+
+def on_connection_created(connection, **kwargs):
+    with connection.cursor() as cursor:
+        cursor.execute("PRAGMA busy_timeout = 5000;")
+
+
+connection_created.connect(on_connection_created)
 
 if not TESTING:
     MIDDLEWARE += ["academy.autologin.AutologinMiddleware"]
