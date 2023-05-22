@@ -40,6 +40,9 @@ LOGGING = {
 
 
 def on_connection_created(connection, **kwargs):
+    if connection.vendor != "sqlite":
+        return
+
     with connection.cursor() as cursor:
         cursor.execute("PRAGMA busy_timeout = 5000;")
 
