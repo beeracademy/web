@@ -187,7 +187,7 @@ redis==4.5.5
     # via
     #   celery
     #   channels-redis
-requests==2.30.0
+requests==2.31.0
     # via
     #   facebook-sdk
     #   pywebpush
