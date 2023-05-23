@@ -6,7 +6,7 @@
 #
 amqp==5.1.1
     # via kombu
-asgiref==3.6.0
+asgiref==3.7.0
     # via
     #   channels
     #   channels-redis
@@ -150,8 +150,10 @@ prompt-toolkit==3.0.38
     # via
     #   click-repl
     #   ipython
-psycopg2==2.9.6
+psycopg[binary]==3.1.9
     # via -r requirements.in
+psycopg-binary==3.1.9
+    # via psycopg
 ptyprocess==0.7.0
     # via pexpect
 pure-eval==0.2.2
@@ -187,7 +189,7 @@ redis==4.5.5
     # via
     #   celery
     #   channels-redis
-requests==2.30.0
+requests==2.31.0
     # via
     #   facebook-sdk
     #   pywebpush
@@ -220,8 +222,10 @@ twisted[tls]==22.10.0
     # via daphne
 txaio==23.1.1
     # via autobahn
-typing-extensions==4.5.0
-    # via twisted
+typing-extensions==4.6.0
+    # via
+    #   psycopg
+    #   twisted
 tzdata==2023.3
     # via django-celery-beat
 urllib3==2.0.2
