@@ -79,6 +79,10 @@ tr.dnf * {
   text-decoration: line-through;
 }
 
+tr.dnf td:first-child {
+  text-decoration: none;
+}
+
 a.dnf * {
   text-decoration: line-through;
 }
