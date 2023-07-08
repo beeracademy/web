@@ -47,7 +47,7 @@ if ($(".live").length) {
   setInterval(function () {
     $(".live").each(function (i, el) {
       var start = new Date(
-        parseFloat(el.getAttribute("data-start-time")) * 1000
+        parseFloat(el.getAttribute("data-start-time")) * 1000,
       );
       var difference = Date.now() - start;
       var newDuration = formatDuration(difference);

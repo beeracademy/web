@@ -1,5 +1,5 @@
 export const card_constants = JSON.parse(
-  document.getElementById("card_constants")!.textContent!
+  document.getElementById("card_constants")!.textContent!,
 );
 export const userColors = [
   "#16a085",
@@ -19,7 +19,7 @@ export const is_staff = _window.is_staff as boolean;
 export const formatDate = _window.formatDate as (d: Date) => string;
 export const formatDuration = _window.formatDuration as (
   ms: number,
-  second_decimals?: number
+  second_decimals?: number,
 ) => string;
 
 export const moment = _window.moment;
