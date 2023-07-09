@@ -577,6 +577,14 @@ class Game(models.Model):
 
         return self.start_datetime
 
+    def all_cards_done(self) -> bool:
+        cards = self.ordered_cards()
+        if len(cards) < self.get_total_card_count():
+            return False
+
+        last_card = cards.last()
+        return last_card.finish_start_delta_ms is not None
+
     def get_season(self):
         if not self.has_ended:
             return None

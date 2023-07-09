@@ -18,6 +18,9 @@ def mark_dnf_games():
     DNF_THRESHOLD = datetime.timedelta(hours=12)
 
     for game in Game.objects.filter(end_datetime__isnull=True, dnf=False):
+        if game.all_card_done():
+            continue
+
         if timezone.now() - game.get_last_activity_time() >= DNF_THRESHOLD:
             game.dnf = True
             game.save()
