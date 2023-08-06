@@ -27,6 +27,22 @@ def mark_dnf_games():
 
 
 @shared_task
+def mark_finished_games():
+    FINISH_THRESHOLD = datetime.timedelta(hours=24)
+
+    for game in Game.objects.filter(end_datetime__isnull=True, dnf=False):
+        if not game.all_cards_done():
+            continue
+
+        if timezone.now() - game.get_last_activity_time() >= FINISH_THRESHOLD:
+            last_card = game.ordered_cards().last()
+            game.end_datetime = game.start_datetime + datetime.timedelta(
+                milliseconds=last_card.finish_start_delta_ms
+            )
+            game.save()
+
+
+@shared_task
 def delete_empty_games():
     THRESHOLD = datetime.timedelta(hours=12)
 
