@@ -89,7 +89,7 @@ class UserAdminWithImage(UserAdmin):
 
 @admin.register(GamePlayer)
 class GamePlayerAdmin(admin.ModelAdmin):
-    readonly_fields = ["game", "user", "position"]
+    readonly_fields = ["game", "position"]
 
 
 @admin.register(Card)
