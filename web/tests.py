@@ -86,7 +86,6 @@ class ViewTest(TestCase):
         ]
         REDIRECT_URLS = [
             "/settings/",
-            "/logout/",
         ]
 
         for url in URLS:

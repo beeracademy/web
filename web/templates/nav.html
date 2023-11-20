@@ -23,7 +23,13 @@
                 <a class="nav-item nav-link" href="/about/">About<i class="fas fa-info-circle float-right d-lg-none"></i></a>
                 {% if user.is_authenticated %}
                     <a class="nav-item nav-link" href="/players/{{ user.id }}/">My Profile<i class="fas fa-user float-right d-lg-none"></i></a>
-                    <a class="nav-item nav-link" href="/logout/">Logout ({{ user.get_username }})<i class="fas fa-sign-out-alt float-right d-lg-none"></i></a>
+                    <form action="/logout/" method="POST" style="align-self: center;">
+                        {% csrf_token %}
+                        <button class="nav-item nav-link" type="submit" style="display: contents;">
+                            Logout ({{ user.get_username }})
+                            <i class="fas fa-sign-out-alt float-right d-lg-none"></i>
+                        </button>
+                    </form>
                 {% else %}
                     <a class="nav-item nav-link" href="/login/">Login<i class="fas fa-sign-in-alt float-right d-lg-none"></i></a>
                 {% endif %}
