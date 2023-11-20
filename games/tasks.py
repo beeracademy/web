@@ -85,5 +85,5 @@ def send_webpush_notification(game_id):
             payload=payload,
             ttl=24 * 60 * 60,
         )
-    except:
+    except Exception:
         pass

@@ -24,10 +24,10 @@ class MergeUsersForm(forms.Form):
         super().clean()
         user1 = self.cleaned_data.get("user1")
         user2 = self.cleaned_data.get("user2")
-        if user1 != None and user1 == user2:
+        if user1 is not None and user1 == user2:
             raise forms.ValidationError("Please pick two different users.")
 
-        if user1 != None and user2 != None:
+        if user1 is not None and user2 is not None:
             same_games = user1.games.filter(id__in=user2.games.all())
             if same_games.exists():
                 raise forms.ValidationError(
@@ -130,7 +130,7 @@ class UploadForm(forms.ModelForm):
         log = self.cleaned_data["game_log"]
         try:
             data = json.loads(log)
-        except:
+        except Exception:
             raise forms.ValidationError("Invalid JSON")
 
         try:

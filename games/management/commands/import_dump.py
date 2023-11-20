@@ -154,7 +154,7 @@ class Command(BaseCommand):
                 drawn_datetime = None
             else:
                 if game.id not in card_delta:
-                    assert game.start_datetime != None
+                    assert game.start_datetime is not None
                     diff_start = drawn_datetime - game.start_datetime
                     seconds = diff_start.total_seconds()
                     hours = seconds / (60 * 60)

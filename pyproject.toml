@@ -1,26 +1,2 @@
-[tool.black]
-target-version = ['py311']
-exclude = '''
-
-(
-  /(
-      \.eggs         # exclude a few common directories in the
-    | \.git          # root of the project
-    | \.hg
-    | \.mypy_cache
-    | \.tox
-    | \.venv
-    | _build
-    | buck-out
-    | build
-    | dist
-    | db_data
-  )/
-)
-'''
-
-[tool.pycln]
-all = true
-
-[tool.isort]
-profile = 'black'
+[tool.ruff]
+target-version = "py311"

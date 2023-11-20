@@ -238,7 +238,7 @@ class GameSerializer(serializers.ModelSerializer):
         ended = data["has_ended"]
         dnf = data["dnf"]
         completed = ended and not dnf
-        if not completed and data.get("description") != None:
+        if not completed and data.get("description") is not None:
             raise serializers.ValidationError(
                 {"description": "Can't set description before game has ended"}
             )
@@ -412,14 +412,14 @@ class GameSerializerWithPlayerStats(GameSerializer):
     player_stats = serializers.SerializerMethodField()
 
     def get_player_stats(self, obj):
-        l = []
+        res = []
         for stats in obj.get_player_stats():
             for k, v in stats.items():
                 if isinstance(v, datetime.timedelta):
                     stats[k] = v.total_seconds() * 1000
-            l.append(stats)
+            res.append(stats)
 
-        return l
+        return res
 
 
 class PlayerStatSerializer(serializers.ModelSerializer):

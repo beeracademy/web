@@ -41,7 +41,7 @@ class GameViewTest(TestCase):
         create_game(self)
 
     def assert_can_render_pages(self):
-        r = self.client.get(f"/games/")
+        r = self.client.get("/games/")
         self.assertEqual(r.status_code, 200)
         r = self.client.get(f"/games/{self.game.id}/")
         self.assertEqual(r.status_code, 200)

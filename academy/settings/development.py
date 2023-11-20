@@ -2,7 +2,8 @@ import os
 
 from django.db.backends.signals import connection_created
 
-from .base import *
+from .base import *  # noqa: F403
+from .base import TESTING, MIDDLEWARE
 
 ALLOWED_HOSTS = ["*"]
 DEBUG = True

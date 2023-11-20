@@ -43,7 +43,7 @@ def format_float_sips_html(value, places):
 def format_chug_duration(ms):
     td = datetime.timedelta(milliseconds=ms)
     s = str(td)
-    if not "." in s:
+    if "." not in s:
         s += "."
 
     a, b = s.split(".")

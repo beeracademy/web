@@ -57,14 +57,14 @@ class UserSettingsForm(forms.ModelForm):
 
         try:
             data = base64.b64decode(parts[1])
-        except:
+        except Exception:
             raise forms.ValidationError("Invalid base64 data")
 
         bytes_io = BytesIO(data)
         try:
             image = Image.open(bytes_io)
             image.verify()
-        except:
+        except Exception:
             raise forms.ValidationError("Invalid image")
 
         bytes_io.seek(0)

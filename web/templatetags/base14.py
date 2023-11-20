@@ -7,10 +7,10 @@ register = template.Library()
 
 @register.filter
 def base14(value, places=None):
-    if value == None:
+    if value is None:
         return None
 
-    if places != None:
+    if places is not None:
         return format_float_sips_html(value, places)
     else:
         return format_sips_html(value)

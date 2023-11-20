@@ -25,10 +25,10 @@ def generate_shuffle_indices_for_players(player_count, random_seed=None):
     return generate_shuffle_indices(player_count * 13, random_seed)
 
 
-def shuffle_with_indices(l, shuffle_indices):
-    n = len(l)
+def shuffle_with_indices(lst, shuffle_indices):
+    n = len(lst)
     assert len(shuffle_indices) + 1 == n
 
     for i in range(n - 1, 0, -1):
         j = shuffle_indices[n - 1 - i]
-        l[i], l[j] = l[j], l[i]
+        lst[i], lst[j] = lst[j], lst[i]

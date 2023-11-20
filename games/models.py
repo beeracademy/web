@@ -76,7 +76,7 @@ def filter_season(qs, season, key=None, should_include_live=False):
 
 
 def filter_player_count(qs, player_count, key=None):
-    if player_count == None:
+    if player_count is None:
         return qs
 
     if key:
@@ -611,7 +611,7 @@ class Game(models.Model):
             return "?"
 
         duration = self.get_duration()
-        if duration == None:
+        if duration is None:
             duration = timezone.now() - self.start_datetime
 
         return datetime.timedelta(seconds=round(duration.total_seconds()))

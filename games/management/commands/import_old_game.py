@@ -65,14 +65,14 @@ class Command(BaseCommand):
 
         first_parts = lines[0].split()
         if len(first_parts) < 2:
-            raise CommandError(f"First line has fewer than 2 words")
+            raise CommandError("First line has fewer than 2 words")
 
         name, start_timestamp, *ids = first_parts
         if name != "startime":
-            raise CommandError(f"First line doesn't start with 'startime'")
+            raise CommandError("First line doesn't start with 'startime'")
 
         if not (2 <= len(ids) <= 6):
-            raise CommandError(f"Not between 2 and 6 players")
+            raise CommandError("Not between 2 and 6 players")
 
         if options["ignore_ids"]:
             ids = ["0"] * len(ids)
@@ -80,15 +80,15 @@ class Command(BaseCommand):
         try:
             ids = [int(x) for x in ids]
         except ValueError:
-            raise CommandError(f"Ids are not numeric")
+            raise CommandError("Ids are not numeric")
 
         last_parts = lines[-1].split()
         if len(last_parts) != 2:
-            raise CommandError(f"Not 2 words on last line")
+            raise CommandError("Not 2 words on last line")
 
         name, end_timestamp = last_parts
         if name != "endtime":
-            raise CommandError(f"Last line doesn't start with 'endtime'")
+            raise CommandError("Last line doesn't start with 'endtime'")
 
         player_count = len(ids)
         find_ids = options["ignore_ids"] or ids[0] == "0"
@@ -103,8 +103,8 @@ class Command(BaseCommand):
             i = 0
             while len(ids) < player_count:
                 i += 1
-                l = lines[i]
-                parts = l.split()
+                line = lines[i]
+                parts = line.split()
                 if len(parts) == 6:
                     continue
                 elif len(parts) == 4:
@@ -116,7 +116,7 @@ class Command(BaseCommand):
                             f"Couldn't find user with username {username}"
                         )
                 else:
-                    raise CommandError(f"Unknown line with {len(parts)} words: {l}")
+                    raise CommandError(f"Unknown line with {len(parts)} words: {line}")
 
         users = []
         for user_id in ids:
@@ -137,11 +137,11 @@ class Command(BaseCommand):
 
             last_card = None
             card_index = 0
-            for l in lines[1:-1]:
-                parts = l.split()
+            for line in lines[1:-1]:
+                parts = line.split()
                 if len(parts) == 6:
                     if last_card is None or last_card.value != 14:
-                        raise CommandError(f"Chuck without an ace before")
+                        raise CommandError("Chuck without an ace before")
 
                     duration_ms = self.parse_duration(parts[4])
                     Chug.objects.create(card=last_card, duration_ms=duration_ms)
@@ -159,7 +159,7 @@ class Command(BaseCommand):
                     )
                     card_index += 1
                 else:
-                    raise CommandError(f"Unknown line with {len(parts)} words: {l}")
+                    raise CommandError(f"Unknown line with {len(parts)} words: {line}")
 
             expected_cards = player_count * 13
             if game.cards.count() != expected_cards:

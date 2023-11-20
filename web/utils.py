@@ -125,13 +125,13 @@ class PlayerCountChooser(ChooserData):
         return None
 
     def to_str(self, value):
-        if value == None:
+        if value is None:
             return "All games"
 
         return f"{value} player games"
 
     def to_query_str(self, value):
-        if value == None:
+        if value is None:
             return None
 
         return value

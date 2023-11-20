@@ -114,7 +114,9 @@ class BundeCampAchievement(Achievement):
 
 class StudyHardAchievement(Achievement):
     name = "Study Hard"
-    description = f"Spend at least the amount of time corresponding to 2.5 ECTS in game (56 hours)"
+    description = (
+        "Spend at least the amount of time corresponding to 2.5 ECTS in game (56 hours)"
+    )
     icon = "diploma"
 
     def has_achieved(user):
