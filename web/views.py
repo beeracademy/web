@@ -279,12 +279,15 @@ class PlayerDetailView(DetailView):
 
         context["achievements"] = []
         for achievement in ACHIEVEMENTS:
+            if achievement.is_hidden(self.object):
+                continue
+
             context["achievements"].append(
                 {
                     "achieved": achievement.has_achieved(self.object),
                     "name": achievement.name,
                     "description": achievement.description,
-                    "icon_url": static(f"achievements/{achievement.icon}.svg"),
+                    "icon_url": static(f"achievements/{achievement.icon}"),
                 }
             )
 
