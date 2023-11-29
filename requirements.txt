@@ -62,7 +62,7 @@ constantly==23.10.4
     # via twisted
 cron-descriptor==1.4.0
     # via django-celery-beat
-cryptography==41.0.5
+cryptography==41.0.6
     # via
     #   autobahn
     #   http-ece
