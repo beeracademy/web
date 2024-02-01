@@ -47,7 +47,7 @@ class Top10Achievement(Achievement):
 
     def has_achieved(user):
         current_season = Season.current_season()
-        for i in range(1, current_season.number + 1):
+        for i in range(1, current_season.number):  # Exclude current season
             top10 = (
                 PlayerStat.objects.filter(season_number=i)
                 .order_by("-total_sips")[:10]
