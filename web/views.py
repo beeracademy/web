@@ -32,7 +32,15 @@ from django.views.generic import (
 )
 
 from games.achievements import ACHIEVEMENTS
-from games.models import Card, Game, GamePlayer, OneTimePassword, User, filter_season
+from games.models import (
+    Card,
+    Game,
+    GamePlayer,
+    OneTimePassword,
+    User,
+    filter_season,
+    all_time_season,
+)
 from games.ranking import RANKINGS, get_ranking_from_key
 from games.serializers import GameSerializerWithPlayerStats, UserSerializer
 from web import stats
@@ -308,10 +316,14 @@ class PlayerDetailView(DetailView):
             context["otp_data"] = otp.password
 
         played_with_count = Counter()
-        for game in self.object.games.all():
-            for player in game.players.all():
-                if player != self.object:
-                    played_with_count[player.username] += 1
+        for game in self.object.games.filter():
+            game_season = game.get_season()
+            if game_season is not None and (
+                season == all_time_season or game_season == season
+            ):
+                for player in game.players.all():
+                    if player != self.object:
+                        played_with_count[player.username] += 1
 
         context["played_with_data"] = sorted(
             ({"x": k, "y": v} for k, v in played_with_count.items()),
