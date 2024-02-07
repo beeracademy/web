@@ -74,7 +74,7 @@ daphne==4.0.0
     # via -r requirements.in
 decorator==5.1.1
     # via ipython
-django==4.2.7
+django==4.2.10
     # via
     #   -r requirements.in
     #   channels
