@@ -2,9 +2,7 @@ import datetime
 import random
 import re
 from collections import Counter
-from collections.abc import Iterable
 from urllib.parse import urlencode
-
 from django.contrib import messages
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -292,7 +290,7 @@ class PlayerDetailView(DetailView):
 
             context["achievements"].append(
                 {
-                    "achieved": achievement.has_achieved(self.object),
+                    "level": achievement.get_level(self.object),
                     "name": achievement.name,
                     "description": achievement.description,
                     "icon_url": static(f"achievements/{achievement.icon}"),
@@ -444,7 +442,7 @@ class GamesFeed(Feed):
     link = "/games/"
     decription = "Feed for every game of Academy started."
 
-    def items(self) -> Iterable[Game]:
+    def items(self):
         return Game.objects.all()[:50]
 
     def item_title(self, item: Game) -> str:

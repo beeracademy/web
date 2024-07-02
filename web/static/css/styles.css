@@ -168,11 +168,24 @@ tr.in-game a {
   margin: 12px;
   height: 90px;
   width: 90px;
-  opacity: 0.2;
 }
 
-.achievements img.active {
-  opacity: 1;
+.achievements img.no_level {
+  background-color: #aaa;
+  filter: grayscale() invert();
+  opacity: 0.5;
+}
+
+.achievements img.bronze {
+  background-color: #cd7f32;
+}
+
+.achievements img.silver {
+  background-color: #c0c0c0;
+}
+
+.achievements img.gold {
+  background-color: #d4af37;
 }
 
 .invalid-feedback {
