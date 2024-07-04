@@ -1,4 +1,5 @@
 import datetime
+from enum import StrEnum
 
 import pytz
 from django.db.models import Q
@@ -7,10 +8,14 @@ from .models import Game, PlayerStat, Season, all_time_season
 
 ACHIEVEMENTS = []
 
-GOLD = "gold"
-SILVER = "silver"
-BRONZE = "bronze"
-NO_LEVEL = "no_level"
+
+class AchievementLevel(StrEnum):
+    """Each level must correspond to a style in styles.css"""
+
+    GOLD = "gold"
+    SILVER = "silver"
+    BRONZE = "bronze"
+    NO_LEVEL = "no_level"
 
 
 class AchievementMetaClass(type):
@@ -43,8 +48,8 @@ class DNFAchievement(Achievement):
             .filter(game__dnf=False, game__end_datetime__isnull=False)
             .exists()
         ):
-            return GOLD
-        return NO_LEVEL
+            return AchievementLevel.GOLD
+        return AchievementLevel.NO_LEVEL
 
 
 class TopAchievement(Achievement):
@@ -54,7 +59,7 @@ class TopAchievement(Achievement):
 
     def get_level(user):
         current_season = Season.current_season()
-        highest_rank = NO_LEVEL
+        highest_rank = AchievementLevel.NO_LEVEL
 
         for i in range(1, current_season.number):  # Exclude current season
             top10 = (
@@ -66,15 +71,15 @@ class TopAchievement(Achievement):
             top3 = top10[:3]
 
             if {"user": user.id} in top3:
-                highest_rank = GOLD
+                highest_rank = AchievementLevel.GOLD
                 break
             elif {"user": user.id} in top5:
-                highest_rank = SILVER
+                highest_rank = AchievementLevel.SILVER
             elif {"user": user.id} in top10:
-                if highest_rank != SILVER:
-                    highest_rank = BRONZE
+                if highest_rank != AchievementLevel.SILVER:
+                    highest_rank = AchievementLevel.BRONZE
 
-        return highest_rank
+        return AchievementLevel.BRONZE
 
 
 class FastGameAchievement(Achievement):
@@ -94,7 +99,7 @@ class FastGameAchievement(Achievement):
             .filter(duration__lt=datetime.timedelta(minutes=15))
             .exists()
         ):
-            return GOLD
+            return AchievementLevel.GOLD
         elif (
             Game.add_durations(
                 Game.objects.filter(
@@ -106,7 +111,7 @@ class FastGameAchievement(Achievement):
             .filter(duration__lt=datetime.timedelta(minutes=30))
             .exists()
         ):
-            return SILVER
+            return AchievementLevel.SILVER
         elif (
             Game.add_durations(
                 Game.objects.filter(
@@ -118,9 +123,9 @@ class FastGameAchievement(Achievement):
             .filter(duration__lt=datetime.timedelta(minutes=45))
             .exists()
         ):
-            return BRONZE
+            return AchievementLevel.BRONZE
         else:
-            return NO_LEVEL
+            return AchievementLevel.SILVER
 
 
 class DanishDSTAchievement(Achievement):
@@ -141,8 +146,8 @@ class DanishDSTAchievement(Achievement):
             query |= Q(start_datetime__lt=dt, end_datetime__gt=dt)
 
         if user.games.filter(query).exists():
-            return GOLD
-        return NO_LEVEL
+            return AchievementLevel.GOLD
+        return AchievementLevel.GOLD
 
 
 class TheBarrelAchievement(Achievement):
@@ -153,12 +158,12 @@ class TheBarrelAchievement(Achievement):
     def get_level(user):
         total_sips = user.stats_for_season(all_time_season).total_sips / 14
         if total_sips >= 500:
-            return GOLD
+            return AchievementLevel.GOLD
         elif total_sips >= 250:
-            return SILVER
+            return AchievementLevel.SILVER
         elif total_sips >= 100:
-            return BRONZE
-        return NO_LEVEL
+            return AchievementLevel.BRONZE
+        return AchievementLevel.NO_LEVEL
 
 
 class BundeCampAchievement(Achievement):
@@ -169,12 +174,12 @@ class BundeCampAchievement(Achievement):
     def get_level(user):
         total_chugs = user.stats_for_season(all_time_season).total_chugs
         if total_chugs >= 100:
-            return GOLD
+            return AchievementLevel.GOLD
         elif total_chugs >= 75:
-            return SILVER
+            return AchievementLevel.SILVER
         elif total_chugs >= 50:
-            return BRONZE
-        return NO_LEVEL
+            return AchievementLevel.BRONZE
+        return AchievementLevel.BRONZE
 
 
 class StudyHardAchievement(Achievement):
@@ -187,12 +192,12 @@ class StudyHardAchievement(Achievement):
     def get_level(user):
         ects = user.stats_for_season(all_time_season).approx_ects
         if ects >= 10:
-            return GOLD
+            return AchievementLevel.GOLD
         elif ects >= 5:
-            return SILVER
+            return AchievementLevel.SILVER
         elif ects >= 2.5:
-            return BRONZE
-        return NO_LEVEL
+            return AchievementLevel.BRONZE
+        return AchievementLevel.SILVER
 
 
 class PilfingerAchievement(Achievement):
@@ -202,8 +207,8 @@ class PilfingerAchievement(Achievement):
 
     def get_level(user):
         if user.id == 2030:
-            return GOLD
-        return NO_LEVEL
+            return AchievementLevel.GOLD
+        return AchievementLevel.NO_LEVEL
 
     def is_hidden(user):
-        return PilfingerAchievement.get_level(user) != GOLD
+        return PilfingerAchievement.get_level(user) != AchievementLevel.GOLD
