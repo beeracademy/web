@@ -79,7 +79,7 @@ class TopAchievement(Achievement):
                 if highest_rank != AchievementLevel.SILVER:
                     highest_rank = AchievementLevel.BRONZE
 
-        return AchievementLevel.BRONZE
+        return highest_rank
 
 
 class FastGameAchievement(Achievement):
@@ -125,7 +125,7 @@ class FastGameAchievement(Achievement):
         ):
             return AchievementLevel.BRONZE
         else:
-            return AchievementLevel.SILVER
+            return AchievementLevel.NO_LEVEL
 
 
 class DanishDSTAchievement(Achievement):
@@ -147,7 +147,7 @@ class DanishDSTAchievement(Achievement):
 
         if user.games.filter(query).exists():
             return AchievementLevel.GOLD
-        return AchievementLevel.GOLD
+        return AchievementLevel.NO_LEVEL
 
 
 class TheBarrelAchievement(Achievement):
@@ -179,7 +179,7 @@ class BundeCampAchievement(Achievement):
             return AchievementLevel.SILVER
         elif total_chugs >= 50:
             return AchievementLevel.BRONZE
-        return AchievementLevel.BRONZE
+        return AchievementLevel.NO_LEVEL
 
 
 class StudyHardAchievement(Achievement):
@@ -197,7 +197,7 @@ class StudyHardAchievement(Achievement):
             return AchievementLevel.SILVER
         elif ects >= 2.5:
             return AchievementLevel.BRONZE
-        return AchievementLevel.SILVER
+        return AchievementLevel.NO_LEVEL
 
 
 class PilfingerAchievement(Achievement):
