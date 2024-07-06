@@ -2,7 +2,6 @@ import datetime
 import os
 import secrets
 
-import pytz
 from django.contrib.auth.models import AbstractUser, UserManager
 from django.db import models
 from django.db.models import Count, DurationField, ExpressionWrapper, F, Q, Subquery
@@ -432,7 +431,9 @@ class Season:
         if extra_half_years % 2 == 1:
             date = date.replace(month=7)
 
-        return pytz.utc.localize(datetime.datetime(date.year, date.month, date.day))
+        return datetime.datetime(
+            date.year, date.month, date.day, tzinfo=datetime.timezone.utc
+        )
 
     @property
     def end_datetime(self):

@@ -2,7 +2,6 @@ import csv
 import datetime
 from collections import Counter
 
-import pytz
 from django.core.files import File
 from django.core.management.base import BaseCommand
 from django.db.utils import IntegrityError
@@ -30,8 +29,7 @@ class Command(BaseCommand):
             return list(reader)
 
     def timestamp_seconds_to_datetime(self, timestamp):
-        d = datetime.datetime.fromtimestamp(int(timestamp))
-        return pytz.utc.localize(d)
+        return datetime.datetime.fromtimestamp(int(timestamp), tz=datetime.timezone.utc)
 
     def timestamp_milliseconds_to_datetime(self, timestamp):
         return self.timestamp_seconds_to_datetime(int(timestamp) / 1000)
@@ -146,9 +144,9 @@ class Command(BaseCommand):
                 continue
 
             # Actually not in UTC, but we will try to fix this.
-            drawn_datetime = pytz.utc.localize(
-                datetime.datetime.strptime(relation["drawtime"], "%Y-%m-%d %H:%M:%S")
-            )
+            drawn_datetime = datetime.datetime.strptime(
+                relation["drawtime"], "%Y-%m-%d %H:%M:%S"
+            ).replace(tzinfo=datetime.timezone.utc)
 
             if self.is_bad_card_date(drawn_datetime):
                 drawn_datetime = None

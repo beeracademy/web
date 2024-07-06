@@ -13,7 +13,7 @@ django-debug-toolbar
 facebook-sdk
 celery[redis]
 django-celery-beat
-django-constance[database]
+django-constance
 scipy
 channels
 daphne

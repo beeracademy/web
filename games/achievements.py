@@ -1,11 +1,21 @@
 import datetime
+import zoneinfo
 
-import pytz
 from django.db.models import Q
 
 from .models import Game, PlayerStat, Season, all_time_season
 
 ACHIEVEMENTS = []
+
+
+TIMEZONE_FILENAME = zoneinfo._tzpath.find_tzfile("Europe/Copenhagen")
+with open(TIMEZONE_FILENAME, "rb") as f:
+    TIMEZONE_DATA = zoneinfo._common.load_data(f)
+
+DST_TRANSITION_TIMES = [
+    datetime.datetime.fromtimestamp(t, tz=datetime.timezone.utc)
+    for t in TIMEZONE_DATA[1]
+]
 
 
 class AchievementMetaClass(type):
@@ -83,16 +93,9 @@ class DanishDSTAchievement(Achievement):
     description = "Participated in a game, while a DST transition happened in Denmark"
     icon = "backward-time.svg"
 
-    @staticmethod
-    def get_transition_times():
-        return map(
-            pytz.utc.localize,
-            pytz.timezone("Europe/Copenhagen")._utc_transition_times[1:],
-        )
-
     def has_achieved(user):
         query = Q()
-        for dt in DanishDSTAchievement.get_transition_times():
+        for dt in DST_TRANSITION_TIMES:
             query |= Q(start_datetime__lt=dt, end_datetime__gt=dt)
 
         return user.games.filter(query).exists()
