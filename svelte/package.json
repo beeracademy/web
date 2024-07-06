@@ -1,16 +1,16 @@
 {
-  "private": true,
-  "type": "module",
-  "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "serve": "vite preview"
-  },
-  "devDependencies": {
-    "@sveltejs/vite-plugin-svelte": "*",
-    "svelte": "*",
-    "svelte-preprocess": "*",
-    "typescript": "*",
-    "vite": "*"
-  }
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"dev": "vite",
+		"build": "vite build",
+		"serve": "vite preview"
+	},
+	"devDependencies": {
+		"@sveltejs/vite-plugin-svelte": "*",
+		"svelte": "*",
+		"svelte-preprocess": "*",
+		"typescript": "*",
+		"vite": "*"
+	}
 }

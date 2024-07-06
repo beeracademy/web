@@ -1,8 +1,8 @@
 <svelte:options immutable />
 
 <script context="module" lang="ts">
-  import { card_constants } from "./globals";
-  import type { CardData } from "./types";
+import { card_constants } from "./globals";
+import type { CardData } from "./types";
 </script>
 
 <script lang="ts">

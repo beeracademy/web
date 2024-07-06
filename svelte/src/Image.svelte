@@ -1,5 +1,5 @@
 <script>
-  export let url;
+export let url;
 </script>
 
 <div class="center">
