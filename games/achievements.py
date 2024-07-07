@@ -74,14 +74,21 @@ class TopAchievement(Achievement):
 
             if {"user": user.id} in top:
                 highest_rank = AchievementLevel.GOLD
-                break
             elif {"user": user.id} in top3:
-                highest_rank = AchievementLevel.SILVER
-                break
+                if highest_rank != AchievementLevel.GOLD:
+                    highest_rank = AchievementLevel.SILVER
             elif {"user": user.id} in top5:
-                highest_rank = AchievementLevel.BRONZE
+                if (
+                    highest_rank != AchievementLevel.GOLD
+                    or highest_rank != AchievementLevel.SILVER
+                ):
+                    highest_rank = AchievementLevel.BRONZE
             elif {"user": user.id} in top10:
-                if highest_rank != AchievementLevel.BRONZE:
+                if (
+                    highest_rank != AchievementLevel.GOLD
+                    or highest_rank != AchievementLevel.SILVER
+                    or highest_rank != AchievementLevel.BRONZE
+                ):
                     highest_rank = AchievementLevel.BASE
 
         return highest_rank
