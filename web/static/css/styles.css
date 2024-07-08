@@ -181,16 +181,19 @@ tr.in-game a {
 .achievements img.bronze {
   border-color: #cd7f32;
   border-style: solid;
+  border-width: 5px;
 }
 
 .achievements img.silver {
   border-color: #c0c0c0;
   border-style: solid;
+  border-width: 5px;
 }
 
 .achievements img.gold {
   border-color: #d4af37;
   border-style: solid;
+  border-width: 5px;
 }
 
 .invalid-feedback {

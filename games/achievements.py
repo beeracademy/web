@@ -168,7 +168,7 @@ class DanishDSTAchievement(Achievement):
 
     def get_level(user):
         query = Q()
-        for dt in DanishDSTAchievement.get_transition_times():
+        for dt in DST_TRANSITION_TIMES:
             query |= Q(start_datetime__lt=dt, end_datetime__gt=dt)
 
         if user.games.filter(query).exists():
