@@ -1,7 +1,7 @@
 <svelte:options immutable />
 
 <script context="module" lang="ts">
-  import { card_constants } from "./globals";
+import { card_constants } from "./globals";
 </script>
 
 <script lang="ts">

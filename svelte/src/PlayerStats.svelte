@@ -1,19 +1,19 @@
 <script lang="ts">
-  import type { PlayerStatsData } from "./types";
+import type { PlayerStatsData } from "./types";
 
-  export let player_stats: PlayerStatsData;
-  export let sips_per_beer: number;
+export let player_stats: PlayerStatsData;
+export let sips_per_beer: number;
 
-  import { formatDuration } from "./globals";
+import { formatDuration } from "./globals";
 
-  let ps: PlayerStatsData;
-  $: ps = player_stats;
+let ps: PlayerStatsData;
+$: ps = player_stats;
 
-  function format(s: number, f?: (s: number) => string) {
-    if (s === null) return "?";
-    if (!f) return s;
-    return f(s);
-  }
+function format(s: number, f?: (s: number) => string) {
+	if (s === null) return "?";
+	if (!f) return s;
+	return f(s);
+}
 </script>
 
 <div style="margin: 6px 0px; border-bottom: 1px solid #eee; display: flex;">

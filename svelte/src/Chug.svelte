@@ -1,6 +1,6 @@
 <script context="module" lang="ts">
-  import type { ChugData } from "./types";
-  import { formatDuration } from "./globals";
+import { formatDuration } from "./globals";
+import type { ChugData } from "./types";
 </script>
 
 <script lang="ts">

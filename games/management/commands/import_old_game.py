@@ -1,7 +1,7 @@
 import argparse
+import zoneinfo
 import datetime
 
-import pytz
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 
@@ -14,6 +14,8 @@ from games.models import (
     update_stats_on_game_finished,
 )
 
+TIMEZONE = zoneinfo.ZoneInfo("Europe/Copenhagen")
+
 
 class Command(BaseCommand):
     help = "Imports game from an old log format"
@@ -24,9 +26,7 @@ class Command(BaseCommand):
 
     def timestamp_to_datetime(self, t):
         try:
-            return pytz.timezone("Europe/Copenhagen").localize(
-                datetime.datetime.fromtimestamp(int(t) / 1000)
-            )
+            return datetime.datetime.fromtimestamp(int(t) / 1000, tz=TIMEZONE)
         except ValueError:
             raise CommandError(f"Invalid timestamp: {t}")
 

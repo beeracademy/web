@@ -1,12 +1,12 @@
 <script context="module" lang="ts">
-  import {
-    is_authenticated,
-    is_staff,
-    formatDate,
-    formatDuration,
-    moment,
-  } from "./globals";
-  import type { GameData, GamePlayerData, ChugData } from "./types";
+import {
+	formatDate,
+	formatDuration,
+	is_authenticated,
+	is_staff,
+	moment,
+} from "./globals";
+import type { ChugData, GameData, GamePlayerData } from "./types";
 </script>
 
 <script lang="ts">
