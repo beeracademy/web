@@ -1,6 +1,6 @@
 import datetime
 import zoneinfo
-from enum import StrEnum
+from enum import IntEnum
 
 from django.db.models import Q
 
@@ -18,14 +18,17 @@ DST_TRANSITION_TIMES = [
 ]
 
 
-class AchievementLevel(StrEnum):
+class AchievementLevel(IntEnum):
     """Each level must correspond to a style in styles.css"""
 
-    GOLD = "gold"
-    SILVER = "silver"
-    BRONZE = "bronze"
-    BASE = "base"
-    NO_LEVEL = "no_level"
+    GOLD = 4
+    SILVER = 3
+    BRONZE = 2
+    BASE = 1
+    NO_LEVEL = 0
+
+    def __lt__(self, other):
+        return self < other
 
 
 class AchievementMetaClass(type):
@@ -84,22 +87,14 @@ class TopAchievement(Achievement):
             if {"user": user.id} in top:
                 highest_rank = AchievementLevel.GOLD
             elif {"user": user.id} in top3:
-                if highest_rank != AchievementLevel.GOLD:
+                if highest_rank < AchievementLevel.SILVER:
                     highest_rank = AchievementLevel.SILVER
             elif {"user": user.id} in top5:
-                if (
-                    highest_rank != AchievementLevel.GOLD
-                    or highest_rank != AchievementLevel.SILVER
-                ):
+                if highest_rank < AchievementLevel.BRONZE:
                     highest_rank = AchievementLevel.BRONZE
             elif {"user": user.id} in top10:
-                if (
-                    highest_rank != AchievementLevel.GOLD
-                    or highest_rank != AchievementLevel.SILVER
-                    or highest_rank != AchievementLevel.BRONZE
-                ):
+                if highest_rank < AchievementLevel.BASE:
                     highest_rank = AchievementLevel.BASE
-
         return highest_rank
 
 
@@ -109,53 +104,18 @@ class FastGameAchievement(Achievement):
     icon = "stopwatch.svg"
 
     def get_level(user):
-        if (
-            Game.add_durations(
-                Game.objects.filter(
-                    gameplayer__in=user.gameplayer_set.filter(
-                        dnf=False, game__dnf=False
-                    )
-                )
+        short_games = Game.add_durations(
+            Game.objects.filter(
+                gameplayer__in=user.gameplayer_set.filter(dnf=False, game__dnf=False)
             )
-            .filter(duration__lt=datetime.timedelta(minutes=10))
-            .exists()
-        ):
+        ).filter(duration__lt=datetime.timedelta(minutes=30))
+        if short_games.filter(duration__lt=datetime.timedelta(minutes=10)).exists():
             return AchievementLevel.GOLD
-        elif (
-            Game.add_durations(
-                Game.objects.filter(
-                    gameplayer__in=user.gameplayer_set.filter(
-                        dnf=False, game__dnf=False
-                    )
-                )
-            )
-            .filter(duration__lt=datetime.timedelta(minutes=15))
-            .exists()
-        ):
+        elif short_games.filter(duration__lt=datetime.timedelta(minutes=15)).exists():
             return AchievementLevel.SILVER
-        elif (
-            Game.add_durations(
-                Game.objects.filter(
-                    gameplayer__in=user.gameplayer_set.filter(
-                        dnf=False, game__dnf=False
-                    )
-                )
-            )
-            .filter(duration__lt=datetime.timedelta(minutes=20))
-            .exists()
-        ):
+        elif short_games.filter(duration__lt=datetime.timedelta(minutes=20)).exists():
             return AchievementLevel.BRONZE
-        elif (
-            Game.add_durations(
-                Game.objects.filter(
-                    gameplayer__in=user.gameplayer_set.filter(
-                        dnf=False, game__dnf=False
-                    )
-                )
-            )
-            .filter(duration__lt=datetime.timedelta(minutes=30))
-            .exists()
-        ):
+        elif short_games.exists():
             return AchievementLevel.BASE
         else:
             return AchievementLevel.NO_LEVEL
@@ -214,7 +174,9 @@ class BundeCampAchievement(Achievement):
 
 class StudyHardAchievement(Achievement):
     name = "Study Hard"
-    description = "Spend at least the amount of time corresponding to (2.5/Quarter/Semester/Year) ECTS in game"
+    description = (
+        "Spend at least the amount of time corresponding to (2.5/15/30/60) ECTS in game"
+    )
     icon = "diploma.svg"
 
     def get_level(user):

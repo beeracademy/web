@@ -171,26 +171,26 @@ tr.in-game a {
   background-color: black;
 }
 
-.achievements img.no_level {
+.achievements img.NO_LEVEL {
   opacity: 0.2;
 }
 
-.achievements img.base {
+.achievements img.BASE {
 }
 
-.achievements img.bronze {
+.achievements img.BRONZE {
   border-color: #cd7f32;
   border-style: solid;
   border-width: 5px;
 }
 
-.achievements img.silver {
+.achievements img.SILVER {
   border-color: #c0c0c0;
   border-style: solid;
   border-width: 5px;
 }
 
-.achievements img.gold {
+.achievements img.GOLD {
   border-color: #d4af37;
   border-style: solid;
   border-width: 5px;

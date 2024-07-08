@@ -290,7 +290,7 @@ class PlayerDetailView(DetailView):
 
             context["achievements"].append(
                 {
-                    "level": achievement.get_level(self.object),
+                    "level": achievement.get_level(self.object).name,
                     "name": achievement.name,
                     "description": achievement.description,
                     "icon_url": static(f"achievements/{achievement.icon}"),
