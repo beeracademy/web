@@ -1,6 +1,6 @@
 import datetime
 import zoneinfo
-from enum import IntEnum
+from enum import StrEnum
 
 from django.db.models import Q
 
@@ -18,17 +18,17 @@ DST_TRANSITION_TIMES = [
 ]
 
 
-class AchievementLevel(IntEnum):
+class AchievementLevel(StrEnum):
     """Each level must correspond to a style in styles.css"""
 
-    GOLD = 4
-    SILVER = 3
-    BRONZE = 2
-    BASE = 1
-    NO_LEVEL = 0
+    GOLD = "gold"
+    SILVER = "silver"
+    BRONZE = "bronze"
+    BASE = "base"
+    NO_LEVEL = "no_level"
 
     def __lt__(self, other):
-        return self < other
+        return list(AchievementLevel).index(self) < list(AchievementLevel).index(other)
 
 
 class AchievementMetaClass(type):
@@ -72,30 +72,28 @@ class TopAchievement(Achievement):
 
     def get_level(user):
         current_season = Season.current_season()
-        highest_rank = AchievementLevel.NO_LEVEL
+        highest_rank = 99
 
         for i in range(1, current_season.number):  # Exclude current season
-            top10 = (
+            top10 = list(
                 PlayerStat.objects.filter(season_number=i)
                 .order_by("-total_sips")[:10]
                 .values("user")
             )
-            top5 = top10[:5]
-            top3 = top10[:3]
-            top = top10[:1]
+            try:
+                rank = top10.index({"user": user.id})
+                highest_rank = min(highest_rank, rank)
+            except ValueError:
+                continue
 
-            if {"user": user.id} in top:
-                highest_rank = AchievementLevel.GOLD
-            elif {"user": user.id} in top3:
-                if highest_rank < AchievementLevel.SILVER:
-                    highest_rank = AchievementLevel.SILVER
-            elif {"user": user.id} in top5:
-                if highest_rank < AchievementLevel.BRONZE:
-                    highest_rank = AchievementLevel.BRONZE
-            elif {"user": user.id} in top10:
-                if highest_rank < AchievementLevel.BASE:
-                    highest_rank = AchievementLevel.BASE
-        return highest_rank
+        if highest_rank < 1:
+            return AchievementLevel.GOLD
+        elif highest_rank < 3:
+            return AchievementLevel.SILVER
+        elif highest_rank < 5:
+            return AchievementLevel.BRONZE
+        elif highest_rank < 10:
+            return AchievementLevel.BASE
 
 
 class FastGameAchievement(Achievement):
