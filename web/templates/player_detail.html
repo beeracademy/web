@@ -46,7 +46,7 @@
 <div class="container">
 	<div class="row achievements">
 		{% for achievement in achievements %}
-			<img class="rounder{% if achievement.achieved %} active{% endif %}" src="{{ achievement.icon_url }}" title="{{ achievement.name }}: {{ achievement.description }}">
+			<img class="rounder {{ achievement.level }}" src="{{ achievement.icon_url }}" title="{{ achievement.name }}: {{ achievement.description }}">
 		{% endfor %}
 	</div>
 </div>
