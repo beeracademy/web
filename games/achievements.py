@@ -27,9 +27,6 @@ class AchievementLevel(StrEnum):
     BASE = "base"
     NO_LEVEL = "no_level"
 
-    def __lt__(self, other):
-        return list(AchievementLevel).index(self) < list(AchievementLevel).index(other)
-
 
 class AchievementMetaClass(type):
     def __init__(self, name, *args, **kwargs):
@@ -82,7 +79,7 @@ class TopAchievement(Achievement):
             )
             try:
                 rank = top10.index({"user": user.id})
-                highest_rank = min(highest_rank, rank)
+                highest_rank = max(highest_rank, rank)
             except ValueError:
                 continue
 
