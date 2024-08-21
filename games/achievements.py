@@ -27,6 +27,9 @@ class AchievementLevel(StrEnum):
     BASE = "base"
     NO_LEVEL = "no_level"
 
+    def __gt__(self, other):
+        return list(AchievementLevel).index(self) < list(AchievementLevel).index(other)
+
 
 class AchievementMetaClass(type):
     def __init__(self, name, *args, **kwargs):
@@ -69,8 +72,7 @@ class TopAchievement(Achievement):
 
     def get_level(user):
         current_season = Season.current_season()
-        highest_rank = 99
-
+        highest_tier = AchievementLevel.NO_LEVEL
         for i in range(1, current_season.number):  # Exclude current season
             top10 = list(
                 PlayerStat.objects.filter(season_number=i)
@@ -79,18 +81,17 @@ class TopAchievement(Achievement):
             )
             try:
                 rank = top10.index({"user": user.id})
-                highest_rank = max(highest_rank, rank)
+                if rank < 1:
+                    return AchievementLevel.GOLD
+                elif rank < 3:
+                    highest_tier = max(AchievementLevel.SILVER, highest_tier)
+                elif rank < 5:
+                    highest_tier = max(AchievementLevel.BRONZE, highest_tier)
+                elif rank < 10:
+                    highest_tier = max(AchievementLevel.BASE, highest_tier)
             except ValueError:
                 continue
-
-        if highest_rank < 1:
-            return AchievementLevel.GOLD
-        elif highest_rank < 3:
-            return AchievementLevel.SILVER
-        elif highest_rank < 5:
-            return AchievementLevel.BRONZE
-        elif highest_rank < 10:
-            return AchievementLevel.BASE
+        return highest_tier
 
 
 class FastGameAchievement(Achievement):
