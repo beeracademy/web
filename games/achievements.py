@@ -128,7 +128,7 @@ class DanishDSTAchievement(Achievement):
             query |= Q(start_datetime__lt=dt, end_datetime__gt=dt)
 
         if user.games.filter(query).exists():
-            return AchievementLevel.BASE
+            return AchievementLevel.GOLD
         return AchievementLevel.NO_LEVEL
 
 
