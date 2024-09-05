@@ -191,16 +191,15 @@ class StudyHardAchievement(Achievement):
 
 class TheMoreTheMerrierAchievement(Achievement):
     name = "The More The Merrier"
-    description = (
-        "Play atleast 5/10/15/20 games with as many different players"
-    )
+    description = "Play atleast 5/10/15/20 games with as many different players"
     icon = "merrier.svg"
+
     def get_level(user):
         played_with_count = Counter()
         for game in user.games.filter():
             for player in game.players.all():
                 if player != user:
-                   played_with_count[player.username] += 1
+                    played_with_count[player.username] += 1
 
         top20 = sorted(
             ({"x": k, "y": v} for k, v in played_with_count.items()),
@@ -218,6 +217,7 @@ class TheMoreTheMerrierAchievement(Achievement):
             return AchievementLevel.BASE
         else:
             return AchievementLevel.NO_LEVEL
+
 
 class PilfingerAchievement(Achievement):
     name = "Pilfinger"
