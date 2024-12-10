@@ -1,16 +1,16 @@
 <script>
-export let url;
+const { url } = $props();
 </script>
 
 <div class="center">
-  <img src={url} />
+	<img src={url} alt="Uploaded game" />
 </div>
 
 <style>
-  img {
-    max-width: 100%;
-  }
-  .center {
-    text-align: center;
-  }
+	img {
+		max-width: 100%;
+	}
+	.center {
+		text-align: center;
+	}
 </style>

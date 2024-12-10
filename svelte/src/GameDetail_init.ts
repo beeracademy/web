@@ -1,7 +1,8 @@
+import { mount } from "svelte";
 import GameDetail from "./GameDetail.svelte";
 
 const target = document.querySelector("#svelte-game_detail");
 
-export default new GameDetail({
+export default mount(GameDetail, {
 	target,
 });

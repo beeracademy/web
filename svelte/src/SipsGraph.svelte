@@ -1,14 +1,19 @@
 <script lang="ts">
 import type { GameData, GamePlayerData } from "./types";
 
-export let game_data: GameData;
-export let ordered_gameplayers: GamePlayerData[];
-
 import { onMount } from "svelte";
-import { ApexCharts, userColors } from "./globals";
+import { ApexCharts, toBase14, userColors } from "./globals";
+interface Props {
+	game_data: GameData;
+	ordered_gameplayers: GamePlayerData[];
+}
 
-let container: HTMLElement;
-let chart: unknown;
+const { game_data, ordered_gameplayers }: Props = $props();
+
+// biome-ignore lint/style/useConst: Svelte 5
+let container: HTMLElement = $state();
+// biome-ignore lint/suspicious/noExplicitAny: ...
+let chart: any;
 
 let lastLength = -1;
 
@@ -17,18 +22,20 @@ const yaxis = {
 		text: "Sips (base 14)",
 	},
 	min: 0,
+	max: 14,
+	tickAmount: 1,
 	labels: {
-		formatter: (value: number) => window.toBase14(value),
+		formatter: (value: number) => toBase14(value),
 	},
 };
 
-function updateChart() {
+function updateChart(game_data: GameData) {
 	if (!chart) return;
 	if (game_data.cards.length === lastLength) return;
 	lastLength = game_data.cards.length;
 
 	const series = [];
-	for (let i = 0; i < game_data.playerCount; i++) {
+	for (let i = 0; i < ordered_gameplayers.length; i++) {
 		series.push({
 			name: ordered_gameplayers[i].user.username,
 			data: [[0, 0]],
@@ -36,7 +43,7 @@ function updateChart() {
 	}
 
 	for (let i = 0; i < game_data.cards.length; i++) {
-		const data = series[i % game_data.playerCount].data;
+		const data = series[i % ordered_gameplayers.length].data;
 		data.push([
 			data.length,
 			data[data.length - 1][1] + game_data.cards[i].value,
@@ -46,7 +53,7 @@ function updateChart() {
 	chart.updateSeries(series);
 
 	let max = 0;
-	for (let i = 0; i < game_data.playerCount; i++) {
+	for (let i = 0; i < ordered_gameplayers.length; i++) {
 		const data = series[i].data;
 		max = Math.max(max, data[data.length - 1][1]);
 	}
@@ -88,12 +95,12 @@ onMount(() => {
 	chart = new ApexCharts(container, options);
 	chart.render();
 
-	updateChart();
+	updateChart(game_data);
 });
 
-$: if (game_data) {
-	updateChart();
-}
+$effect(() => {
+	updateChart(game_data);
+});
 </script>
 
-<div bind:this={container} />
+<div bind:this={container}></div>

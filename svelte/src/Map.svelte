@@ -1,12 +1,16 @@
 <script lang="ts">
+import { L } from "./globals";
 import type { Location } from "./types";
 
-export let location: Location;
-
 import { onMount } from "svelte";
-const L = window.L;
+interface Props {
+	location: Location;
+}
 
-let mapEl: HTMLElement;
+const { location }: Props = $props();
+
+// biome-ignore lint/style/useConst: Svelte 5
+let mapEl: HTMLElement = $state();
 onMount(() => {
 	const map = L.map(mapEl).setView([location.latitude, location.longitude], 13);
 	L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -26,10 +30,10 @@ onMount(() => {
 });
 </script>
 
-<div class="map" bind:this={mapEl} />
+<div class="map" bind:this={mapEl}></div>
 
 <style>
-  .map {
-    height: 300px;
-  }
+	.map {
+		height: 300px;
+	}
 </style>

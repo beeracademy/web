@@ -1,18 +1,23 @@
 <script lang="ts">
 import type { GameData, GamePlayerData } from "./types";
 
-export let game_data: GameData;
-export let ordered_gameplayers: GamePlayerData[];
-
 import { onMount } from "svelte";
 import { ApexCharts, formatDuration } from "./globals";
+interface Props {
+	game_data: GameData;
+	ordered_gameplayers: GamePlayerData[];
+}
 
-let container: HTMLElement;
-let chart: unknown;
+const { game_data, ordered_gameplayers }: Props = $props();
+
+// biome-ignore lint/style/useConst: Svelte 5
+let container: HTMLElement = $state();
+// biome-ignore lint/suspicious/noExplicitAny: ...
+let chart: any;
 
 let lastLength = -1;
 
-function updateChart() {
+function updateChart(game_data: GameData) {
 	if (!chart) return;
 	if (game_data.cards.length === lastLength) return;
 	lastLength = game_data.cards.length;
@@ -69,9 +74,9 @@ onMount(() => {
 			x: {
 				formatter: (value: number) => {
 					const player_name =
-						ordered_gameplayers[(value - 1) % game_data.playerCount].user
+						ordered_gameplayers[(value - 1) % ordered_gameplayers.length].user
 							.username;
-					const turn = Math.floor((value - 1) / game_data.playerCount + 1);
+					const turn = Math.floor((value - 1) / ordered_gameplayers.length + 1);
 					return `${player_name}'s turn ${turn}`;
 				},
 			},
@@ -96,20 +101,22 @@ onMount(() => {
 	chart = new ApexCharts(container, options);
 	chart.render();
 
-	updateChart();
+	updateChart(game_data);
 });
 
-$: if (game_data) {
-	updateChart();
-}
+$effect(() => {
+	if (game_data) {
+		updateChart(game_data);
+	}
+});
 </script>
 
 <div>
-  {#if game_data.cards.length > 0 && game_data.cards[0].start_delta_ms === null}
-    <p style="text-align: center;">
-      Time graph unavailable due to missing data
-    </p>
-  {:else}
-    <div bind:this={container} />
-  {/if}
+	{#if game_data.cards.length > 0 && game_data.cards[0].start_delta_ms === null}
+		<p style="text-align: center;">
+			Time graph unavailable due to missing data
+		</p>
+	{:else}
+		<div bind:this={container}></div>
+	{/if}
 </div>

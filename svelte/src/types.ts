@@ -44,8 +44,6 @@ export interface GameData {
 	description: string | null;
 	description_html: string | null;
 
-	playerCount: number;
-
 	image: string | null;
 	location: Location | null;
 }
