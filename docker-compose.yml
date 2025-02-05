@@ -18,6 +18,12 @@ services:
       - media
       - static
       - redis
+    healthcheck:
+      test: 'curl --fail --head http://academy.beer:8000/ --resolve academy.beer:8000:127.0.0.1 || exit 1'
+      interval: 60s
+      retries: 5
+      start_period: 60s
+      timeout: 10s
 
   celery:
     image: *app
