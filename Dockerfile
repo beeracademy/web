@@ -6,7 +6,7 @@ COPY /svelte .
 
 RUN ./build_components
 
-FROM python:3.12
+FROM python:3.13
 
 WORKDIR /app
 
