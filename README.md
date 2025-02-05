@@ -6,29 +6,21 @@ Frontend and api server for Academy.
 
 ## Installation
 
-Install Python 3.9 and create a virtual environment:
-
+Install [`uv`](https://docs.astral.sh/uv/) and run:
 ```sh
-python -mvenv ~/.cache/venvs/academy-web
-```
-
-Inside the virtual enviroment install [pip-tools](https://github.com/jazzband/pip-tools) and install our dependencies with `pip-sync`:
-
-```sh
-pip install pip-tools
-pip-sync requirements.txt dev-requirements.txt
+uv sync
 ```
 
 Install pre-commit hook to ensure files are formatted correctly:
 
 ```sh
-pre-commit install
+uv run pre-commit install
 ```
 
 Then apply the database migrations:
 
 ```sh
-./manage.py migrate
+uv run ./manage.py migrate
 ```
 
 ## Running
@@ -36,7 +28,7 @@ Then apply the database migrations:
 To start the server locally run:
 
 ```sh
-./manage.py runserver
+uv run ./manage.py runserver
 ```
 
 ## Compiling Svelte components

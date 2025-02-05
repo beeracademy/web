@@ -17,8 +17,13 @@ jobs:
         with:
           python-version: "3.13"
 
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "0.5.28"
+
       - name: Install python dependencies
-        run: pip install -r requirements.txt -r dev-requirements.txt
+        run: uv sync --frozen
 
       - name: Run pre-commit checks
         uses: pre-commit/action@v3.0.1
