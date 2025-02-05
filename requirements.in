@@ -9,7 +9,9 @@ tqdm
 django-bootstrap4
 python-dotenv
 psycopg[binary]
-django-debug-toolbar
+# Using 5.0.1 causes academy.debug_toolbar.show_toolbar to raise
+# a SynchronousOnlyOperation exception from using request.user
+django-debug-toolbar==4.4.6
 facebook-sdk
 celery[redis]
 django-celery-beat

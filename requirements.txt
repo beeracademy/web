@@ -93,7 +93,7 @@ django-constance==4.3.1
     # via -r requirements.in
 django-cors-headers==4.6.0
     # via -r requirements.in
-django-debug-toolbar==5.0.1
+django-debug-toolbar==4.4.6
     # via -r requirements.in
 django-extensions==3.2.3
     # via -r requirements.in
