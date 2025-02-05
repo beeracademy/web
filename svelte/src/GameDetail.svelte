@@ -358,7 +358,7 @@ import type { ChugData, GameData, GamePlayerData } from "./types";
 				<div id="chugs_container" class="row justify-content-md-center">
 					{#each chugs as chug}
 						{#if game_data.start_datetime}
-							<Chug start_datetime={game_data.start_datetime} {chug} />
+							<Chug start_datetime={game_data.start_datetime} {chug} game_dnf={game_data.dnf} />
 						{/if}
 					{/each}
 				</div>

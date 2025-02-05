@@ -8,9 +8,10 @@ import type { ChugData } from "./types";
 	interface Props {
 		start_datetime: string;
 		chug: ChugData;
+		game_dnf: boolean;
 	}
 
-	let { start_datetime, chug }: Props = $props();
+	let { start_datetime, chug, game_dnf }: Props = $props();
 
 	const gameplayer = chug.gameplayer;
 	const user = gameplayer.user;
@@ -27,7 +28,11 @@ import type { ChugData } from "./types";
 		} else if (card.chug_duration_ms) {
 			return { durationStr: formatDuration(card.chug_duration_ms, 3), inProgress: false };
 		} else if (card.chug_start_start_delta_ms) {
-			return { durationStr: formatDuration(startDeltaMs - card.chug_start_start_delta_ms!, 3), inProgress: true };
+			if (game_dnf) {
+				return { durationStr: "DNF", inProgress: false };
+			} else {
+				return { durationStr: formatDuration(startDeltaMs - card.chug_start_start_delta_ms!, 3), inProgress: true };
+			}
 		} else {
 			return { durationStr: "Not started", inProgress: false };
 		}
