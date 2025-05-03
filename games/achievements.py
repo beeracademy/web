@@ -191,7 +191,7 @@ class StudyHardAchievement(Achievement):
 
 class TheMoreTheMerrierAchievement(Achievement):
     name = "The More The Merrier"
-    description = "Play atleast 5/10/15/20 games with as many different players"
+    description = "Play atleast 5/10/15/20 games with equally as many unique players"
     icon = "merrier.svg"
 
     def get_level(user):
