@@ -108,6 +108,10 @@ tr.in-game a {
 	color: #bd2130;
 }
 
+tr.sub > th {
+	padding-left: 2em;
+}
+
 .username {
 	max-width: 200px;
 	display: inline-block;

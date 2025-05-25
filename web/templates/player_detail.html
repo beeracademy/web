@@ -93,14 +93,24 @@
 		<table class="table table-bordered table-striped table-sm">
 			<tbody>
 				<tr>
-					<th>Games played</th>
-					<td>{{ stats.total_games|intcomma }}</td>
+					<th>Games played (official)</th>
+					<td>{{ stats.total_games_including_dnf |intcomma }}</td>
 				</tr>
-				<tr>
-					<th>Total time played</th>
-					<td>{{ stats.total_time_played }}
-						<br>
-						(~ {{ stats.approx_ects|floatformat:1 }} ECTS)</td>
+				<tr class="sub">
+					<th>Finished</th>
+					<td>{{ stats.total_games |intcomma }}</td>
+				</tr>
+				<tr class="sub">
+					<th>Player DNF</th>
+					<td>{{ stats.total_games_with_player_dnf|intcomma }}</td>
+				</tr>
+				<tr class="sub">
+					<th>Game DNF</th>
+					<td>{{ stats.total_games_with_game_dnf|intcomma }}</td>
+				</tr>
+				<tr class="sub">
+					<th>Player & game DNF</th>
+					<td>{{ stats.total_games_with_player_and_game_dnf|intcomma }}</td>
 				</tr>
 				<tr>
 					<th>Estimated money spent (TÅGEKAMMERET)</th>
@@ -109,6 +119,12 @@
 				<tr>
 					<th>Estimated money spent (FøTeX)</th>
 					<td>{{ stats.approx_money_spent_føtex|intcomma }}</td>
+				</tr>
+				<tr>
+					<th>Total time played</th>
+					<td>{{ stats.total_time_played }}
+						<br>
+						(~ {{ stats.approx_ects|floatformat:1 }} ECTS)</td>
 				</tr>
 			</tbody>
 		</table>

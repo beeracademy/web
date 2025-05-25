@@ -168,6 +168,9 @@ class PlayerStat(models.Model):
     season_number = models.PositiveIntegerField()
 
     total_games = models.PositiveIntegerField(default=0)
+    total_games_with_player_dnf = models.PositiveIntegerField(default=0)
+    total_games_with_game_dnf = models.PositiveIntegerField(default=0)
+    total_games_with_player_and_game_dnf = models.PositiveIntegerField(default=0)
     total_time_played_seconds = models.FloatField(default=0)
 
     total_sips = models.PositiveIntegerField(default=0)
@@ -229,17 +232,27 @@ class PlayerStat(models.Model):
 
         gameplayers = filter_season(
             self.user.gameplayer_set, self.season, key="game"
-        ).filter(game__official=True, game__dnf=False)
+        ).filter(game__official=True)
 
         for gp in gameplayers:
             self.update_from_new_game(gp.game)
 
     def update_from_new_game(self, game):
-        if not game.official or game.dnf:
+        if not game.official:
             return
 
         gp = game.gameplayer_set.get(user=self.user)
+        if game.dnf:
+            if gp.dnf:
+                self.total_games_with_player_and_game_dnf += 1
+            else:
+                self.total_games_with_game_dnf += 1
+            self.save()
+            return
+
         if gp.dnf:
+            self.total_games_with_player_dnf += 1
+            self.save()
             return
 
         self.total_games += 1
@@ -288,6 +301,15 @@ class PlayerStat(models.Model):
         if self.season_number == 0:
             return all_time_season
         return Season(self.season_number)
+
+    @property
+    def total_games_including_dnf(self):
+        return (
+            self.total_games
+            + self.total_games_with_player_dnf
+            + self.total_games_with_game_dnf
+            + self.total_games_with_player_and_game_dnf
+        )
 
     @property
     def total_time_played(self):
