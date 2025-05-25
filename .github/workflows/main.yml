@@ -15,7 +15,7 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@v5
         with:
-          version: "0.5.28"
+          version: "0.7.8"
 
       - name: Install python dependencies
         run: uv sync --frozen
