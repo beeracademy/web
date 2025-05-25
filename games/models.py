@@ -759,6 +759,7 @@ class GamePlayer(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     position = models.PositiveSmallIntegerField()
     dnf = models.BooleanField(default=False)
+    dnf_datetime = models.DateTimeField(blank=True, null=True)
 
 
 class Card(models.Model):

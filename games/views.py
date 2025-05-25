@@ -162,8 +162,8 @@ def update_game(game, data):
         update_chug(card, card_data)
 
     dnf_gps = game.gameplayer_set.filter(user_id__in=data["dnf_player_ids"])
-    dnf_gps.update(dnf=True)
-    game.gameplayer_set.exclude(id__in=dnf_gps).update(dnf=False)
+    dnf_gps.filter(dnf=False).update(dnf=True, dnf_datetime=timezone.now())
+    game.gameplayer_set.exclude(id__in=dnf_gps).update(dnf=False, dnf_datetime=None)
 
     game.dnf = data["dnf"]
 
