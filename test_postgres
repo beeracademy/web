@@ -2,7 +2,7 @@
 set -euo pipefail
 
 echo "[-] Starting postgres"
-container_id=$(docker run --rm -e POSTGRES_HOST_AUTH_METHOD=trust -p 5432:5432 -d postgres:15)
+container_id=$(docker run --rm -e POSTGRES_HOST_AUTH_METHOD=trust -p 5432:5432 -d postgres:17)
 
 cleanup() {
 	echo "[-] Stopping postgres"
