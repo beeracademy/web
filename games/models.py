@@ -355,11 +355,10 @@ class User(AbstractUser):
                 pass
 
     def total_game_count(self):
-        return self.gameplayer_set.count()
+        return self.stats_for_season(all_time_season).total_games
 
     def current_season_game_count(self):
-        season = Season.current_season()
-        return filter_season(self.gameplayer_set, season, key="game").count()
+        return self.stats_for_season(Season.current_season()).total_games
 
     def stats_for_season(self, season):
         return PlayerStat.objects.get_or_create(user=self, season_number=season.number)[
