@@ -51,7 +51,7 @@ requires-dist = [
     { name = "django-debug-toolbar", specifier = ">=5.0.1" },
     { name = "django-extensions", specifier = ">=3.2.3" },
     { name = "django-filter", specifier = ">=24.3" },
-    { name = "django-webpush", specifier = ">=0.3.6" },
+    { name = "django-webpush", git = "https://github.com/safwanrahman/django-webpush.git?rev=57125f53286a42dccc7037e0f38d08d16d6b425e" },
     { name = "djangorestframework", specifier = ">=3.15.2" },
     { name = "facebook-sdk", specifier = ">=3.1.0" },
     { name = "ipython", specifier = ">=8.32.0" },
@@ -629,13 +629,9 @@ wheels = [
 [[package]]
 name = "django-webpush"
 version = "0.3.6"
-source = { registry = "https://pypi.org/simple" }
+source = { git = "https://github.com/safwanrahman/django-webpush.git?rev=57125f53286a42dccc7037e0f38d08d16d6b425e#57125f53286a42dccc7037e0f38d08d16d6b425e" }
 dependencies = [
     { name = "pywebpush" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/7b/96/8cd510b4c7dfbf22507b3e23830a6d36b94183058f4692988997100968d9/django-webpush-0.3.6.tar.gz", hash = "sha256:e2a93a955ad652d71dd8451ad7e9ba65f1d7a40069063c223dd008f9ed253856", size = 24252, upload-time = "2024-04-30T21:05:56.52Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/26/0d/1aee349ebf2d8e605d502079751c33eb7425e27fd87f5c8423bc4b22a0a3/django_webpush-0.3.6-py2.py3-none-any.whl", hash = "sha256:a6c1c13386822cbcdf703bf8502d3eabc6071cc18e8df23be56e9ad03b2c59f5", size = 31659, upload-time = "2024-04-30T21:05:54.631Z" },
 ]
 
 [[package]]

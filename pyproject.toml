@@ -24,7 +24,7 @@ dependencies = [
     "daphne>=4.1.2",
     "channels-redis>=4.2.1",
     "django-cors-headers>=4.6.0",
-    "django-webpush>=0.3.6",
+    "django-webpush",
 ]
 
 [tool.ruff]
@@ -32,6 +32,10 @@ target-version = "py313"
 
 [tool.uv]
 package = false
+
+[tool.uv.sources]
+# Latest release has a missing migration
+django-webpush = { git = "https://github.com/safwanrahman/django-webpush.git", rev = "57125f53286a42dccc7037e0f38d08d16d6b425e" }
 
 [dependency-groups]
 dev = [
