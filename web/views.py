@@ -19,7 +19,16 @@ from django.contrib.syndication.views import Feed
 from django.core.files import File
 from django.core.mail import mail_admins
 from django.core.paginator import Paginator
-from django.db.models import Case, Count, DateTimeField, F, IntegerField, Value, When
+from django.db.models import (
+    Case,
+    DateTimeField,
+    F,
+    IntegerField,
+    Value,
+    When,
+    OuterRef,
+    Subquery,
+)
 from django.shortcuts import render
 from django.templatetags.static import static
 from django.views.generic import (
@@ -35,6 +44,7 @@ from games.models import (
     Card,
     Game,
     GamePlayer,
+    PlayerStat,
     OneTimePassword,
     User,
     filter_season,
@@ -260,9 +270,12 @@ class PlayerListView(PaginatedListView):
 
     def get_queryset(self):
         query = self.request.GET.get("query", "")
+        all_season_stats = PlayerStat.objects.filter(
+            user=OuterRef("id"), season_number=0
+        )
         return (
             User.objects.filter(username__icontains=query)
-            .annotate(total_games=Count("gameplayer"))
+            .annotate(total_games=Subquery(all_season_stats.values("total_games")))
             .order_by("-total_games", "id")
         )
 
