@@ -20,6 +20,8 @@ repos:
     rev: v2.3.13
     hooks:
       - id: biome-check
+        # See https://github.com/biomejs/pre-commit/pull/59
+        entry: biome check --write --files-ignore-unknown=true --no-errors-on-unmatched --error-on-warnings
 
   - repo: https://github.com/Tyilo/pre-commit-django-migrations
     rev: d3a23e91aeb76b3c6b0f934d734c0dca237840ae

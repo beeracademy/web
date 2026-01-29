@@ -10,10 +10,8 @@ interface Props {
 
 const { game_data, ordered_gameplayers }: Props = $props();
 
-// biome-ignore lint/style/useConst: Svelte 5
 let container: HTMLElement = $state();
-// biome-ignore lint/suspicious/noExplicitAny: ...
-let chart: any;
+let chart: typeof ApexCharts | undefined;
 
 let lastLength = -1;
 

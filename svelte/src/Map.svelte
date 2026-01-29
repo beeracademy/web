@@ -9,7 +9,6 @@ interface Props {
 
 const { location }: Props = $props();
 
-// biome-ignore lint/style/useConst: Svelte 5
 let mapEl: HTMLElement = $state();
 onMount(() => {
 	const map = L.map(mapEl).setView([location.latitude, location.longitude], 13);

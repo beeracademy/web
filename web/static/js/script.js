@@ -34,17 +34,17 @@ function formatDuration(ms, seconds_decimals_input) {
 	return `${total_hours}:${twoPad(minutes)}:${twoPad(seconds)}`;
 }
 
-function formatDate(d) {
+window.formatDate = function formatDate(d) {
 	return moment(d).format("MMMM D, YYYY HH:mm:ss");
-}
+};
 
-function toBase14(n) {
+window.toBase14 = function toBase14(n) {
 	return n.toString(14).toUpperCase();
-}
+};
 
 if ($(".live").length) {
 	setInterval(() => {
-		$(".live").each((i, el) => {
+		$(".live").each((_i, el) => {
 			const start = new Date(
 				Number.parseFloat(el.getAttribute("data-start-time")) * 1000,
 			);
@@ -55,7 +55,7 @@ if ($(".live").length) {
 	}, 1000);
 }
 
-function gamesHeatmap(el, data) {
+window.gamesHeatmap = function gamesHeatmap(el, data) {
 	const options = {
 		series: data.series,
 		xaxis: {
@@ -76,13 +76,13 @@ function gamesHeatmap(el, data) {
 		},
 		tooltip: {
 			y: {
-				formatter: (value, args) => {
+				formatter: (value, _args) => {
 					if (value === null) return "Out of season";
 					const games = value === 1 ? "game" : "games";
 					return `${value} ${games} played`;
 				},
 				title: {
-					formatter: (value, args) =>
+					formatter: (_value, args) =>
 						data.dates[args.seriesIndex][args.dataPointIndex],
 				},
 			},
@@ -101,4 +101,4 @@ function gamesHeatmap(el, data) {
 	chart.render();
 
 	return chart;
-}
+};
