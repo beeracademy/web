@@ -1,4 +1,4 @@
-FROM node:22-alpine AS builder
+FROM node:24-alpine AS builder
 
 WORKDIR /build
 
@@ -6,14 +6,14 @@ COPY /svelte .
 
 RUN ./build_components
 
-FROM python:3.13
+FROM python:3.14
 
 WORKDIR /app
 
 COPY --from=builder /build/static /app/svelte/static
 COPY --from=builder /build/templates/svelte_include_generated.html /app/svelte/templates/svelte_include_generated.html
 
-COPY --from=ghcr.io/astral-sh/uv:0.7.8 /uv /uvx /bin/
+COPY --from=ghcr.io/astral-sh/uv:0.9.27 /uv /uvx /bin/
 COPY pyproject.toml uv.lock .
 RUN uv sync --frozen --no-install-project --no-dev
 

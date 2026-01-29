@@ -1,8 +1,8 @@
 <script lang="ts">
+import { onMount } from "svelte";
 import { L } from "./globals";
 import type { Location } from "./types";
 
-import { onMount } from "svelte";
 interface Props {
 	location: Location;
 }

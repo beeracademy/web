@@ -10,12 +10,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@v7
         with:
-          version: "0.7.8"
+          version: "0.9.27"
 
       - name: Install python dependencies
         run: uv sync --frozen
@@ -27,7 +27,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Pull existing images
         run: docker compose pull
@@ -39,7 +39,7 @@ jobs:
         run: docker save "$DOCKER_IMAGE_NAME" | gzip > image.tar.gz
 
       - name: Upload docker image for other jobs
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: image
           path: image.tar.gz
@@ -49,7 +49,7 @@ jobs:
     needs: build
     steps:
       - name: Download docker image
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: image
 
@@ -64,7 +64,7 @@ jobs:
     needs: build
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Download docker image
         uses: actions/download-artifact@v4
@@ -82,7 +82,7 @@ jobs:
     needs: build
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Download docker image
         uses: actions/download-artifact@v4

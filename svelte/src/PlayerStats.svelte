@@ -1,7 +1,7 @@
 <script lang="ts">
+import { formatDuration, toBase14 } from "./globals";
 import type { PlayerStatsData } from "./types";
 
-import { formatDuration, toBase14 } from "./globals";
 interface Props {
 	player_stats: PlayerStatsData;
 }

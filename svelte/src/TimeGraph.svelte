@@ -1,8 +1,8 @@
 <script lang="ts">
-import type { GameData, GamePlayerData } from "./types";
-
 import { onMount } from "svelte";
 import { ApexCharts, formatDuration } from "./globals";
+import type { GameData, GamePlayerData } from "./types";
+
 interface Props {
 	game_data: GameData;
 	ordered_gameplayers: GamePlayerData[];
