@@ -5,13 +5,14 @@ import type { GameData, GamePlayerData } from "./types";
 interface Props {
 	game_data: GameData;
 	ordered_gameplayers: GamePlayerData[];
+	currentTurn: number;
 }
 
-const { game_data, ordered_gameplayers }: Props = $props();
+const { game_data, ordered_gameplayers, currentTurn }: Props = $props();
 </script>
 
 {#each ordered_gameplayers as gp, i}
-	<div class="card" style="margin-bottom: 16px;">
+	<div class={{"card": true, "current-turn": i === currentTurn}} style="margin-bottom: 16px;">
 		<div class="card-body">
 			<a href="/players/{gp.user.id}/">
 				<div style="display: flex; align-items: center; margin-bottom: 12px;">
@@ -45,5 +46,9 @@ const { game_data, ordered_gameplayers }: Props = $props();
 	.card {
 		min-width: 225px;
 		margin: auto;
+	}
+
+	.current-turn {
+		background-color: #faa;
 	}
 </style>

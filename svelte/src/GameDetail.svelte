@@ -20,9 +20,10 @@ import type { ChugData, GameData, GamePlayerData } from "./types";
 	const ordered_gameplayers = JSON.parse(
 		document.getElementById("ordered_gameplayers")!.textContent!
 	) as GamePlayerData[];
+	let done = $derived(game_data.end_datetime !== null || game_data.dnf);
 
 	async function updateData() {
-		if (game_data.end_datetime || game_data.dnf) return;
+		if (done) return;
 
 		try {
 			const res = await fetch(`/api/games/${game_data.id}/`);
@@ -93,6 +94,24 @@ import type { ChugData, GameData, GamePlayerData } from "./types";
 			}
 		}
 		return chugs;
+	});
+
+	let currentTurn: number | undefined = $derived.by(() => {
+		if (done) {
+			return undefined;
+		}
+
+		const n = game_data.cards.length;
+		if (n === 0) {
+			return 0;
+		}
+
+		const lastCard = game_data.cards[n - 1];
+		let index = n;
+		if (lastCard.value === 14 && lastCard.chug_duration_ms === null) {
+			index--;
+		}
+		return index % ordered_gameplayers.length;
 	});
 
 	let chat_messages: HTMLDivElement = $state(), chat_input: HTMLInputElement = $state();
@@ -272,7 +291,7 @@ import type { ChugData, GameData, GamePlayerData } from "./types";
 <div class="game-wrapper">
 	<h2 class="players-header">Players</h2>
 	<div class="players">
-		<Players {game_data} {ordered_gameplayers} />
+		<Players {game_data} {ordered_gameplayers} {currentTurn} />
 	</div>
 	<div class="game">
 		<div class="container">
@@ -375,8 +394,8 @@ import type { ChugData, GameData, GamePlayerData } from "./types";
 				<thead>
 					<tr>
 						<th scope="col">Round</th>
-						{#each ordered_gameplayers as gp}
-							<th scope="col">{gp.user.username}</th>
+						{#each ordered_gameplayers as gp, i}
+							<th scope="col" class={{"current-turn": i === currentTurn}}>{gp.user.username}</th>
 						{/each}
 					</tr>
 				</thead>
@@ -460,6 +479,10 @@ import type { ChugData, GameData, GamePlayerData } from "./types";
 		margin: 0px 5px;
 		overflow-y: auto;
 		overflow-x: hidden;
+	}
+
+	.current-turn {
+		background-color: #faa;
 	}
 
 	.game-wrapper .players {
