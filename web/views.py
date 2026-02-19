@@ -327,6 +327,24 @@ class PlayerDetailView(DetailView):
             otp, _ = OneTimePassword.objects.get_or_create(user=self.object)
             context["otp_data"] = otp.password
 
+        qs = filter_season(Game.objects, season, should_include_live=True).filter(
+            players=self.object
+        )
+        qs = qs.order_by(
+            Case(
+                When(end_datetime__isnull=True, dnf=False, then=Value(0)),
+                default=Value(1),
+                output_field=IntegerField(),
+            ),
+            Case(
+                When(end_datetime__isnull=True, then="start_datetime"),
+                default="end_datetime",
+                output_field=DateTimeField(),
+            ).desc(),
+            "id",
+        )
+        context["recent_games"] = qs[:10]
+
         played_with_count = Counter()
         for game in self.object.games.filter():
             game_season = game.get_season()

@@ -170,6 +170,38 @@
 	</div>
 </div>
 
+<h4><i class="fas fa-gamepad"></i> Recent games</h4>
+
+<table class="table table-bordered table-striped table-hover table-sm">
+	<thead>
+		<tr class="academy-table">
+			<th scope="col">Players</th>
+			<th scope="col">Season</th>
+			<th scope="col">End datetime</th>
+			<th scope="col">Duration</th>
+		</tr>
+	</thead>
+	<tbody>
+		{% for game in recent_games %}
+		<tr data-href="/games/{{ game.id }}/" class="academy-table slim {% if user in game.ordered_players %}in-game {% endif %}{% if game.is_live %}live {% endif %}{% if game.dnf %}dnf {% endif %}" data-start-time="{{ game.start_datetime.timestamp }}">
+			<td>
+				{% for gp in game.ordered_gameplayers %}
+				<a href="/players/{{ gp.user.id }}/" class="{% if gp.dnf %}dnf{% endif %}"><span class="username">{{ gp.user.username }}</span></a>{% if not forloop.last %},{% endif %}{% endfor %}
+			</td>
+			<td>{{ game.season_number_str }}</td>
+			<td>{{ game.end_str }}</td>
+			<td class="text-right">
+				<span class="duration">
+					{{ game.duration_str }}
+				</span>
+				<i class="far fa-clock"></i>
+			</td>
+		</tr>
+	{% endfor %}
+	</tbody>
+</table>
+
+
 <h4><i class="fas fa-users"></i> Top 30 co-players</h4>
 <hr>
 
