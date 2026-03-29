@@ -415,7 +415,7 @@ class OneTimePassword(models.Model):
             obj.password = None
             obj.save()
             return True
-        except (User.DoesNotExist, cls.DoesNotExist):
+        except User.DoesNotExist, cls.DoesNotExist:
             pass
 
         return False
@@ -479,7 +479,7 @@ class Season:
     def is_valid_season_number(cls, number):
         try:
             number = int(number)
-        except (ValueError, TypeError):
+        except ValueError, TypeError:
             return False
 
         return 1 <= number <= Season.current_season().number

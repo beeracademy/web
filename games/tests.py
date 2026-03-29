@@ -68,7 +68,7 @@ class ApiTest(TransactionTestCase):
             try:
                 del game_state["cards"][-1]["chug_start_start_delta_ms"]
                 del game_state["cards"][-1]["chug_end_start_delta_ms"]
-            except (IndexError, KeyError):
+            except IndexError, KeyError:
                 pass
 
         return game_state

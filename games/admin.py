@@ -135,7 +135,7 @@ class UploadForm(forms.ModelForm):
 
         try:
             game_id = int(data["id"])
-        except (KeyError, ValueError):
+        except KeyError, ValueError:
             game_id = None
 
         game, created = Game.objects.get_or_create(

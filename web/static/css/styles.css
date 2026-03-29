@@ -101,19 +101,6 @@ a.dnf * {
 	filter: grayscale(1);
 }
 
-tr.in-game {
-	background-color: rgba(52, 152, 219, 0.4) !important;
-	color: #000;
-}
-
-tr.in-game a {
-	color: #bd2130;
-}
-
-tr.sub > th {
-	padding-left: 2em;
-}
-
 .username {
 	max-width: 200px;
 	display: inline-block;
@@ -202,4 +189,17 @@ tr.sub > th {
 .invalid-feedback {
 	/* wtf bootstrap??? */
 	display: block !important;
+}
+
+tr.in-game {
+	background-color: rgba(52, 152, 219, 0.4) !important;
+	color: #000;
+}
+
+tr.in-game a {
+	color: #bd2130;
+}
+
+tr.sub > th {
+	padding-left: 2em;
 }
