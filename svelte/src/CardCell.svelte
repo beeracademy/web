@@ -4,7 +4,7 @@ import { card_constants } from "./globals";
 
 <script lang="ts">
 	import ColoredSuit from "./ColoredSuit.svelte";
-	import { CardData } from "./types";
+	import type { CardData } from "./types";
 
 	interface Props {
 		card: CardData | undefined;
