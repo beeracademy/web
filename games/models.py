@@ -737,6 +737,7 @@ class Game(models.Model):
                 "id": gp.user.id,
                 "username": gp.user.username,
                 "dnf": gp.dnf,
+                "dnf_datetime": gp.dnf_datetime,
                 "total_sips": total_sips[i],
                 "sips_per_turn": div_or_none(total_sips[i], total_drawn[i]),
                 "full_beers": full_beers,
