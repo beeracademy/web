@@ -6,6 +6,7 @@
 		"build": "vite build",
 		"serve": "vite preview"
 	},
+	"packageManager": "pnpm@10.33.0",
 	"devDependencies": {
 		"@sveltejs/vite-plugin-svelte": "^7.0.0",
 		"svelte": "^5.0.0",

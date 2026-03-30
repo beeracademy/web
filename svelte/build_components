@@ -4,8 +4,8 @@ set -euo pipefail
 rm -rf static/svelte
 mkdir -p static/svelte
 
-yarn install --frozen-lockfile
-yarn build
+pnpm install --frozen-lockfile
+pnpm build
 
 for f in dist/assets/*; do
 	name=$(basename "$f")
