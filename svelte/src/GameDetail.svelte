@@ -310,7 +310,7 @@ import type { ChugData, GameData, GamePlayerData } from "./types";
 
 			<p class="description">{@html game_data.description_html}</p>
 
-			<table class="table">
+			<table class="table meta-table">
 				<thead>
 					<tr>
 						<th scope="col">Game id</th>
@@ -324,15 +324,15 @@ import type { ChugData, GameData, GamePlayerData } from "./types";
 				</thead>
 				<tbody>
 					<tr>
-						<td>{game_data.id}</td>
-						<td id="game_start_datetime">
+						<td data-label="Game id">{game_data.id}</td>
+						<td data-label="Start Time" id="game_start_datetime">
 							{#if game_data.start_datetime}
 								{formatDate(new Date(game_data.start_datetime))}
 							{:else}
 								?
 							{/if}
 						</td>
-						<td id="game_end_datetime">
+						<td data-label="End Time" id="game_end_datetime">
 							{#if game_data.dnf}
 								DNF
 							{:else if game_data.end_datetime}
@@ -341,7 +341,7 @@ import type { ChugData, GameData, GamePlayerData } from "./types";
 								-
 							{/if}
 						</td>
-						<td id="game_duration">
+						<td data-label="Duration" id="game_duration">
 							{#if duration}
 								{formatDuration(duration)}
 							{:else}
@@ -349,7 +349,7 @@ import type { ChugData, GameData, GamePlayerData } from "./types";
 							{/if}
 						</td>
 						{#if durationSinceLastActivity !== null}
-							<td>
+							<td data-label="Time since last activity">
 								{formatDuration(durationSinceLastActivity)}
 							</td>
 						{/if}
@@ -570,6 +570,28 @@ import type { ChugData, GameData, GamePlayerData } from "./types";
 
 		.players-header {
 			margin-left: 1em;
+		}
+
+		.meta-table thead {
+			display: none;
+		}
+
+		.meta-table tbody tr {
+			display: block;
+		}
+
+		.meta-table tbody td {
+			display: flex;
+			justify-content: space-between;
+			max-width: none;
+			white-space: normal;
+		}
+
+		.meta-table tbody td::before {
+			content: attr(data-label);
+			font-weight: bold;
+			margin-right: 1em;
+			white-space: nowrap;
 		}
 	}
 
