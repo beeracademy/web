@@ -387,31 +387,33 @@ import type { ChugData, GameData, GamePlayerData } from "./types";
 
 			<hr />
 
-			<table
-				id="cards_table"
-				class="table table-bordered table-striped table-hover table-sm"
-			>
-				<thead>
-					<tr>
-						<th scope="col">Round</th>
-						{#each ordered_gameplayers as gp, i}
-							<th scope="col" class={{"current-turn": i === currentTurn}}>{gp.user.username}</th>
-						{/each}
-					</tr>
-				</thead>
-				<tbody>
-					{#each Array(13) as _, i}
+			<div class="table-responsive">
+				<table
+					id="cards_table"
+					class="table table-bordered table-striped table-hover table-sm"
+				>
+					<thead>
 						<tr>
-							<td>{i + 1}</td>
-							{#each ordered_gameplayers as _, j}
-								<CardCell
-									card={game_data.cards[i * ordered_gameplayers.length + j]}
-								/>
+							<th scope="col">Round</th>
+							{#each ordered_gameplayers as gp, i}
+								<th scope="col" class={{"current-turn": i === currentTurn}}>{gp.user.username}</th>
 							{/each}
 						</tr>
-					{/each}
-				</tbody>
-			</table>
+					</thead>
+					<tbody>
+						{#each Array(13) as _, i}
+							<tr>
+								<td>{i + 1}</td>
+								{#each ordered_gameplayers as _, j}
+									<CardCell
+										card={game_data.cards[i * ordered_gameplayers.length + j]}
+									/>
+								{/each}
+							</tr>
+						{/each}
+					</tbody>
+				</table>
+			</div>
 
 			<h2>Graphs</h2>
 
