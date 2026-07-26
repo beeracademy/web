@@ -1,5 +1,5 @@
 [project]
-name = ""
+name = "academy"
 version = "0.0.1"
 requires-python = ">=3.14"
 dependencies = [
