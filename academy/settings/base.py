@@ -208,5 +208,6 @@ TESTING = sys.argv[1:2] == ["test"]
 CORS_ALLOWED_ORIGINS = [
     "https://game.academy.beer",
     "https://beta.academy.beer",
+    "https://spil.to",
 ]
 CORS_URLS_REGEX = r"^/(api|api-token-auth)/.*$"
