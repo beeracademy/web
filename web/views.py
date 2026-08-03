@@ -296,6 +296,34 @@ class PlayerListView(PaginatedListView):
         return context
 
 
+def get_recent_chugs(qs, user):
+    recent_chugs = []
+    for game in qs:
+        for ace in game.cards.filter(value=Chug.VALUE):
+            gameplayer = ace.get_gameplayer()
+            if gameplayer.user != user:
+                continue
+            recent_chugs.append(
+                {
+                    "game": {
+                        "id": game.id,
+                        "start_datetime": game.start_datetime,
+                        "dnf": game.dnf,
+                    },
+                    "chug": {
+                        "card": CardSerializer(ace).data,
+                        "gameplayer": {
+                            "dnf": gameplayer.dnf,
+                        },
+                    },
+                }
+            )
+            if len(recent_chugs) >= 6:
+                return recent_chugs
+
+    return recent_chugs
+
+
 class PlayerDetailView(DetailView):
     model = User
     template_name = "player_detail.html"
@@ -356,32 +384,7 @@ class PlayerDetailView(DetailView):
         )
         context["recent_games"] = qs[:10]
 
-        recent_chugs = []
-        for game in qs:
-            for ace in game.cards.filter(value=Chug.VALUE):
-                gameplayer = ace.get_gameplayer()
-                if gameplayer.user != self.object:
-                    continue
-                recent_chugs.append(
-                    {
-                        "game": {
-                            "id": game.id,
-                            "start_datetime": game.start_datetime,
-                            "dnf": game.dnf,
-                        },
-                        "chug": {
-                            "card": CardSerializer(ace).data,
-                            "gameplayer": {
-                                "dnf": gameplayer.dnf,
-                            },
-                        },
-                    }
-                )
-
-                if len(recent_chugs) >= 6:
-                    break
-
-        context["recent_chugs"] = recent_chugs
+        context["recent_chugs"] = get_recent_chugs(qs, self.object)
 
         provide_card_constants(context)
 
