@@ -378,8 +378,8 @@ class PlayerDetailView(DetailView):
                     }
                 )
 
-            if len(recent_chugs) >= 6:
-                break
+                if len(recent_chugs) >= 6:
+                    break
 
         context["recent_chugs"] = recent_chugs
 
