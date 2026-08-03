@@ -2,6 +2,7 @@
 
 {% load humanize %}
 {% load base14 %}
+{% load svelte %}
 
 {% block pagetitle %}Player {{ object.username }}{% endblock %}
 
@@ -203,6 +204,15 @@
 	</tbody>
 </table>
 
+
+<h4><i class="fas fa-beer"></i> Recent chugs</h4>
+<hr>
+
+{{ recent_chugs|json_script:"recent_chugs" }}
+{{ card_constants|json_script:"card_constants" }}
+{% svelte_include "RecentChugs" %}
+<div id="svelte-recent_chugs">
+</div>
 
 <h4><i class="fas fa-users"></i> Top 30 co-players</h4>
 <hr>

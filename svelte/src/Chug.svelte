@@ -1,5 +1,5 @@
 <script module lang="ts">
-import { formatDuration } from "./globals";
+import { formatDateWithoutTime, formatDuration } from "./globals";
 import type { ChugData } from "./types";
 </script>
 
@@ -9,9 +9,10 @@ import type { ChugData } from "./types";
 		start_datetime: string;
 		chug: ChugData;
 		game_dnf: boolean;
+		game_id?: number,
 	}
 
-	let { start_datetime, chug, game_dnf }: Props = $props();
+	let { start_datetime, chug, game_dnf, game_id }: Props = $props();
 
 	const gameplayer = chug.gameplayer;
 	const user = gameplayer.user;
@@ -20,6 +21,8 @@ import type { ChugData } from "./types";
 	function getStartDeltaMs() {
 		return Date.now() - new Date(start_datetime).getTime();
 	}
+
+	const chugStartDate = new Date(new Date(start_datetime).getTime() + (card.chug_start_start_delta_ms ?? 0));
 
 	let startDeltaMs = $state(getStartDeltaMs());
 	let { durationStr, inProgress } = $derived.by(() => {
@@ -56,14 +59,21 @@ import type { ChugData } from "./types";
 			<ColoredSuit {card} />
 		</div>
 		<ul class="list-group list-group-flush">
-			<li class="list-group-item">
-				<a href="/players/{user.id}/" class="username">
-					{user.username}
-				</a>
-			</li>
+			{#if user}
+				<li class="list-group-item">
+					<a href="/players/{user.id}/" class="username">
+						{user.username}
+					</a>
+				</li>
+			{/if}
 			<li class="list-group-item">
 				{durationStr}
 			</li>
+			{#if game_id}
+				<li class="list-group-item">
+					<a href="/games/{game_id}">{formatDateWithoutTime(chugStartDate)}</a>
+				</li>
+			{/if}
 			{#if card.chug_id}
 				<li class="list-group-item staff-only">
 					<a

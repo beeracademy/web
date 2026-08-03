@@ -20,6 +20,7 @@ pnpm run dev &
 		echo "Waiting for dev server..." >&2
 	done
 	grep -E '<(script|link)' <<< "$res" | sed -E 's@src="(/[^"]+)@src="http://localhost:5173\1@'
+	echo '    <script type="module">{{ component }}_init();</script>'
 } > templates/svelte_include_generated.html
 
 wait

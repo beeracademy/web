@@ -848,6 +848,9 @@ class Card(models.Model):
     def __str__(self):
         return f"{self.value} {self.suit}"
 
+    def get_gameplayer(self):
+        return self.game.ordered_gameplayers()[self.index % self.game.players.count()]
+
     def get_user(self):
         return self.game.ordered_players()[self.index % self.game.players.count()]
 

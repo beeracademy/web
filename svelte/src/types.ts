@@ -61,5 +61,15 @@ export interface GamePlayerData {
 
 export interface ChugData {
 	card: CardData;
-	gameplayer: GamePlayerData;
+	gameplayer: Partial<GamePlayerData> & { dnf: boolean };
+}
+
+export interface RecentChugData {
+	game: {
+		id: number;
+		start_datetime: string;
+		end_datetime: string;
+		dnf: boolean;
+	};
+	chug: ChugData;
 }

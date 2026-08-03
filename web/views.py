@@ -42,6 +42,7 @@ from django.views.generic import (
 from games.achievements import ACHIEVEMENTS
 from games.models import (
     Card,
+    Chug,
     Game,
     GamePlayer,
     PlayerStat,
@@ -51,7 +52,11 @@ from games.models import (
     all_time_season,
 )
 from games.ranking import RANKINGS, get_ranking_from_key
-from games.serializers import GameSerializerWithPlayerStats, UserSerializer
+from games.serializers import (
+    CardSerializer,
+    GameSerializerWithPlayerStats,
+    UserSerializer,
+)
 from web import stats
 
 from .forms import FailedGameUploadForm, UserSettingsForm
@@ -104,6 +109,15 @@ def get_recent_dnf_players(n, min_sample_size=10):
         (gp.user, f"For dnf'ing game on {gp.game.date} with {gp.game.players_str()}")
         for gp in dnf_gps
     ]
+
+
+def provide_card_constants(context):
+    context["card_constants"] = {
+        "value_names": dict(Card.VALUES),
+        "suit_names": dict(Card.SUITS),
+        "suit_symbols": Card.SUIT_SYMBOLS,
+    }
+    return context
 
 
 def index(request):
@@ -256,11 +270,7 @@ class GameDetailView(DetailView):
             {"dnf": gp.dnf, "user": UserSerializer(gp.user).data}
             for gp in self.object.ordered_gameplayers()
         ]
-        context["card_constants"] = {
-            "value_names": dict(Card.VALUES),
-            "suit_names": dict(Card.SUITS),
-            "suit_symbols": Card.SUIT_SYMBOLS,
-        }
+        provide_card_constants(context)
         return context
 
 
@@ -344,6 +354,35 @@ class PlayerDetailView(DetailView):
             "id",
         )
         context["recent_games"] = qs[:10]
+
+        recent_chugs = []
+        for game in qs:
+            for ace in game.cards.filter(value=Chug.VALUE):
+                gameplayer = ace.get_gameplayer()
+                if gameplayer.user != self.object:
+                    continue
+                recent_chugs.append(
+                    {
+                        "game": {
+                            "id": game.id,
+                            "start_datetime": game.start_datetime,
+                            "dnf": game.dnf,
+                        },
+                        "chug": {
+                            "card": CardSerializer(ace).data,
+                            "gameplayer": {
+                                "dnf": gameplayer.dnf,
+                            },
+                        },
+                    }
+                )
+
+            if len(recent_chugs) >= 6:
+                break
+
+        context["recent_chugs"] = recent_chugs
+
+        provide_card_constants(context)
 
         played_with_count = Counter()
         for game in self.object.games.filter():

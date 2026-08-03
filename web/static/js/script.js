@@ -34,6 +34,10 @@ function formatDuration(ms, seconds_decimals_input) {
 	return `${total_hours}:${twoPad(minutes)}:${twoPad(seconds)}`;
 }
 
+window.formatDateWithoutTime = function formatDateWithoutTime(d) {
+	return moment(d).format("MMM D, YYYY");
+};
+
 window.formatDate = function formatDate(d) {
 	return moment(d).format("MMMM D, YYYY HH:mm:ss");
 };

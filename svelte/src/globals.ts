@@ -14,6 +14,7 @@ declare global {
 	interface Window {
 		is_authenticated: boolean;
 		is_staff: boolean;
+		formatDateWithoutTime: (d: Date) => string;
 		formatDate: (d: Date) => string;
 		formatDuration: (ms: number, seconds_decimals?: number) => string;
 		toBase14: (s: number) => string;
@@ -28,6 +29,7 @@ declare global {
 
 export const is_authenticated = window.is_authenticated;
 export const is_staff = window.is_staff;
+export const formatDateWithoutTime = window.formatDateWithoutTime;
 export const formatDate = window.formatDate;
 export const formatDuration = window.formatDuration;
 export const toBase14 = window.toBase14;
