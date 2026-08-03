@@ -1,6 +1,7 @@
 import datetime
 import os
 import secrets
+from typing import ClassVar
 
 from django.contrib.auth.models import AbstractUser, UserManager
 from django.db import models
@@ -162,7 +163,7 @@ class GamePlayerStat(models.Model):
 
 class PlayerStat(models.Model):
     class Meta:
-        unique_together = [("user", "season_number")]
+        unique_together = ("user", "season_number")
 
     user = models.ForeignKey("User", on_delete=models.CASCADE)
     season_number = models.PositiveIntegerField()
@@ -452,9 +453,7 @@ class Season:
         if extra_half_years % 2 == 1:
             date = date.replace(month=7)
 
-        return datetime.datetime(
-            date.year, date.month, date.day, tzinfo=datetime.timezone.utc
-        )
+        return datetime.datetime(date.year, date.month, date.day, tzinfo=datetime.UTC)
 
     @property
     def end_datetime(self):
@@ -473,7 +472,7 @@ class Season:
 
     @classmethod
     def current_season(cls):
-        return cls.season_from_date(datetime.date.today())
+        return cls.season_from_date(datetime.datetime.now(tz=datetime.UTC).date())
 
     @classmethod
     def is_valid_season_number(cls, number):
@@ -774,7 +773,7 @@ class GameToken(models.Model):
 
 class GamePlayer(models.Model):
     class Meta:
-        unique_together = [("game", "user", "position")]
+        unique_together = ("game", "user", "position")
         ordering = ("position",)
 
     game = models.ForeignKey(Game, on_delete=models.CASCADE)
@@ -786,27 +785,27 @@ class GamePlayer(models.Model):
 
 class Card(models.Model):
     class Meta:
-        unique_together = [("game", "value", "suit"), ("game", "index")]
+        unique_together = (("game", "value", "suit"), ("game", "index"))
         ordering = ("index",)
 
-    VALUES = [
+    VALUES = (
         *zip(range(2, 11), map(str, range(2, 11))),
         (11, "Jack"),
         (12, "Queen"),
         (13, "King"),
         (14, "Ace"),
-    ]
+    )
 
-    SUITS = [
+    SUITS = (
         ("S", "Spades"),
         ("C", "Clubs"),
         ("H", "Hearts"),
         ("D", "Diamonds"),
         ("A", "Carls"),
         ("I", "Heineken"),
-    ]
+    )
 
-    FACE_CARD_VALUES = [13, 12, 11]
+    FACE_CARD_VALUES = (13, 12, 11)
 
     game = models.ForeignKey("Game", on_delete=models.CASCADE, related_name="cards")
     index = models.PositiveSmallIntegerField()
@@ -863,7 +862,7 @@ class Card(models.Model):
     def card_str(self):
         return f"{self.value_str()} of {self.suit_str()}"
 
-    SUIT_SYMBOLS = {
+    SUIT_SYMBOLS: ClassVar[dict[str, tuple[str, str]]] = {
         "S": ("♠", "black"),
         "C": ("♣", "black"),
         "H": ("♥", "red"),

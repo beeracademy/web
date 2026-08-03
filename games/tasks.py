@@ -1,4 +1,5 @@
 import datetime
+import logging
 
 from celery import shared_task
 from django.conf import settings
@@ -11,6 +12,8 @@ from academy.utils import get_absolute_url
 
 from .facebook import post_game_to_page, update_game_post
 from .models import Game, recalculate_all_stats
+
+logger = logging.getLogger(__name__)
 
 
 @shared_task
@@ -86,4 +89,4 @@ def send_webpush_notification(game_id):
             ttl=24 * 60 * 60,
         )
     except Exception:
-        pass
+        logger.exception("Error sending webpush notification for game %s", game_id)

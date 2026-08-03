@@ -29,7 +29,7 @@ class Command(BaseCommand):
             return list(reader)
 
     def timestamp_seconds_to_datetime(self, timestamp):
-        return datetime.datetime.fromtimestamp(int(timestamp), tz=datetime.timezone.utc)
+        return datetime.datetime.fromtimestamp(int(timestamp), tz=datetime.UTC)
 
     def timestamp_milliseconds_to_datetime(self, timestamp):
         return self.timestamp_seconds_to_datetime(int(timestamp) / 1000)
@@ -146,7 +146,7 @@ class Command(BaseCommand):
             # Actually not in UTC, but we will try to fix this.
             drawn_datetime = datetime.datetime.strptime(
                 relation["drawtime"], "%Y-%m-%d %H:%M:%S"
-            ).replace(tzinfo=datetime.timezone.utc)
+            ).replace(tzinfo=datetime.UTC)
 
             if self.is_bad_card_date(drawn_datetime):
                 drawn_datetime = None

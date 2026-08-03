@@ -12,7 +12,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             {
                 **data,
                 "type": "chat_event",
-                "datetime": datetime.datetime.now().isoformat(),
+                "datetime": datetime.datetime.now(tz=datetime.UTC).isoformat(),
                 "chat_id": self.chat_id,
                 "username": self.user.username,
                 "user_id": self.user.id,

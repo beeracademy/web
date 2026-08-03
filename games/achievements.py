@@ -14,7 +14,7 @@ with open(TIMEZONE_FILENAME, "rb") as f:
     TIMEZONE_DATA = zoneinfo._common.load_data(f)
 VALID_DATES = filter(lambda t: t > 0, TIMEZONE_DATA[1])
 DST_TRANSITION_TIMES = [
-    datetime.datetime.fromtimestamp(t, tz=datetime.timezone.utc) for t in VALID_DATES
+    datetime.datetime.fromtimestamp(t, tz=datetime.UTC) for t in VALID_DATES
 ]
 
 
@@ -39,7 +39,7 @@ class AchievementMetaClass(type):
 
 
 class Achievement(metaclass=AchievementMetaClass):
-    __slots__ = ["name", "description", "icon"]
+    __slots__ = ["description", "icon", "name"]
 
     @staticmethod
     def get_level(user):

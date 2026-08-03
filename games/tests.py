@@ -21,7 +21,7 @@ class ApiTest(TransactionTestCase):
 
     # These shuffle indices corresponds to the identity permutation
     # Thus it will use the same order as Card.get_ordered_cards_for_players
-    SHUFFLE_INDICES = list(range(TOTAL_CARDS - 1, 0, -1))
+    SHUFFLE_INDICES = tuple(range(TOTAL_CARDS - 1, 0, -1))
 
     def assert_status(self, r, status):
         self.assertEqual(r.status_code, status, getattr(r, "data", None))
@@ -206,7 +206,7 @@ class ApiTest(TransactionTestCase):
 
     def send_all_updates(self, send_without_chug, send_with_chug):
         self.set_token(self.game_token)
-        for i in range(0, self.TOTAL_CARDS + 1):
+        for i in range(self.TOTAL_CARDS + 1):
             if send_without_chug:
                 game_data = self.get_game_data(i, False)
                 self.update_game(game_data)
@@ -346,18 +346,19 @@ class ApiTest(TransactionTestCase):
                 with lock:
                     times_called_at_first_end = times_called
 
-        with patch("games.views.update_game", mocked_update_game):
-            with concurrent.futures.ThreadPoolExecutor() as executor:
-                futures = [
-                    executor.submit(send_game_data, game_info)
-                    for game_info in game_infos
-                ]
-                results = [f.result().status_code for f in futures]
+        with (
+            patch("games.views.update_game", mocked_update_game),
+            concurrent.futures.ThreadPoolExecutor() as executor,
+        ):
+            futures = [
+                executor.submit(send_game_data, game_info) for game_info in game_infos
+            ]
+            results = [f.result().status_code for f in futures]
 
-                self.assertEqual(set(results), {200}, results)
-                self.assertEqual(times_called, len(game_infos))
+            self.assertEqual(set(results), {200}, results)
+            self.assertEqual(times_called, len(game_infos))
 
-                return times_called_at_first_end
+            return times_called_at_first_end
 
     @skipUnlessDBFeature("has_select_for_update")
     def test_concurrent_update(self):

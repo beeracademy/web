@@ -7,12 +7,12 @@ from django.contrib.auth.password_validation import (
 
 
 class StrongAdminPasswordValidator:
-    VALIDATORS = [
+    VALIDATORS = (
         UserAttributeSimilarityValidator,
         MinimumLengthValidator,
         CommonPasswordValidator,
         NumericPasswordValidator,
-    ]
+    )
 
     def validate(self, password, user=None):
         if user and user.is_staff:

@@ -4,6 +4,7 @@ import re
 from collections import Counter
 from collections.abc import Iterable
 from urllib.parse import urlencode
+
 from django.contrib import messages
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -24,10 +25,10 @@ from django.db.models import (
     DateTimeField,
     F,
     IntegerField,
-    Value,
-    When,
     OuterRef,
     Subquery,
+    Value,
+    When,
 )
 from django.shortcuts import render
 from django.templatetags.static import static
@@ -45,11 +46,11 @@ from games.models import (
     Chug,
     Game,
     GamePlayer,
-    PlayerStat,
     OneTimePassword,
+    PlayerStat,
     User,
-    filter_season,
     all_time_season,
+    filter_season,
 )
 from games.ranking import RANKINGS, get_ranking_from_key
 from games.serializers import (

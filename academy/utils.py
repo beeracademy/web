@@ -1,3 +1,5 @@
+# ruff: noqa: SIM103
+
 import os
 import sys
 from urllib.parse import urljoin

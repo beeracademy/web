@@ -1,8 +1,9 @@
 import datetime
 from collections import Counter, defaultdict
+from collections.abc import Callable
 from dataclasses import dataclass
 from threading import Thread
-from typing import Any, Callable, Optional
+from typing import Any
 
 from django.db.models import Sum
 from django.db.models.signals import post_save, pre_delete
@@ -91,9 +92,7 @@ def combined_distribution(
     )
 
 
-def generate_context_data(
-    season: Season, player_count: Optional[int]
-) -> dict[str, Any]:
+def generate_context_data(season: Season, player_count: int | None) -> dict[str, Any]:
     context = {}
 
     games = filter_season_and_player_count(Game.objects, season, player_count)
@@ -242,14 +241,14 @@ def generate_context_data(
 CONTEXT_DATA_CACHE = {}
 
 
-def get_context_data(season: Season, player_count: Optional[int]) -> dict[str, Any]:
+def get_context_data(season: Season, player_count: int | None) -> dict[str, Any]:
     context = CONTEXT_DATA_CACHE.get((season, player_count))
     if context is None:
         context = populate_cache(season, player_count)
     return context
 
 
-def populate_cache(season: Season, player_count: Optional[int]) -> dict[str, Any]:
+def populate_cache(season: Season, player_count: int | None) -> dict[str, Any]:
     context = CONTEXT_DATA_CACHE[season, player_count] = generate_context_data(
         season, player_count
     )
@@ -257,8 +256,8 @@ def populate_cache(season: Season, player_count: Optional[int]) -> dict[str, Any
 
 
 def init_cache(
-    seasons: Optional[list[Season]] = None,
-    player_counts: Optional[list[Optional[int]]] = None,
+    seasons: list[Season] | None = None,
+    player_counts: list[int | None] | None = None,
 ) -> None:
     seasons = seasons or get_all_seasons()
     player_counts = player_counts or [None] + list(range(2, 6 + 1))

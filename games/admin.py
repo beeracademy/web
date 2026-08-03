@@ -89,17 +89,17 @@ class UserAdminWithImage(UserAdmin):
 
 @admin.register(GamePlayer)
 class GamePlayerAdmin(admin.ModelAdmin):
-    readonly_fields = ["game", "position"]
+    readonly_fields = ("game", "position")
 
 
 @admin.register(Card)
 class CardAdmin(admin.ModelAdmin):
-    readonly_fields = ["game", "index", "value", "suit"]
+    readonly_fields = ("game", "index", "value", "suit")
 
 
 @admin.register(Chug)
 class ChugAdmin(admin.ModelAdmin):
-    readonly_fields = ["card"]
+    readonly_fields = ("card",)
 
 
 class GamePlayerInline(admin.TabularInline):
@@ -113,14 +113,14 @@ class CardInline(admin.TabularInline):
 
 class UploadGameView(CreateView):
     model = Game
-    fields = []
+    fields = ()
     template_name = "admin/games/game/upload_game.html"
 
 
 class UploadForm(forms.ModelForm):
     class Meta:
         model = Game
-        fields = ["game_log", "fix_times"]
+        fields = ("game_log", "fix_times")
 
     game_log = forms.CharField(widget=forms.Textarea(attrs={"rows": 30, "cols": 55}))
     fix_times = forms.BooleanField(required=False)
@@ -138,7 +138,7 @@ class UploadForm(forms.ModelForm):
         except KeyError, ValueError:
             game_id = None
 
-        game, created = Game.objects.get_or_create(
+        game, _created = Game.objects.get_or_create(
             id=game_id, defaults={"start_datetime": None}
         )
 
@@ -171,7 +171,7 @@ class UploadForm(forms.ModelForm):
 
 @admin.register(Game)
 class GameAdmin(admin.ModelAdmin):
-    list_filter = ["dnf", "official"]
+    list_filter = ("dnf", "official")
     add_form_template = "admin/games/game/upload_game.html"
     save_on_top = True
 

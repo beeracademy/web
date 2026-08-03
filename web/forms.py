@@ -20,13 +20,13 @@ validators_help_text = "<br>".join(
 class UserSettingsForm(forms.ModelForm):
     class Meta:
         model = User
-        fields = [
+        fields = (
             "username",
             "email",
             "new_password",
             "new_image_data_url",
             "image_deleted",
-        ]
+        )
 
     new_password = forms.CharField(
         widget=forms.PasswordInput, required=False, help_text=validators_help_text
@@ -81,6 +81,6 @@ class UserSettingsForm(forms.ModelForm):
 class FailedGameUploadForm(forms.ModelForm):
     class Meta:
         model = FailedGameUpload
-        fields = ["game_log_file", "game_log", "notes"]
+        fields = ("game_log_file", "game_log", "notes")
 
     game_log_file = forms.FileField(required=False)

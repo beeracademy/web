@@ -92,9 +92,6 @@ class GameUpdatePermission(BasePermission):
         return request.auth == game
 
 
-1 + 1
-
-
 class PartOfGamePermission(BasePermission):
     def has_object_permission(self, request, view, game):
         return request.user in game.players.all()

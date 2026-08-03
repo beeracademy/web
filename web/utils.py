@@ -29,16 +29,16 @@ def updated_query_url(request, updates):
 
 
 def get_all_seasons() -> list[Season]:
-    return [all_time_season] + list(
+    return (all_time_season,) + tuple(
         map(Season, range(Season.current_season().number, 0, -1))
     )
 
 
 class ChooserData:
     key = None
-    reset_keys = []
+    reset_keys = ()
     # The first value should be the default
-    values = []
+    values = ()
 
     def __init__(self, request):
         self.request = request
@@ -79,7 +79,7 @@ class ChooserData:
 
 class SeasonChooser(ChooserData):
     key = "season"
-    reset_keys = ["page"]
+    reset_keys = ("page",)
 
     @property
     def values(self):
@@ -97,7 +97,7 @@ class SeasonChooser(ChooserData):
 
 class RankingChooser(ChooserData):
     key = "type"
-    reset_keys = ["page"]
+    reset_keys = ("page",)
     values = RANKINGS
 
     def from_str(self, s):
@@ -112,7 +112,7 @@ class RankingChooser(ChooserData):
 
 class PlayerCountChooser(ChooserData):
     key = "player_count"
-    values = [None] + list(range(2, 6 + 1))
+    values = (None,) + tuple(range(2, 6 + 1))
 
     def from_str(self, s):
         try:
@@ -139,7 +139,7 @@ class PlayerCountChooser(ChooserData):
 
 class SortOrder:
     key = "order"
-    columns = []
+    columns = ()
 
     def __init__(self, request):
         self.request = request
@@ -187,10 +187,12 @@ class SortOrder:
 
 
 class GameOrder(SortOrder):
-    columns = ["end_datetime", "duration"]
+    columns = ("end_datetime", "duration")
 
 
-def get_admin_url(obj_or_model, page="changelist", args=[]):
+def get_admin_url(obj_or_model, page="changelist", args=None):
+    if args is None:
+        args = []
     url_name = (
         f"admin:{obj_or_model._meta.app_label}_{obj_or_model._meta.model_name}_{page}"
     )

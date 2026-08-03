@@ -1,3 +1,6 @@
+# ruff: noqa: SIM103
+
+
 def show_toolbar(request):
     if not (request.user and request.user.is_superuser):
         return False

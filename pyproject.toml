@@ -29,6 +29,14 @@ dependencies = [
 
 [tool.ruff]
 target-version = "py314"
+exclude = [
+    "migrations",
+]
+
+[tool.ruff.lint]
+ignore = [
+    "BLE001",
+]
 
 [tool.uv]
 package = false

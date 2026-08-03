@@ -1,5 +1,6 @@
 import datetime
 import re
+from typing import ClassVar
 from urllib.parse import urlencode
 
 from django.urls import reverse
@@ -14,8 +15,10 @@ from .shuffle_indices import generate_shuffle_indices_for_players
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ["id", "username", "is_superuser", "image_url", "password"]
-        extra_kwargs = {"password": {"write_only": True}}
+        fields = ("id", "username", "is_superuser", "image_url", "password")
+        extra_kwargs: ClassVar[dict[str, dict[str, bool]]] = {
+            "password": {"write_only": True}
+        }
 
     def create(self, validated_data):
         user = User(username=validated_data["username"])
@@ -57,14 +60,14 @@ class CreateGameSerializer(serializers.Serializer):
         return game
 
 
-CHUG_FIELDS = ["chug_start_start_delta_ms", "chug_end_start_delta_ms"]
-STORED_CHUG_FIELDS = ["chug_start_start_delta_ms", "chug_duration_ms"]
+CHUG_FIELDS = ("chug_start_start_delta_ms", "chug_end_start_delta_ms")
+STORED_CHUG_FIELDS = ("chug_start_start_delta_ms", "chug_duration_ms")
 
 
 class CardSerializer(serializers.ModelSerializer):
     class Meta:
         model = Card
-        fields = [
+        fields = (
             "value",
             "suit",
             "start_delta_ms",
@@ -72,7 +75,7 @@ class CardSerializer(serializers.ModelSerializer):
             "chug_end_start_delta_ms",
             "chug_duration_ms",
             "chug_id",
-        ]
+        )
 
     start_delta_ms = serializers.IntegerField()
     chug_start_start_delta_ms = serializers.IntegerField(
@@ -123,7 +126,7 @@ class LocationSerializer(serializers.Serializer):
 class GameSerializer(serializers.ModelSerializer):
     class Meta:
         model = Game
-        fields = [
+        fields = (
             "id",
             "start_datetime",
             "end_datetime",
@@ -141,7 +144,7 @@ class GameSerializer(serializers.ModelSerializer):
             "dnf_player_ids",
             "location",
             "image",
-        ]
+        )
 
     start_datetime = serializers.DateTimeField(required=False)
     official = serializers.BooleanField(required=True)
@@ -191,7 +194,7 @@ class GameSerializer(serializers.ModelSerializer):
                 elif not allow_overwrite:
                     raise serializers.ValidationError(
                         {
-                            field: f"Differs from server value: {repr(value)} != {repr(new_value)}"
+                            field: f"Differs from server value: {value!r} != {new_value!r}"
                         }
                     )
 
@@ -335,11 +338,14 @@ class GameSerializer(serializers.ModelSerializer):
                     )
 
         for i, card_data in enumerate(new_cards):
-            if card_data["value"] == 14 and "chug_end_start_delta_ms" not in card_data:
-                if i != len(new_cards) - 1 or completed:
-                    raise serializers.ValidationError(
-                        {"cards": f"Card {i} has missing chug data"}
-                    )
+            if (
+                card_data["value"] == 14
+                and "chug_end_start_delta_ms" not in card_data
+                and (i != len(new_cards) - 1 or completed)
+            ):
+                raise serializers.ValidationError(
+                    {"cards": f"Card {i} has missing chug data"}
+                )
 
         if completed:
             last_card = new_cards[-1]
@@ -407,7 +413,7 @@ class GameSerializer(serializers.ModelSerializer):
 
 class GameSerializerWithPlayerStats(GameSerializer):
     class Meta(GameSerializer.Meta):
-        fields = GameSerializer.Meta.fields + ["player_stats"]
+        fields = GameSerializer.Meta.fields + ("player_stats",)
 
     player_stats = serializers.SerializerMethodField()
 
@@ -425,7 +431,7 @@ class GameSerializerWithPlayerStats(GameSerializer):
 class PlayerStatSerializer(serializers.ModelSerializer):
     class Meta:
         model = PlayerStat
-        fields = [
+        fields = (
             "season_number",
             "total_games",
             "total_time_played_seconds",
@@ -438,7 +444,7 @@ class PlayerStatSerializer(serializers.ModelSerializer):
             "fastest_chug",
             "fastest_chug_duration_ms",
             "average_chug_time_seconds",
-        ]
+        )
 
     fastest_chug_duration_ms = serializers.IntegerField(
         required=False, source="fastest_chug.duration_ms"

@@ -1,6 +1,6 @@
 import argparse
-import zoneinfo
 import datetime
+import zoneinfo
 
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
