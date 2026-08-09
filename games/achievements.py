@@ -1,5 +1,6 @@
 import datetime
 import zoneinfo
+from collections import Counter
 from enum import StrEnum
 
 from django.db.models import Q
@@ -186,6 +187,36 @@ class StudyHardAchievement(Achievement):
         elif ects >= 2.5:
             return AchievementLevel.BASE
         return AchievementLevel.NO_LEVEL
+
+
+class TheMoreTheMerrierAchievement(Achievement):
+    name = "The More The Merrier"
+    description = "Play atleast 5/10/15/20 games with equally as many unique players"
+    icon = "merrier.svg"
+
+    def get_level(user):
+        played_with_count = Counter()
+        for game in user.games.filter():
+            for player in game.players.all():
+                if player != user:
+                    played_with_count[player.username] += 1
+
+        top20 = sorted(
+            ({"x": k, "y": v} for k, v in played_with_count.items()),
+            key=lambda x: -x["y"],
+        )[:30]
+        if len(top20) < 20:
+            return AchievementLevel.NO_LEVEL
+        if top20[19].get("y") >= 20:
+            return AchievementLevel.GOLD
+        elif top20[14].get("y") >= 15:
+            return AchievementLevel.SILVER
+        elif top20[9].get("y") >= 10:
+            return AchievementLevel.BRONZE
+        elif top20[4].get("y") >= 5:
+            return AchievementLevel.BASE
+        else:
+            return AchievementLevel.NO_LEVEL
 
 
 class PilfingerAchievement(Achievement):
