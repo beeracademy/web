@@ -31,8 +31,8 @@ DATABASES = {
         "NAME": "postgres",
         "USER": "postgres",
         "PASSWORD": "postgres",
-        "HOST": "db",
-        "PORT": 5432,
+        "HOST": "db_proxy",
+        "PORT": 6432,
     }
 }
 

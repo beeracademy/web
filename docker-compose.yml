@@ -65,6 +65,22 @@ services:
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=db
 
+  db_proxy:
+    image: pgbouncer/pgbouncer
+    depends_on:
+      - db
+    environment:
+      - DATABASES_HOST=db
+      - DATABASES_PORT=5432
+      - DATABASES_USER=postgres
+      - DATABASES_PASSWORD=postgres
+      - DATABASES_DBNAME=db
+      - PGBOUNCER_POOL_MODE=transaction
+      - PGBOUNCER_MAX_CLIENT_CONN=100000
+      - PGBOUNCER_DEFAULT_POOL_SIZE=100
+      - PGBOUNCER_LOG_CONNECTIONS=0
+      - PGBOUNCER_LOG_DISCONNECTIONS=0
+
   media:
     image: nginx:alpine
     restart: always
