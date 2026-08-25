@@ -33,6 +33,7 @@ DATABASES = {
         "PASSWORD": "postgres",
         "HOST": "db_proxy",
         "PORT": 6432,
+        "DISABLE_SERVER_SIDE_CURSORS": True,
     }
 }
 
