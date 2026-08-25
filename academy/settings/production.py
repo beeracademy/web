@@ -31,9 +31,11 @@ DATABASES = {
         "NAME": "postgres",
         "USER": "postgres",
         "PASSWORD": "postgres",
-        "HOST": "db-proxy",
-        "PORT": 6432,
-        "DISABLE_SERVER_SIDE_CURSORS": True,
+        "HOST": "db",
+        "PORT": 5432,
+        "OPTIONS": {
+            "pool": True,
+        },
     }
 }
 
