@@ -1,6 +1,7 @@
 import datetime
 import logging
 
+import webpush
 from celery import shared_task
 from django.conf import settings
 from django.db import transaction
@@ -88,5 +89,8 @@ def send_webpush_notification(game_id):
             payload=payload,
             ttl=24 * 60 * 60,
         )
+    except webpush.models.Group.DoesNotExist:
+        # See https://github.com/safwanrahman/django-webpush/issues/155
+        pass
     except Exception:
         logger.exception("Error sending webpush notification for game %s", game_id)
