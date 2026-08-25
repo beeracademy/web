@@ -14,7 +14,7 @@ services:
       - traefik.http.routers.academy-beer.rule=Host(`academy.beer`)
       - traefik.http.services.academy-beer.loadbalancer.server.port=8000
     depends_on:
-      - db
+      - db-proxy
       - media
       - static
       - redis
@@ -34,7 +34,7 @@ services:
     depends_on:
       - app
       - redis
-      - db
+      - db-proxy
 
   celery-beat:
     image: *app
@@ -53,7 +53,7 @@ services:
     depends_on:
       - app
       - redis
-      - db
+      - db-proxy
 
   db:
     image: postgres:17
