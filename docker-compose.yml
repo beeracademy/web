@@ -65,7 +65,7 @@ services:
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=db
 
-  db_proxy:
+  db-proxy:
     image: pgbouncer/pgbouncer
     depends_on:
       - db
