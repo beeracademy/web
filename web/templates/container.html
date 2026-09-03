@@ -5,7 +5,7 @@
 <div class="wrapper">
     {% include "nav.html" %}
 
-    <main class="container" style="padding-top: 2rem; padding-bottom: 2rem;">
+    <main class="container{% block container_class %}{% endblock %}" style="padding-top: 2rem; padding-bottom: 2rem;">
         {% bootstrap_messages %}
         {% block content %}{% endblock %}
     </main>

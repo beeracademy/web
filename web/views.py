@@ -26,6 +26,7 @@ from django.db.models import (
     DateTimeField,
     F,
     IntegerField,
+    Max,
     OuterRef,
     Subquery,
     Value,
@@ -93,25 +94,37 @@ def sample_max(population, k):
     return random.sample(population, min(k, len(population)))
 
 
-def get_recent_players(n, min_sample_size=20):
-    qs = GamePlayer.objects.filter(game__dnf=False).order_by(
-        F("game__end_datetime").desc(nulls_last=True)
+def get_recent_players(n, min_sample_size=40):
+    # Find the most recently active users, deduplicated by user at the
+    # database level (one row per user, keyed by their latest game).
+    recent_user_ids = list(
+        GamePlayer.objects.filter(game__dnf=False)
+        .values("user_id")
+        .annotate(last_end=Max("game__end_datetime"))
+        .order_by(F("last_end").desc(nulls_last=True))
+        .values_list("user_id", flat=True)[:min_sample_size]
     )
-    gps = sample_max(list(set(qs[:min_sample_size])), n)
+
+    gp_by_user_id = {}
+    qs = (
+        GamePlayer.objects.filter(user_id__in=recent_user_ids, game__dnf=False)
+        .select_related("user", "game")
+        .order_by(F("game__end_datetime").desc(nulls_last=True))
+    )
+    for gp in qs:
+        gp_by_user_id.setdefault(gp.user_id, gp)
+
+    unique_gps = [
+        gp_by_user_id[user_id]
+        for user_id in recent_user_ids
+        if user_id in gp_by_user_id
+    ]
+
+    gps = sample_max(unique_gps, n)
+    gps.sort(key=unique_gps.index)
     return [
         (gp.user, f"For playing game on {gp.game.date} with {gp.game.players_str()}")
         for gp in gps
-    ]
-
-
-def get_recent_dnf_players(n, min_sample_size=10):
-    qs = GamePlayer.objects.filter(dnf=True, game__dnf=False).order_by(
-        F("game__end_datetime").desc(nulls_last=True)
-    )
-    dnf_gps = sample_max(list(qs[:min_sample_size]), n)
-    return [
-        (gp.user, f"For dnf'ing game on {gp.game.date} with {gp.game.players_str()}")
-        for gp in dnf_gps
     ]
 
 
@@ -164,14 +177,20 @@ def index(request):
     total_players = GamePlayer.objects.count()
     monthly_games_data = get_monthly_game_counts()
 
+    recent_picture_games = (
+        Game.objects.exclude(image="")
+        .filter(image__isnull=False)
+        .order_by("-end_datetime", "-start_datetime", "-id")[:24]
+    )
+
     context = {
         "total_beers": total_players * BEERS_PER_PLAYER,
         "total_games": Game.objects.all().count(),
-        "recent_players": get_recent_players(4),
-        "wall_of_shame_players": get_recent_dnf_players(4),
+        "recent_players": get_recent_players(16),
         "live_games": Game.objects.filter(
             end_datetime__isnull=True, dnf=False
         ).order_by("-start_datetime")[:5],
+        "recent_picture_games": recent_picture_games,
         "monthly_games_data": monthly_games_data,
         "games_last_12_months": sum(monthly_games_data["counts"]),
     }

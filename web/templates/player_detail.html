@@ -200,7 +200,14 @@
 	</div>
 	{% if recent_games %}
 	<div class="table-card mb-0">
-		<table class="table academy-table table-sm mb-0">
+		<table class="table academy-table table-sm mb-0 recent-games-table">
+			<colgroup>
+				<col class="col-players">
+				<col class="col-season">
+				<col class="col-ended">
+				<col class="col-duration">
+				<col class="col-action">
+			</colgroup>
 			<thead>
 				<tr class="academy-table">
 					<th scope="col" class="player-name-col">Players</th>

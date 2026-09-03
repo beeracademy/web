@@ -1,14 +1,12 @@
 <script module lang="ts">
-import { formatDate, formatDuration, is_staff, moment } from "./globals";
+import { formatDate, formatDuration, is_staff } from "./globals";
 import type { ChugData, GameData, GamePlayerData } from "./types";
 </script>
 
 <script lang="ts">
-	import { onMount } from "svelte";
-
 	import Map from "./Map.svelte";
 	import Image from "./Image.svelte";
-	import Players from "./Players.svelte";
+	import PlayerCard from "./PlayerCard.svelte";
 	import CardCell from "./CardCell.svelte";
 	import Chug from "./Chug.svelte";
 	import SipsGraph from "./SipsGraph.svelte";
@@ -114,289 +112,205 @@ import type { ChugData, GameData, GamePlayerData } from "./types";
 		return index % ordered_gameplayers.length;
 	});
 
-	let chat_messages: HTMLDivElement = $state(), chat_input: HTMLInputElement = $state();
-	let toastContainer: HTMLDivElement = $state();
-	onMount(function () {
-		const scheme = window.location.protocol === "https:" ? "wss" : "ws";
-		let socket: WebSocket | null = null;
-		let myChatId: string | null = null;
+	const numPlayers = ordered_gameplayers.length;
+	const totalCards = numPlayers * 13;
 
-		startSocket();
+	let currentRound = $derived(
+		Math.min(13, Math.floor(game_data.cards.length / numPlayers) + 1)
+	);
+	let currentCard = $derived(Math.min(totalCards, game_data.cards.length + 1));
 
-		function startSocket() {
-			socket = new WebSocket(
-				scheme + "://" + window.location.host + "/ws/chat/" + game_data.id + "/"
-			);
-
-			socket.addEventListener("open", function (e) {
-				chat_input.disabled = false;
+	let rankedPlayerIndices: number[] = $derived.by(() => {
+		return ordered_gameplayers
+			.map((_, i) => i)
+			.sort((a, b) => {
+				const sa = game_data.player_stats[a]?.total_sips ?? 0;
+				const sb = game_data.player_stats[b]?.total_sips ?? 0;
+				return sb - sa;
 			});
+	});
 
-			socket.addEventListener("close", function () {
-				console.error("Chat socket closed unexpectedly!");
-				disconnected();
-			});
-
-			socket.addEventListener("error", function () {
-				console.error("Got an error from the chat socket!");
-				socket!.close();
-			});
-
-			socket.addEventListener("message", function (e) {
-				var data = JSON.parse(e.data);
-
-				if (data.event === "chat_id") {
-					myChatId = data.chat_id;
-					return;
-				}
-
-				var username = data["username"];
-				if (data.is_game) {
-					username = "Game";
-				} else if (!username) {
-					username = "Guest";
-				}
-
-				let chatId = data.chat_id;
-
-				var userUrl: string;
-				if (data.user_id) {
-					userUrl = `/players/${data.user_id}`;
-				} else if (data.is_game) {
-					userUrl = window.location.href;
-				} else {
-					userUrl = "#";
-				}
-
-				var message = null;
-				var isInfo = false;
-				switch (data["event"]) {
-					case "message":
-						message = data["message"];
-						break;
-					case "connect":
-						message = "connected";
-						isInfo = true;
-						break;
-					case "disconnect":
-						message = "disconnected";
-						isInfo = true;
-						break;
-				}
-
-				if (message) {
-					var d = new Date(data["datetime"]);
-					var time = moment(d).format("HH:mm:ss");
-
-					addMessage(username, userUrl, message, isInfo, time, chatId);
-				} else {
-					console.error("Unknown message received:");
-					console.error(data);
-				}
-			});
-		}
-
-		chat_input.addEventListener("keyup", function (e) {
-			if (e.keyCode === 13) {
-				socket!.send(
-					JSON.stringify({
-						message: chat_input.value,
-					})
-				);
-
-				chat_input.value = "";
-			}
+	let ranks: number[] = $derived.by(() => {
+		const r = new Array(numPlayers).fill(0);
+		rankedPlayerIndices.forEach((playerIndex, rank) => {
+			r[playerIndex] = rank + 1;
 		});
-
-		function disconnected() {
-			chat_input.disabled = true;
-			setTimeout(startSocket, 1000);
-		}
-
-		function addMessage(
-			user: string,
-			userUrl: string,
-			msg: string,
-			isInfo: boolean,
-			_time: string,
-			chatId: string
-		) {
-			let elm = document.createElement("div");
-			elm.classList.add("message");
-
-			if (isInfo) {
-				elm.classList.add("info-message");
-			}
-
-			var userElm = document.createElement("a");
-			userElm.href = userUrl;
-			userElm.target = "_blank";
-			userElm.innerText = user;
-			if (!isInfo) {
-				userElm.innerText += ":";
-			}
-			elm.appendChild(userElm);
-
-			elm.appendChild(document.createTextNode(" "));
-
-			var textElm = document.createTextNode(msg);
-			elm.appendChild(textElm);
-
-			chat_messages.appendChild(elm);
-
-			chat_messages.scrollTo(0, chat_messages.scrollHeight);
-
-			if (!isInfo && chatId !== myChatId) {
-				const toastHeader = document.createElement("div");
-				toastHeader.classList.add("toast-header");
-				toastHeader.textContent = user;
-
-				const toastBody = document.createElement("div");
-				toastBody.classList.add("toast-body");
-				toastBody.textContent = msg;
-
-				const toastElm = document.createElement("div");
-				toastElm.appendChild(toastHeader);
-				toastElm.appendChild(toastBody);
-
-				toastContainer.appendChild(toastElm);
-
-				(window as any)
-					.jQuery(toastElm)
-					.toast({ delay: 2000 })
-					.on("hidden.bs.toast", function () {
-						toastContainer.removeChild(this);
-					})
-					.toast("show");
-			}
-		}
+		return r;
 	});
 
-	onMount(() => {
-		const footer = document.querySelector("footer");
-		const game = document.querySelector(".game");
-		const gameWrapper = document.querySelector(".game-wrapper");
-
-		function handleResize() {
-			const parent = window.innerWidth <= 1024 ? gameWrapper : game;
-			parent.appendChild(footer);
-		}
-
-		window.addEventListener("resize", handleResize);
-
-		handleResize();
+	let statusLabel = $derived.by(() => {
+		if (game_data.dnf) return "DNF";
+		if (game_data.end_datetime) return "Finished";
+		if (game_data.start_datetime) return "Live";
+		return "Not started";
 	});
+
+	type TabId = "rounds" | "sips" | "time";
+	let activeTab: TabId = $state("rounds");
+	const tabs: { id: TabId; label: string; icon: string }[] = [
+		{ id: "rounds", label: "Round overview", icon: "fa-table" },
+		{ id: "sips", label: "Sips per round", icon: "fa-chart-line" },
+		{ id: "time", label: "Time per turn", icon: "fa-chart-line" },
+	];
+
+	let lightboxOpen = $state(false);
+
+	function openLightbox() {
+		lightboxOpen = true;
+		document.body.classList.add("gallery-lightbox-active");
+	}
+
+	function closeLightbox() {
+		lightboxOpen = false;
+		document.body.classList.remove("gallery-lightbox-active");
+	}
+
+	function handleLightboxKeydown(e: KeyboardEvent) {
+		if (lightboxOpen && e.key === "Escape") {
+			closeLightbox();
+		}
+	}
 </script>
 
-<div class="game-wrapper">
-	<h2 class="players-header">Players</h2>
-	<div class="players">
-		<Players {game_data} {ordered_gameplayers} {currentTurn} />
+<svelte:window onkeydown={handleLightboxKeydown} />
+
+<div class="page-toolbar" style="align-items: center;">
+	<div>
+		<h1 class="page-title icon-heading">
+			<i class="fas fa-gamepad"></i> Game #{game_data.id}
+		</h1>
+		<p class="page-subtitle icon-heading-inline">
+			{#if game_data.start_datetime}
+				Started {formatDate(new Date(game_data.start_datetime))}
+			{/if}
+		</p>
 	</div>
-	<div class="game">
-		<div class="container">
-			<h2>
-				Meta
-				{#if is_staff}
-					<a
-						class="btn btn-primary float-right text-light col-md-auto"
-						href="/admin/games/game/{game_data.id}/change/">Edit</a
-					>
-					<br /><br class="d-lg-none" />
-				{/if}
-			</h2>
+	<div class="page-toolbar-actions">
+		{#if statusLabel === "Live"}
+			<span class="game-live-badge"><span class="status-dot"></span> Live</span>
+		{:else if statusLabel === "DNF"}
+			<span class="game-status-badge game-status-dnf">DNF</span>
+		{/if}
+		{#if is_staff}
+			<a class="btn btn-outline-secondary btn-sm" href="/admin/games/game/{game_data.id}/change/">
+				<i class="fas fa-user-edit"></i> Edit
+			</a>
+		{/if}
+	</div>
+</div>
 
-			<hr />
+{#if !done}
+	{#if game_data.description_html}
+		<p class="description">{@html game_data.description_html}</p>
+	{/if}
 
-			<p class="description">{@html game_data.description_html}</p>
-
-			<table class="table meta-table">
-				<thead>
-					<tr>
-						<th scope="col">Game id</th>
-						<th scope="col">Start Time</th>
-						<th scope="col">End Time</th>
-						<th scope="col">Duration</th>
-						{#if durationSinceLastActivity !== null}
-							<th scope="col">Time since last activity</th>
-						{/if}
-					</tr>
-				</thead>
-				<tbody>
-					<tr>
-						<td data-label="Game id">{game_data.id}</td>
-						<td data-label="Start Time" id="game_start_datetime">
-							{#if game_data.start_datetime}
-								{formatDate(new Date(game_data.start_datetime))}
-							{:else}
-								?
-							{/if}
-						</td>
-						<td data-label="End Time" id="game_end_datetime">
-							{#if game_data.dnf}
-								DNF
-							{:else if game_data.end_datetime}
-								{formatDate(new Date(game_data.end_datetime))}
-							{:else}
-								-
-							{/if}
-						</td>
-						<td data-label="Duration" id="game_duration">
-							{#if duration}
-								{formatDuration(duration)}
-							{:else}
-								?
-							{/if}
-						</td>
-						{#if durationSinceLastActivity !== null}
-							<td data-label="Time since last activity">
-								{formatDuration(durationSinceLastActivity)}
-							</td>
-						{/if}
-					</tr>
-				</tbody>
-			</table>
-
-			{#if game_data.location.latitude !== null}
-				<h2>Location</h2>
-				<hr />
-				<Map location={game_data.location} />
-			{/if}
-
-			{#if game_data.image !== null}
-				<h2>Image</h2>
-				<hr />
-				<Image url={game_data.image} />
-			{/if}
-
-			<h2>Chugs</h2>
-
-			<hr />
-
-			<div class="container">
-				<div id="chugs_container" class="row justify-content-md-center">
-					{#each chugs as chug}
-						{#if game_data.start_datetime}
-							<Chug start_datetime={game_data.start_datetime} {chug} game_dnf={game_data.dnf} />
-						{/if}
-					{/each}
-				</div>
+	<div class="stat-grid game-stat-grid stats-summary-grid">
+		<div class="stat-card-v2">
+			<div class="stat-card-v2-head">
+				<span class="stat-card-v2-label">Round</span>
 			</div>
+			<div class="stat-card-v2-value">{currentRound}<span class="stat-card-v2-value-sub">/13</span></div>
+			<div class="stats-card-subtext">Card {currentCard} of {totalCards}</div>
+			<i class="fas fa-layer-group stat-card-v2-icon"></i>
+		</div>
+		<div class="stat-card-v2">
+			<div class="stat-card-v2-head">
+				<span class="stat-card-v2-label">Duration</span>
+			</div>
+			<div class="stat-card-v2-value">{#if duration}{formatDuration(duration)}{:else}?{/if}</div>
+			<div class="stats-card-subtext">
+				{#if durationSinceLastActivity !== null && currentTurn !== undefined}
+					{formatDuration(durationSinceLastActivity)} waiting for {ordered_gameplayers[currentTurn].user.username}
+				{:else}
+					In progress
+				{/if}
+			</div>
+			<i class="fas fa-stopwatch stat-card-v2-icon"></i>
+		</div>
+	</div>
+{:else if game_data.image !== null || game_data.description_html || !game_data.dnf}
+	<div class="game-summary-row">
+		{#if game_data.image !== null}
+			<button type="button" class="card game-summary-card game-summary-image-card" onclick={openLightbox}>
+				<img src={game_data.image} alt="Game" />
+			</button>
+		{/if}
+		{#if game_data.description_html}
+			<div class="card game-summary-card game-summary-description-card">
+				<p class="description">{@html game_data.description_html}</p>
+			</div>
+		{/if}
+		{#if !game_data.dnf}
+			<div class="card game-summary-card stat-card-v2 no-accent">
+				<div class="stat-card-v2-head">
+					<span class="stat-card-v2-label">Duration</span>
+				</div>
+				<div class="stat-card-v2-value">{#if duration}{formatDuration(duration)}{:else}?{/if}</div>
+				<div class="stats-card-subtext">
+					{#if game_data.end_datetime}
+						Ended {formatDate(new Date(game_data.end_datetime))}
+					{/if}
+				</div>
+				<i class="fas fa-stopwatch stat-card-v2-icon"></i>
+			</div>
+		{/if}
+	</div>
+{/if}
 
-			<h2>Round overview</h2>
+{#if game_data.image !== null}
+	<div class="gallery-lightbox" class:open={lightboxOpen} onclick={(e) => { if (e.target === e.currentTarget) closeLightbox(); }}>
+		<button type="button" class="gallery-lightbox-close" aria-label="Close" onclick={closeLightbox}>&times;</button>
+		<div class="gallery-lightbox-inner">
+			<img class="gallery-lightbox-image" src={game_data.image} alt="Game" />
+		</div>
+	</div>
+{/if}
 
-			<hr />
+<div class="card section-card">
+	<div class="section-card-header">
+		<h2 class="icon-heading"><i class="fas fa-users"></i> Players</h2>
+	</div>
+	<div class="game-players-grid">
+		{#each ordered_gameplayers as gp, i}
+			<PlayerCard
+				gameplayer={gp}
+				player_stats={game_data.player_stats[i]}
+				colorIndex={i}
+				rank={ranks[i]}
+				isCurrentTurn={i === currentTurn}
+				{done}
+			/>
+		{/each}
+	</div>
+</div>
 
+<div class="card section-card">
+	<ul class="nav nav-tabs game-detail-tabs">
+		{#each tabs as tab}
+			<li class="nav-item">
+				<button
+					type="button"
+					class="nav-link{activeTab === tab.id ? ' active' : ''}"
+					onclick={() => (activeTab = tab.id)}
+				>
+					<i class="fas {tab.icon}"></i> {tab.label}
+				</button>
+			</li>
+		{/each}
+	</ul>
+
+	{#if activeTab === "rounds"}
+		<div class="table-card mb-0">
 			<div class="table-responsive">
 				<table
 					id="cards_table"
-					class="table table-bordered table-striped table-hover table-sm"
+					class="table academy-table slim mb-0"
 				>
 					<thead>
 						<tr>
 							<th scope="col">Round</th>
 							{#each ordered_gameplayers as gp, i}
-								<th scope="col" class={{"current-turn": i === currentTurn}}>{gp.user.username}</th>
+								<th scope="col" class={{"current-turn-col": i === currentTurn}}>{gp.user.username}</th>
 							{/each}
 						</tr>
 					</thead>
@@ -414,207 +328,150 @@ import type { ChugData, GameData, GamePlayerData } from "./types";
 					</tbody>
 				</table>
 			</div>
+		</div>
+	{:else if activeTab === "sips"}
+		<SipsGraph {game_data} {ordered_gameplayers} />
+	{:else if activeTab === "time"}
+		<TimeGraph {game_data} {ordered_gameplayers} />
+	{/if}
+</div>
 
-			<h2>Graphs</h2>
+<div class="card section-card">
+	<div class="section-card-header">
+		<h2 class="icon-heading"><i class="fas fa-wine-bottle"></i> Chugs</h2>
+	</div>
+	{#if chugs.length > 0}
+		<div class="chugs-grid">
+			{#each chugs as chug}
+				{#if game_data.start_datetime}
+					<Chug start_datetime={game_data.start_datetime} {chug} game_dnf={game_data.dnf} />
+				{/if}
+			{/each}
+		</div>
+	{:else}
+		<p class="empty-state">No chugs yet.</p>
+	{/if}
+</div>
 
-			<hr />
-
-			<br />
-			<br />
-			<SipsGraph {game_data} {ordered_gameplayers} />
-			<br />
-			<br />
-			<br />
-			<TimeGraph {game_data} {ordered_gameplayers} />
+{#if game_data.location.latitude !== null}
+	<div class="card section-card">
+		<div class="section-card-header">
+			<h2 class="icon-heading"><i class="fas fa-map-marker-alt"></i> Location</h2>
+		</div>
+		<div class="stats-map">
+			<Map location={game_data.location} />
 		</div>
 	</div>
+{/if}
 
-	<div class="chat">
-		<div class="info">Chat</div>
-		<div class="messages" id="chat-messages" bind:this={chat_messages}></div>
-		<input
-			id="chat-input"
-			autocomplete="off"
-			type="text"
-			disabled
-			placeholder="Send a message"
-			bind:this={chat_input}
-		/>
+{#if game_data.image !== null && !done}
+	<div class="card section-card">
+		<div class="section-card-header">
+			<h2 class="icon-heading"><i class="fas fa-image"></i> Image</h2>
+		</div>
+		<Image url={game_data.image} />
 	</div>
-</div>
-
-<div
-	aria-live="polite"
-	aria-atomic="true"
-	class="d-flex justify-content-center align-items-center"
->
-	<div
-		style="position: absolute; top: 100px; right: 100px; z-index: 10000; min-height: 200px;"
-		bind:this={toastContainer}
-></div>
-</div>
+{/if}
 
 <style>
-	:global(.toast-body) {
-		background-color: white;
-	}
-
-	:global(.toast-header, .toast-body) {
-		border: 1px solid black;
-	}
-
 	.description {
-		min-height: 1.5em;
+		color: var(--color-text-muted);
+		margin-top: -0.5rem;
 	}
 
-	.game-wrapper {
-		display: grid;
-		grid:
-			[row1-start] "players game chat" [row1-end]
-			/ 275px auto 275px;
-		height: 100%;
+	.game-stat-grid {
+		grid-template-columns: repeat(2, 1fr);
 	}
 
-	.game-wrapper .game {
-		grid-area: game;
-		padding: 0px 48px;
-		margin: 0px 5px;
-		overflow-y: auto;
-		overflow-x: hidden;
+	.game-stat-grid .stat-card-v2::before {
+		display: none;
 	}
 
-	.current-turn {
-		background-color: #faa;
+	.stat-card-v2-value-sub {
+		font-size: 1.1rem;
+		color: var(--color-text-muted);
 	}
 
-	.game-wrapper .players {
-		grid-area: players;
-		padding: 16px;
-		overflow-y: auto;
-		border-right: 1px solid #dededf;
+	.game-summary-row {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 1.25rem;
+		margin-bottom: 1.25rem;
 	}
 
-	.game-wrapper .chat {
-		grid-area: chat;
-		min-height: 0; /* Fix scrolling */
-		border-left: 1px solid #dededf;
-		display: grid;
-		grid:
-			[row1-start] "chat-header" 64px [row1-end]
-			[row2-start] "chat-messages" 1fr [row2-end]
-			[row3-start] "chat-input" 64px [row3-end]
-			/ auto;
-		justify-content: center;
+	.game-summary-card {
+		flex: 1 1 240px;
+		margin-bottom: 0;
+		min-width: 0;
 	}
 
-	.game-wrapper .chat .info {
-		grid-area: chat-header;
-		border-bottom: 1px solid #dededf;
-		text-align: center;
-		font-size: 1.5em;
-		color: #666;
-		text-transform: uppercase;
-		margin-top: 0.5em;
-	}
-
-	.game-wrapper .chat .messages {
-		grid-area: chat-messages;
-		padding: 16px;
-		overflow-y: auto;
-		overflow-x: hidden;
-	}
-
-	.game-wrapper .chat .messages :global(.message.info-message) {
-		color: #666;
-	}
-
-	.game-wrapper .chat .messages :global(.message) {
-		margin: 4px 8px;
-	}
-
-	.game-wrapper .chat .messages :global(.message:not(.info-message) b) {
-		color: #bd2130;
-	}
-
-	.game-wrapper .chat input {
-		grid-area: chat-input;
-		margin: 16px;
-		padding: 8px;
-		border: none;
-		border-radius: 5px;
-		background-color: #f2f2f2;
-		outline-color: #bd2130;
-	}
-
-	th,
-	td {
-		max-width: 150px;
-		white-space: nowrap;
+	.game-summary-image-card {
+		padding: 0;
 		overflow: hidden;
-		text-overflow: ellipsis;
+		display: flex;
+		border: 1px solid var(--color-border);
+		cursor: pointer;
+		transition: opacity 0.15s ease;
 	}
 
-	@media only screen and (max-width: 1200px) {
-		.game-wrapper {
-			display: block; /* Disable grid */
-		}
-
-		.game {
-			padding: 15px !important;
-			margin: 0px;
-		}
-
-		.players {
-			display: grid;
-			grid-template-columns: repeat(auto-fill, minmax(275px, 1fr));
-			grid-gap: 1rem;
-		}
-
-		.players-header {
-			margin-left: 1em;
-		}
-
-		.meta-table thead {
-			display: none;
-		}
-
-		.meta-table tbody tr {
-			display: block;
-		}
-
-		.meta-table tbody td {
-			display: flex;
-			justify-content: space-between;
-			max-width: none;
-			white-space: normal;
-		}
-
-		.meta-table tbody td::before {
-			content: attr(data-label);
-			font-weight: bold;
-			margin-right: 1em;
-			white-space: nowrap;
-		}
+	.game-summary-image-card:hover {
+		opacity: 0.85;
 	}
 
-	@media only screen and (min-width: 1200px) {
-		.game::-webkit-scrollbar,
-		.players::-webkit-scrollbar {
-			width: 10px;
-		}
+	.game-summary-image-card img {
+		width: 100%;
+		height: 100%;
+		max-height: 200px;
+		object-fit: cover;
+		display: block;
+	}
 
-		.game::-webkit-scrollbar-thumb,
-		.players::-webkit-scrollbar-thumb {
-			background-color: #646a7217;
-		}
+	.stat-card-v2.no-accent::before {
+		display: none;
+	}
 
-		.game::-webkit-scrollbar-thumb,
-		.players::-webkit-scrollbar-thumb {
-			background-color: #646a7217;
-		}
+	.game-summary-description-card {
+		display: flex;
+		align-items: center;
+		padding: 1.25rem 1.5rem;
+	}
 
-		.players-header {
-			display: none;
+	.game-summary-description-card .description {
+		margin: 0;
+	}
+
+	.game-players-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+		gap: 1rem;
+	}
+
+	.chugs-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+		gap: 1rem;
+	}
+
+	.game-detail-tabs {
+		margin-bottom: 1.25rem;
+		flex-wrap: wrap;
+	}
+
+	.game-detail-tabs .nav-link {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5rem;
+		background: none;
+		cursor: pointer;
+	}
+
+	:global(.current-turn-col) {
+		color: var(--color-primary) !important;
+	}
+
+	@media (max-width: 768px) {
+		.game-stat-grid {
+			grid-template-columns: 1fr;
 		}
 	}
 </style>

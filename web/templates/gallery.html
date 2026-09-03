@@ -1,5 +1,7 @@
 {% extends "container.html" %}
 
+{% load static %}
+
 {% block pagetitle %}Gallery{% endblock %}
 
 {% block content %}
@@ -41,6 +43,7 @@
 {% endblock %}
 
 {% block scripts %}
+<script src="{% static 'js/masonry.js' %}"></script>
 <script>
 (() => {
     var masonry = document.getElementById("gallery-masonry");
@@ -110,98 +113,20 @@
         }
     });
 
-    function columnCountForWidth(width) {
-        if (width < 500) return 1;
-        if (width < 768) return 2;
-        if (width < 992) return 3;
-        if (width < 1400) return 4;
-        return 5;
-    }
-
-    var itemAspectRatios = null;
-
-    function getItemAspectRatios(items) {
-        // Preload every image so we know its aspect ratio up front —
-        // this lets us assign items to the shortest column synchronously,
-        // instead of racing against async image loads.
-        return Promise.all(
-            items.map((item) => new Promise((resolve) => {
-                    var img = new Image();
-                    var finish = () => {
-                        resolve(
-                            (img.naturalHeight || 1) / (img.naturalWidth || 1) ||
-                                1
-                        );
-                    };
-                    img.addEventListener("load", finish);
-                    img.addEventListener("error", finish);
-                    img.src = item.dataset.imageUrl;
-                }))
-        );
-    }
-
-    function renderMasonry(items, ratios) {
-        var columnCount = columnCountForWidth(masonry.clientWidth || masonry.parentElement.clientWidth);
-        masonry.innerHTML = "";
-
-        var columns = [];
-        var heights = [];
-        var i, col;
-        for (i = 0; i < columnCount; i++) {
-            col = document.createElement("div");
-            col.className = "gallery-masonry-col";
-            masonry.appendChild(col);
-            columns.push(col);
-            heights.push(0);
-        }
-
-        items.forEach((originalItem, index) => {
-            var item = originalItem.cloneNode(true);
-            item.addEventListener("click", () => {
-                openLightbox(index);
-            });
-
-            // Place the item into the currently shortest column.
-            var shortestIndex = heights.indexOf(Math.min.apply(null, heights));
-            columns[shortestIndex].appendChild(item);
-            heights[shortestIndex] += ratios[index];
-        });
-    }
-
-    function layoutMasonry() {
-        if (!masonry) return;
-
+    if (masonry) {
         var template = document.getElementById("gallery-item-template");
         var items = Array.prototype.slice.call(
             template.content.querySelectorAll(".gallery-item")
         );
 
-        if (!galleryData.length) {
-            galleryData = items.map((item) => ({
-                    imageUrl: item.dataset.imageUrl,
-                    gameUrl: item.dataset.gameUrl,
-                    caption: item.dataset.caption,
-                }));
-        }
+        galleryData = items.map((item) => ({
+                imageUrl: item.dataset.imageUrl,
+                gameUrl: item.dataset.gameUrl,
+                caption: item.dataset.caption,
+            }));
 
-        if (itemAspectRatios) {
-            renderMasonry(items, itemAspectRatios);
-            return;
-        }
-
-        getItemAspectRatios(items).then((ratios) => {
-            itemAspectRatios = ratios;
-            renderMasonry(items, ratios);
-        });
+        initMasonry(masonry, items, openLightbox);
     }
-
-    layoutMasonry();
-
-    var resizeTimeout;
-    window.addEventListener("resize", () => {
-        clearTimeout(resizeTimeout);
-        resizeTimeout = setTimeout(layoutMasonry, 200);
-    });
 })();
 </script>
 {% endblock %}

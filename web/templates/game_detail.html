@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "container.html" %}
 
 {% load svelte %}
 
@@ -6,26 +6,11 @@
 
 {% block styles %}
 <style>
-    body {
-        display: flex;
-        flex-direction: column;
-    }
-
-    nav {
-        margin-bottom: 0px !important;
-        flex-grow: 0;
-    }
-
-    #svelte-game_detail {
-        height: calc(100% - 64px);
-    }
-
     .card-img-top {
         width: {{ IMAGE_WIDTH }}px;
     }
 </style>
 <script>
-    window.is_authenticated = {{ user.is_authenticated|lower }};
     window.is_staff = {{ user.is_staff|lower }};
 </script>
 
@@ -33,9 +18,7 @@
 
 {% endblock %}
 
-{% block body %}
-
-{% include "nav.html" %}
+{% block content %}
 
 {{ game_data|json_script:"game_data" }}
 {{ ordered_gameplayers|json_script:"ordered_gameplayers" }}

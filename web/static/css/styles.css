@@ -83,6 +83,10 @@ body:not(.staff-user) .staff-only {
 	padding-right: 1.5rem;
 }
 
+.wrapper > .container.container-wide {
+	max-width: 1800px;
+}
+
 h1,
 h2,
 h3,
@@ -872,6 +876,25 @@ tr[data-href] {
 	padding: 0.6rem 1.5rem;
 }
 
+/* Game round overview table — narrow round column, player columns share the rest */
+#cards_table {
+	table-layout: fixed;
+}
+
+#cards_table th:first-child,
+#cards_table td:first-child {
+	width: 3.5rem;
+	padding-left: 1rem !important;
+	padding-right: 0.5rem !important;
+}
+
+#cards_table th:not(:first-child),
+#cards_table td:not(:first-child) {
+	text-align: center;
+	padding-left: 0.5rem !important;
+	padding-right: 0.5rem !important;
+}
+
 .duration,
 .text-mono {
 	font-family: var(--font-mono);
@@ -930,6 +953,37 @@ tr[data-href] {
 }
 
 .games-table .col-action {
+	width: 44px;
+}
+
+/* Recent games table (player detail) — fixed layout with fewer columns
+   so long player lists truncate instead of pushing the duration out */
+.recent-games-table {
+	table-layout: fixed;
+}
+
+.recent-games-table th,
+.recent-games-table td {
+	overflow: hidden;
+}
+
+.recent-games-table .col-players {
+	width: 46%;
+}
+
+.recent-games-table .col-season {
+	width: 10%;
+}
+
+.recent-games-table .col-ended {
+	width: 24%;
+}
+
+.recent-games-table .col-duration {
+	width: 16%;
+}
+
+.recent-games-table .col-action {
 	width: 44px;
 }
 
@@ -1032,6 +1086,72 @@ tr[data-href]:hover .row-action-icon {
 
 tr.live .status-dot {
 	animation: status-dot-pulse 1.4s ease-in-out infinite;
+}
+
+.game-live-badge {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.55rem;
+	font-weight: 700;
+	font-size: 1rem;
+	letter-spacing: 0.02em;
+	color: #4ade80;
+	padding: 0.5rem 1.1rem;
+	border-radius: var(--radius-pill);
+	background-color: rgba(74, 222, 128, 0.08);
+	border: 1px solid rgba(74, 222, 128, 0.25);
+	flex: none;
+}
+
+.game-live-badge .status-dot {
+	position: relative;
+	width: 10px;
+	height: 10px;
+}
+
+.game-live-badge .status-dot::before {
+	content: "";
+	position: absolute;
+	inset: -3px;
+	border-radius: 50%;
+	background-color: currentColor;
+	opacity: 0.55;
+	animation: status-dot-ring 1.6s ease-out infinite;
+}
+
+@keyframes status-dot-ring {
+	0% {
+		transform: scale(0.5);
+		opacity: 0.55;
+	}
+	100% {
+		transform: scale(1.5);
+		opacity: 0;
+	}
+}
+
+.game-status-badge {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.45rem;
+	font-weight: 700;
+	font-size: 1rem;
+	letter-spacing: 0.02em;
+	padding: 0.5rem 1.1rem;
+	border-radius: var(--radius-pill);
+	flex: none;
+}
+
+.game-status-badge.game-status-done {
+	color: #4ade80;
+	background-color: rgba(74, 222, 128, 0.08);
+	border: 1px solid rgba(74, 222, 128, 0.25);
+}
+
+.game-status-badge.game-status-dnf {
+	color: var(--color-text-muted);
+	background-color: rgba(255, 255, 255, 0.06);
+	border: 1px solid var(--color-border);
 }
 
 @keyframes status-dot-pulse {
@@ -1305,18 +1425,6 @@ tr.live .status-dot {
 	isolation: isolate;
 }
 
-.stat-card-v2::before {
-	content: "";
-	display: block;
-	position: absolute;
-	left: 0;
-	top: 0;
-	bottom: 0;
-	width: 3px;
-	background: var(--color-primary);
-	border-radius: 3px 0 0 3px;
-}
-
 .stat-card-v2-head {
 	display: flex;
 	align-items: center;
@@ -1459,6 +1567,31 @@ tr.live .status-dot {
 	margin-bottom: 1.25rem;
 }
 
+.game-stat-grid .stat-card-v2 {
+	padding: 0.9rem 1.1rem;
+}
+
+.game-stat-grid .stat-card-v2-head {
+	margin-bottom: 0.4rem;
+}
+
+.game-stat-grid .stat-card-v2-value {
+	font-size: 1.4rem;
+}
+
+.game-stat-grid .stat-card-v2-value-sub {
+	font-size: 0.95rem;
+}
+
+.game-stat-grid .stats-card-subtext {
+	font-size: 0.82rem;
+}
+
+.game-stat-grid .stat-card-v2-icon {
+	font-size: 3.4rem;
+	bottom: -0.4rem;
+}
+
 .stats-card-subtext {
 	position: relative;
 	z-index: 1;
@@ -1526,27 +1659,23 @@ tr.live .status-dot {
 }
 
 .stats-section .apexcharts-canvas,
-.stats-section .apexcharts-svg {
+.stats-section .apexcharts-svg,
+.apexcharts-canvas,
+.apexcharts-svg {
 	background: transparent !important;
 }
 
 .stats-section .apexcharts-svg > rect[fill="#fff"],
 .stats-section .apexcharts-svg > rect[fill="#fefefe"],
-.stats-section .apexcharts-svg > rect[fill="rgb(255,255,255)"] {
+.stats-section .apexcharts-svg > rect[fill="rgb(255,255,255)"],
+.apexcharts-svg > rect[fill="#fff"],
+.apexcharts-svg > rect[fill="#fefefe"],
+.apexcharts-svg > rect[fill="rgb(255,255,255)"] {
 	fill: transparent !important;
 }
 
-.stats-section .apexcharts-heatmap-rect[fill="rgba(255,255,255,1)"] {
-	fill: rgba(255, 255, 255, 0.045) !important;
-}
-
-.stats-section .apexcharts-heatmap-rect[fill="rgba(32,157,252,1)"] {
-	fill: #b44a4d !important;
-}
-
 .stats-section .apexcharts-heatmap-rect {
-	stroke: transparent !important;
-	stroke-width: 0 !important;
+	rx: 4;
 }
 
 .empty-state {
@@ -1971,7 +2100,7 @@ select.form-control:focus {
 	max-height: min(70vh, 440px);
 	overflow-y: auto;
 	scrollbar-width: thin;
-	scrollbar-color: rgba(123, 130, 160, 0.45) transparent;
+	scrollbar-color: rgba(123, 130, 160, 0.45) var(--color-surface);
 }
 
 .chooser-dropdown-menu {
@@ -2011,7 +2140,7 @@ select.form-control:focus {
 }
 
 .chooser-menu-scroll::-webkit-scrollbar-track {
-	background: transparent;
+	background: var(--color-surface);
 }
 
 .chooser-menu-scroll::-webkit-scrollbar-thumb {

@@ -72,6 +72,24 @@
 </div>
 {% endif %}
 
+{% if recent_picture_games %}
+<div class="card section-card">
+    <div class="section-card-header">
+        <h2 class="icon-heading"><i class="fas fa-camera"></i> Recent Pictures</h2>
+    </div>
+
+    <div id="recent-pictures-masonry" class="gallery-masonry">
+        <template id="recent-pictures-item-template">
+            {% for game in recent_picture_games %}
+            <div class="gallery-item" data-game-id="{{ game.id }}" data-game-url="/games/{{ game.id }}/" data-image-url="{{ game.image.url }}">
+                <img src="{{ game.image.url }}" alt="{{ game.description|default:game.players_str }}" loading="lazy">
+            </div>
+            {% endfor %}
+        </template>
+    </div>
+</div>
+{% endif %}
+
 <div class="card section-card">
     <div class="section-card-header">
         <h2 class="icon-heading"><i class="fas fa-heart"></i> Recently Active Players</h2>
@@ -91,30 +109,27 @@
     </div>
 </div>
 
-<div class="card section-card">
-    <div class="section-card-header">
-        <h2 class="icon-heading"><i class="fas fa-thumbs-down"></i> Wall Of Shame</h2>
-    </div>
-
-    <div class="row">
-        {% for user, reason in wall_of_shame_players %}
-        <div class="col-6 col-sm-4 col-lg-3 mb-3" title="{{ reason }}">
-            <a href="/players/{{ user.id }}/" class="player-tile-card">
-                <div class="player-tile-img-wrap">
-                    <img src="{{ user.image_url }}" alt="{{ user.username }}" class="player-tile-img">
-                </div>
-                <div class="player-tile-name">{{ user.username }}</div>
-            </a>
-        </div>
-        {% endfor %}
-    </div>
-</div>
-
 {{ monthly_games_data|json_script:"monthly_games_data" }}
 
 {% endblock %}
 
 {% block scripts %}
+<script src="{% static 'js/masonry.js' %}"></script>
+<script>
+    (function() {
+        var masonry = document.getElementById("recent-pictures-masonry");
+        if (masonry) {
+            var template = document.getElementById("recent-pictures-item-template");
+            var items = Array.prototype.slice.call(
+                template.content.querySelectorAll(".gallery-item")
+            );
+
+            initMasonry(masonry, items, function(index) {
+                window.location.href = items[index].dataset.gameUrl;
+            });
+        }
+    })();
+</script>
 <script>
     (function() {
         var monthlyData = JSON.parse(document.getElementById("monthly_games_data").textContent);
@@ -127,6 +142,7 @@
                 fontFamily: "inherit",
                 background: "transparent",
                 foreColor: "#7b82a0",
+                animations: { enabled: false },
             },
             plotOptions: {
                 bar: {

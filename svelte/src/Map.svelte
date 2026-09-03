@@ -39,6 +39,6 @@ onMount(() => {
 
 <style>
 	.map {
-		height: 300px;
+		height: 100%;
 	}
 </style>
