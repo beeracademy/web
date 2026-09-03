@@ -1,0 +1,207 @@
+{% extends "container.html" %}
+
+{% block pagetitle %}Gallery{% endblock %}
+
+{% block content %}
+<div class="page-toolbar">
+    <div>
+        <h1 class="page-title icon-heading"><i class="fas fa-images"></i> Gallery</h1>
+        <p class="page-subtitle">{{ object_list.paginator.count }} game photos</p>
+    </div>
+</div>
+
+{% if object_list %}
+<div id="gallery-masonry" class="gallery-masonry">
+    <template id="gallery-item-template">
+        {% for game in object_list %}
+        <div class="gallery-item" data-game-id="{{ game.id }}" data-game-url="/games/{{ game.id }}/" data-image-url="{{ game.image.url }}" data-caption="{{ game.description }}">
+            <img src="{{ game.image.url }}" alt="{{ game.description|default:game.players_str }}" loading="lazy">
+        </div>
+        {% endfor %}
+    </template>
+</div>
+{% else %}
+<p class="text-muted">No game photos yet.</p>
+{% endif %}
+
+{% include "pagination_nav.html" %}
+
+<div id="gallery-lightbox" class="gallery-lightbox">
+    <button type="button" class="gallery-lightbox-close" aria-label="Close">&times;</button>
+    <button type="button" class="gallery-lightbox-nav gallery-lightbox-prev" aria-label="Previous"><i class="fas fa-chevron-left"></i></button>
+    <button type="button" class="gallery-lightbox-nav gallery-lightbox-next" aria-label="Next"><i class="fas fa-chevron-right"></i></button>
+    <div class="gallery-lightbox-inner">
+        <img class="gallery-lightbox-image" src="" alt="">
+        <div class="gallery-lightbox-caption"></div>
+        <a class="btn btn-danger gallery-lightbox-open-game" href="#">
+            <i class="fas fa-gamepad"></i> Open game
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(() => {
+    var masonry = document.getElementById("gallery-masonry");
+    var lightbox = document.getElementById("gallery-lightbox");
+    var lightboxImage = lightbox.querySelector(".gallery-lightbox-image");
+    var lightboxCaption = lightbox.querySelector(".gallery-lightbox-caption");
+    var lightboxOpenGame = lightbox.querySelector(".gallery-lightbox-open-game");
+    var closeButton = lightbox.querySelector(".gallery-lightbox-close");
+    var prevButton = lightbox.querySelector(".gallery-lightbox-prev");
+    var nextButton = lightbox.querySelector(".gallery-lightbox-next");
+
+    // Ordered list of every gallery item's data, independent of which
+    // masonry column it ends up in, so prev/next can step through the
+    // original order.
+    var galleryData = [];
+    var currentIndex = -1;
+
+    function showAtIndex(index) {
+        if (index < 0 || index >= galleryData.length) return;
+        currentIndex = index;
+        var data = galleryData[currentIndex];
+        lightboxImage.src = data.imageUrl;
+        lightboxImage.alt = data.caption || "";
+        lightboxCaption.textContent = data.caption || "";
+        lightboxCaption.style.display = data.caption ? "" : "none";
+        lightboxOpenGame.href = data.gameUrl;
+        prevButton.disabled = currentIndex <= 0;
+        nextButton.disabled = currentIndex >= galleryData.length - 1;
+    }
+
+    function openLightbox(index) {
+        showAtIndex(index);
+        lightbox.classList.add("open");
+        document.body.classList.add("gallery-lightbox-active");
+    }
+
+    function closeLightbox() {
+        lightbox.classList.remove("open");
+        document.body.classList.remove("gallery-lightbox-active");
+    }
+
+    function showPrev() {
+        showAtIndex(currentIndex - 1);
+    }
+
+    function showNext() {
+        showAtIndex(currentIndex + 1);
+    }
+
+    closeButton.addEventListener("click", closeLightbox);
+    prevButton.addEventListener("click", showPrev);
+    nextButton.addEventListener("click", showNext);
+    lightbox.addEventListener("click", (e) => {
+        if (e.target === lightbox) {
+            closeLightbox();
+        }
+    });
+    document.addEventListener("keydown", (e) => {
+        if (!lightbox.classList.contains("open")) return;
+
+        if (e.key === "Escape") {
+            closeLightbox();
+        } else if (e.key === "ArrowLeft") {
+            showPrev();
+        } else if (e.key === "ArrowRight") {
+            showNext();
+        }
+    });
+
+    function columnCountForWidth(width) {
+        if (width < 500) return 1;
+        if (width < 768) return 2;
+        if (width < 992) return 3;
+        if (width < 1400) return 4;
+        return 5;
+    }
+
+    var itemAspectRatios = null;
+
+    function getItemAspectRatios(items) {
+        // Preload every image so we know its aspect ratio up front —
+        // this lets us assign items to the shortest column synchronously,
+        // instead of racing against async image loads.
+        return Promise.all(
+            items.map((item) => new Promise((resolve) => {
+                    var img = new Image();
+                    var finish = () => {
+                        resolve(
+                            (img.naturalHeight || 1) / (img.naturalWidth || 1) ||
+                                1
+                        );
+                    };
+                    img.addEventListener("load", finish);
+                    img.addEventListener("error", finish);
+                    img.src = item.dataset.imageUrl;
+                }))
+        );
+    }
+
+    function renderMasonry(items, ratios) {
+        var columnCount = columnCountForWidth(masonry.clientWidth || masonry.parentElement.clientWidth);
+        masonry.innerHTML = "";
+
+        var columns = [];
+        var heights = [];
+        var i, col;
+        for (i = 0; i < columnCount; i++) {
+            col = document.createElement("div");
+            col.className = "gallery-masonry-col";
+            masonry.appendChild(col);
+            columns.push(col);
+            heights.push(0);
+        }
+
+        items.forEach((originalItem, index) => {
+            var item = originalItem.cloneNode(true);
+            item.addEventListener("click", () => {
+                openLightbox(index);
+            });
+
+            // Place the item into the currently shortest column.
+            var shortestIndex = heights.indexOf(Math.min.apply(null, heights));
+            columns[shortestIndex].appendChild(item);
+            heights[shortestIndex] += ratios[index];
+        });
+    }
+
+    function layoutMasonry() {
+        if (!masonry) return;
+
+        var template = document.getElementById("gallery-item-template");
+        var items = Array.prototype.slice.call(
+            template.content.querySelectorAll(".gallery-item")
+        );
+
+        if (!galleryData.length) {
+            galleryData = items.map((item) => ({
+                    imageUrl: item.dataset.imageUrl,
+                    gameUrl: item.dataset.gameUrl,
+                    caption: item.dataset.caption,
+                }));
+        }
+
+        if (itemAspectRatios) {
+            renderMasonry(items, itemAspectRatios);
+            return;
+        }
+
+        getItemAspectRatios(items).then((ratios) => {
+            itemAspectRatios = ratios;
+            renderMasonry(items, ratios);
+        });
+    }
+
+    layoutMasonry();
+
+    var resizeTimeout;
+    window.addEventListener("resize", () => {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(layoutMasonry, 200);
+    });
+})();
+</script>
+{% endblock %}

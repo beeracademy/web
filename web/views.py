@@ -301,6 +301,19 @@ class GameListView(PaginatedListView):
         return context
 
 
+class GalleryView(PaginatedListView):
+    model = Game
+    template_name = "gallery.html"
+    page_limit = 100
+
+    def get_queryset(self):
+        return (
+            Game.objects.exclude(image="")
+            .filter(image__isnull=False)
+            .order_by("-end_datetime", "-start_datetime", "-id")
+        )
+
+
 class GameDetailView(DetailView):
     model = Game
     template_name = "game_detail.html"
