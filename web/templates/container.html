@@ -5,12 +5,10 @@
 <div class="wrapper">
     {% include "nav.html" %}
 
-    <main class="container">
+    <main class="container" style="padding-top: 2rem; padding-bottom: 2rem;">
         {% bootstrap_messages %}
         {% block content %}{% endblock %}
     </main>
-
-    <div class="push"></div>
 </div>
 
 {% endblock %}

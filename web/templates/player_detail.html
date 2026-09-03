@@ -10,7 +10,7 @@
 
 <h2>
 	{% if object.is_staff %}
-	<i class="fas fa-crown" style="color: #dc3545;"></i>
+	<i class="fas fa-crown" style="color: var(--color-primary);"></i>
 	{% endif %}
 
 	{{ object.username }}
@@ -40,7 +40,7 @@
 
 <br>
 
-<h4><i class="fas fa-trophy"></i>  Achievements</h4>
+<h4 class="icon-heading"><i class="fas fa-trophy"></i> Achievements</h4>
 
 <hr>
 
@@ -55,7 +55,7 @@
 <br>
 
 <h4>
-	<i class="fas fa-receipt"></i> Rank
+	<span class="icon-heading-inline"><i class="fas fa-receipt"></i> Rank</span>
 
 	<div style="float: right; margin-top: -7px;">
 		{% include "season_chooser.html" %}
@@ -85,7 +85,7 @@
 
 <br>
 
-<h4><i class="fas fa-chart-pie"></i> Stats</h4>
+<h4 class="icon-heading"><i class="fas fa-chart-pie"></i> Stats</h4>
 
 <hr>
 
@@ -171,7 +171,7 @@
 	</div>
 </div>
 
-<h4><i class="fas fa-gamepad"></i> Recent games</h4>
+<h4 class="icon-heading"><i class="fas fa-gamepad"></i> Recent games</h4>
 
 <hr>
 
@@ -205,7 +205,7 @@
 </table>
 
 
-<h4><i class="fas fa-beer"></i> Recent chugs</h4>
+<h4 class="icon-heading"><i class="fas fa-beer"></i> Recent chugs</h4>
 <hr>
 
 {{ recent_chugs|json_script:"recent_chugs" }}
@@ -214,7 +214,7 @@
 <div id="svelte-recent_chugs">
 </div>
 
-<h4><i class="fas fa-users"></i> Top 30 co-players</h4>
+<h4 class="icon-heading"><i class="fas fa-users"></i> Top 30 co-players</h4>
 <hr>
 
 <div id="played_with_charts"></div>

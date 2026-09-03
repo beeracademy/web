@@ -22,6 +22,7 @@ from django.core.mail import mail_admins
 from django.core.paginator import Paginator
 from django.db.models import (
     Case,
+    Count,
     DateTimeField,
     F,
     IntegerField,
@@ -30,8 +31,10 @@ from django.db.models import (
     Value,
     When,
 )
+from django.db.models.functions import TruncMonth
 from django.shortcuts import render
 from django.templatetags.static import static
+from django.utils import timezone
 from django.views.generic import (
     CreateView,
     DetailView,
@@ -121,9 +124,45 @@ def provide_card_constants(context):
     return context
 
 
+def get_monthly_game_counts(months=12):
+    now = timezone.localtime(timezone.now())
+    year, month = now.year, now.month
+
+    month_starts = []
+    for _ in range(months):
+        month_starts.append(datetime.date(year, month, 1))
+        month -= 1
+        if month == 0:
+            month = 12
+            year -= 1
+    month_starts.reverse()
+
+    counts_by_month = {}
+    qs = (
+        Game.objects.filter(
+            end_datetime__isnull=False,
+            end_datetime__date__gte=month_starts[0],
+        )
+        .annotate(month=TruncMonth("end_datetime"))
+        .values("month")
+        .annotate(count=Count("id"))
+    )
+    for row in qs:
+        month_dt = row["month"]
+        if timezone.is_aware(month_dt):
+            month_dt = timezone.localtime(month_dt)
+        counts_by_month[month_dt.date().replace(day=1)] = row["count"]
+
+    return {
+        "labels": [d.strftime("%b") for d in month_starts],
+        "counts": [counts_by_month.get(d, 0) for d in month_starts],
+    }
+
+
 def index(request):
     BEERS_PER_PLAYER = sum(range(2, 15)) / Game.STANDARD_SIPS_PER_BEER
     total_players = GamePlayer.objects.count()
+    monthly_games_data = get_monthly_game_counts()
 
     context = {
         "total_beers": total_players * BEERS_PER_PLAYER,
@@ -133,6 +172,8 @@ def index(request):
         "live_games": Game.objects.filter(
             end_datetime__isnull=True, dnf=False
         ).order_by("-start_datetime")[:5],
+        "monthly_games_data": monthly_games_data,
+        "games_last_12_months": sum(monthly_games_data["counts"]),
     }
     return render(request, "index.html", context)
 
