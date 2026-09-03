@@ -118,9 +118,8 @@ h2 {
 
 .icon-heading > i:first-child,
 .icon-heading-inline > i:first-child {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
+	position: relative;
+	display: inline-block;
 	width: 32px;
 	height: 32px;
 	flex: none;
@@ -128,6 +127,17 @@ h2 {
 	background-color: var(--color-primary-light);
 	color: var(--color-primary);
 	font-size: 0.85rem;
+}
+
+/* Center the glyph itself rather than relying on flex centering of the
+   font ligature, whose line-height box isn't computed consistently
+   across browsers and can leave icons looking off-center. */
+.icon-heading > i:first-child::before,
+.icon-heading-inline > i:first-child::before {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
 }
 
 hr {
@@ -340,19 +350,6 @@ a.nolink {
 .navbar-dark .navbar-nav .nav-link.active {
 	color: #fff;
 	background-color: rgba(172, 24, 28, 0.2);
-}
-
-.navbar-dark .navbar-nav .nav-link.active::after {
-	content: "";
-	display: block;
-	position: absolute;
-	bottom: -1px;
-	left: 50%;
-	transform: translateX(-50%);
-	width: 20px;
-	height: 2px;
-	background-color: var(--color-primary);
-	border-radius: 2px 2px 0 0;
 }
 
 .navbar-nav .nav-item-form {
@@ -987,6 +984,85 @@ tr[data-href] {
 	width: 44px;
 }
 
+/* ── Responsive tables ──
+   Fixed-layout tables (games-table, recent-games-table) use percentage
+   column widths tuned for desktop. On narrow viewports the combined cell
+   padding leaves too little room, silently clipping dates/durations. Drop
+   the least essential columns and tighten padding instead of truncating. */
+@media (max-width: 576px) {
+	.academy-table th,
+	.academy-table td {
+		padding-left: 0.75rem;
+		padding-right: 0.75rem;
+	}
+
+	/* games-table columns: 1 players, 2 status, 3 season, 4 started, 5 ended,
+	   6 duration, 7 action — drop status/season/ended (th AND td, since a
+	   column only collapses once every cell in it is hidden). */
+	.games-table col:nth-child(2),
+	.games-table col:nth-child(3),
+	.games-table col:nth-child(5),
+	.games-table th:nth-child(2),
+	.games-table td:nth-child(2),
+	.games-table th:nth-child(3),
+	.games-table td:nth-child(3),
+	.games-table th:nth-child(5),
+	.games-table td:nth-child(5) {
+		display: none;
+	}
+
+	.games-table .col-players {
+		width: 42%;
+	}
+
+	.games-table .col-started {
+		width: 30%;
+	}
+
+	.games-table .col-duration {
+		width: 28%;
+	}
+
+	/* recent-games-table columns: 1 players, 2 season, 3 ended, 4 duration,
+	   5 action — drop season. */
+	.recent-games-table col:nth-child(2),
+	.recent-games-table th:nth-child(2),
+	.recent-games-table td:nth-child(2) {
+		display: none;
+	}
+
+	.recent-games-table .col-players {
+		width: 52%;
+	}
+
+	.recent-games-table .col-ended {
+		width: 32%;
+	}
+
+	.recent-games-table .col-duration {
+		width: 16%;
+	}
+
+	/* Truncate remaining long text cells with an ellipsis instead of a
+	   hard, unmarked clip. */
+	.games-table td.text-mono,
+	.recent-games-table td.text-mono {
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.games-table .username,
+	.recent-games-table .username {
+		max-width: 72px;
+	}
+
+	/* Tables without a fixed layout (e.g. ranking) can grow wider than
+	   their card; scroll horizontally instead of clipping the overflow. */
+	.table-card {
+		overflow-x: auto;
+	}
+}
+
 .row-action-icon {
 	color: var(--color-text-muted);
 	opacity: 0;
@@ -1538,15 +1614,8 @@ tr.live .status-dot {
 .section-card-header .icon-heading > i:first-child {
 	width: 28px;
 	height: 28px;
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
 	font-size: 0.78rem;
 	line-height: 1;
-}
-
-.section-card-header .icon-heading > i.fa-info-circle {
-	transform: translateY(1px);
 }
 
 .section-count-badge {
