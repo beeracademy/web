@@ -1,31 +1,45 @@
-<footer class="container">
-  <div class="row">
-    <div class="col">
-      <a href="https://www.facebook.com/academygame/">
-        <i class="fab fa-facebook-square"></i>
+{% load static %}
+<footer class="site-footer">
+  <div class="site-footer-inner">
+
+    <div class="footer-left">
+      <a class="footer-brand" href="/">
+        <span class="footer-brand-icon">
+          <img src="{% static "logo.png" %}" alt="">
+        </span>
+        <span class="footer-brand-name">Academy</span>
       </a>
-      <a href="https://github.com/beeracademy">
-        <i class="fab fa-github-square"></i>
+      <div class="footer-meta">
+        <span>&copy; Academy 2002&ndash;{% now "Y" %}</span>
+        <span class="footer-sep">&middot;</span>
+        <small>
+          {% if GIT_COMMIT_HASH %}
+            <a href="https://github.com/beeracademy/web/commit/{{ GIT_COMMIT_HASH }}">{{ GIT_COMMIT_HASH }}</a>
+          {% else %}
+            unknown version
+          {% endif %}
+        </small>
+      </div>
+    </div>
+
+    <div class="footer-right">
+      <span id="notification-button" class="footer-icon-btn" role="button" tabindex="0" aria-label="Toggle game start notifications">
+        <i class="fas fa-bell" title="Notify me when games start"></i>
+        <i class="fas fa-bell-slash" title="Unsubscribe from notifications"></i>
+      </span>
+      <a class="footer-icon-btn" href="/games/rss/" title="RSS feed" aria-label="RSS feed">
+        <i class="fas fa-rss"></i>
       </a>
-      <a href="https://discord.gg/RazEcbG">
+      <a class="footer-icon-btn" href="https://www.facebook.com/academygame/" title="Facebook" aria-label="Facebook">
+        <i class="fab fa-facebook-f"></i>
+      </a>
+      <a class="footer-icon-btn" href="https://github.com/beeracademy" title="GitHub" aria-label="GitHub">
+        <i class="fab fa-github"></i>
+      </a>
+      <a class="footer-icon-btn" href="https://discord.gg/RazEcbG" title="Discord" aria-label="Discord">
         <i class="fab fa-discord"></i>
       </a>
     </div>
-  </div>
-  <div class="row">
-    <div class="col">
-      <span>&copy; Academy 2002-{% now "Y" %}</span>
-    </div>
-  </div>
-  <div class="row">
-    <div class="col">
-      <small>
-        {% if GIT_COMMIT_HASH %}
-          Running version <a href="https://github.com/beeracademy/web/commit/{{ GIT_COMMIT_HASH }}">{{ GIT_COMMIT_HASH }}</a>
-        {% else %}
-          Running unknown version
-        {% endif %}
-      </small>
-    </div>
+
   </div>
 </footer>

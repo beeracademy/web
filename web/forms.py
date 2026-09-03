@@ -78,9 +78,43 @@ class UserSettingsForm(forms.ModelForm):
         return password
 
 
+class PrettyJSONField(forms.JSONField):
+    """A JSONField whose widget doesn't show the literal string "null"
+    when there is no value yet."""
+
+    def prepare_value(self, value):
+        if value in (None, ""):
+            return ""
+        return super().prepare_value(value)
+
+
 class FailedGameUploadForm(forms.ModelForm):
     class Meta:
         model = FailedGameUpload
         fields = ("game_log_file", "game_log", "notes")
 
-    game_log_file = forms.FileField(required=False)
+    game_log_file = forms.FileField(
+        required=False,
+        widget=forms.ClearableFileInput(
+            attrs={"class": "custom-file-input", "accept": ".json,application/json"}
+        ),
+    )
+    game_log = PrettyJSONField(
+        widget=forms.Textarea(
+            attrs={
+                "style": "font-family: var(--font-mono, monospace); font-size: 0.85rem;",
+                "placeholder": "Paste the game log JSON here",
+                "rows": 12,
+            }
+        )
+    )
+    notes = forms.CharField(
+        required=False,
+        label="Notes (optional)",
+        widget=forms.Textarea(
+            attrs={
+                "placeholder": "Anything else we should know about what went wrong",
+                "rows": 3,
+            }
+        ),
+    )

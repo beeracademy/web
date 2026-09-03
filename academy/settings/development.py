@@ -13,7 +13,7 @@ SECRET_KEY = "finish him!"
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 SERVER_URL = "http://localhost:8000/"
-PLAY_URL = "http://localhost:4200/"
+PLAY_URL = "http://localhost:5173/"
 
 AUTOLOGIN_USERNAME = os.environ.get("AUTOLOGIN_USERNAME")
 

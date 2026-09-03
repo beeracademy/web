@@ -11,52 +11,94 @@
 #image {
 	max-width: 100%;
 }
+
+.settings-avatar-wrap {
+	max-width: 260px;
+	margin: 0 auto 1.25rem;
+	border-radius: var(--radius-lg);
+	border: 1px solid var(--color-border);
+	background-color: var(--color-surface-2);
+}
+
+.settings-avatar-actions {
+	display: flex;
+	flex-direction: column;
+	gap: 0.6rem;
+}
+
+.settings-avatar-col {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	text-align: center;
+}
+
+.settings-divider {
+	border-top: 1px solid var(--color-border);
+	margin: 1.5rem 0;
+}
+
+.settings-footer {
+	display: flex;
+	justify-content: flex-end;
+	gap: 0.75rem;
+	margin-top: 1.5rem;
+	padding-top: 1.5rem;
+	border-top: 1px solid var(--color-border);
+}
+
+@media (max-width: 767px) {
+	.settings-footer {
+		flex-direction: column-reverse;
+	}
+	.settings-footer .btn {
+		width: 100%;
+	}
+}
 </style>
 {% endblock %}
 
 {% block content %}
 
-<h3>
-	<i class="fas fa-cogs"></i> Settings
-</h3>
-
-<hr>
-
-<form method="post">
-	{% csrf_token %}
-	<div style="display: none;">
-		<input type="file" id="file_input" accept="image/*" style="display: none;">
-		{{ form.new_image_data_url }}
-		{{ form.image_deleted }}
+<div class="page-toolbar">
+	<div>
+		<h1 class="page-title icon-heading"><i class="fas fa-cogs"></i> Settings</h1>
+		<p class="page-subtitle">Manage your account and profile picture</p>
 	</div>
-	<div class="row">
-		<div class="col-md-6 text-center">
-			<div style="margin: 0px 20%;">
-				<img src="{{ object.image_url }}" id="image" width="{{ IMAGE_WIDTH }}" height="{{ IMAGE_HEIGHT }}" alt="Profile picture">
+</div>
+
+<div class="card section-card">
+	<form method="post">
+		{% csrf_token %}
+		<div style="display: none;">
+			<input type="file" id="file_input" accept="image/*" style="display: none;">
+			{{ form.new_image_data_url }}
+			{{ form.image_deleted }}
+		</div>
+		<div class="row">
+			<div class="col-md-6 settings-avatar-col">
+				<div class="settings-avatar-wrap">
+					<img src="{{ object.image_url }}" id="image" width="{{ IMAGE_WIDTH }}" height="{{ IMAGE_HEIGHT }}" alt="Profile picture" style="width: 100%; height: auto; display: block;">
+				</div>
+				<div class="settings-avatar-actions">
+					<button type="button" id="upload_button" class="btn btn-secondary btn-sm"><i class="fas fa-upload"></i> Upload image</button>
+					<button type="button" id="delete_button" class="btn btn-outline-danger btn-sm"><i class="fas fa-trash"></i> Delete</button>
+				</div>
 			</div>
-			<br>
-			<button type="button" id="upload_button" class="btn btn-primary col-md-3">Upload image</button>
-			<div class="d-lg-none" style="height: 10px;"></div>
-			<button type="button" id="delete_button" class="btn btn-danger col-md-3">Delete</button>
-			<br class="d-lg-none">
-			<br class="d-lg-none">
+			<div class="col-md-6">
+				{% bootstrap_field form.username %}
+				{% bootstrap_field form.email %}
+				<div class="settings-divider"></div>
+				{% bootstrap_field form.new_password %}
+			</div>
 		</div>
-		<div class="col-md-6">
-			{% bootstrap_field form.username %}
-			{% bootstrap_field form.email %}
-			<hr>
-			{% bootstrap_field form.new_password %}
+
+		<div class="settings-footer">
+			<a href="/players/{{object.id}}/" class="btn btn-secondary"><i class="fas fa-times"></i> Cancel</a>
+			<button type="submit" class="btn btn-primary"><i class="fas fa-check"></i> Save</button>
 		</div>
-	</div>
-
-	<hr>
-	<div class="text-right">
-
-		<button type="submit" class="btn btn-primary col-md-1 pull-right">Save</button>
-		<div class="d-lg-none" style="height: 10px;"></div>
-		<a href="/players/{{object.id}}/" class="btn btn-danger col-md-1">Cancel</a>
-	</div>
-</form>
+	</form>
+</div>
 {% endblock %}
 
 {% block scripts %}
