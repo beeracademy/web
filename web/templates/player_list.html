@@ -21,7 +21,7 @@
 {% block thead %}
 <tr class="academy-table">
     <th scope="col" style="width: 52px; padding-right: 0;"></th>
-    <th scope="col">Username</th>
+    <th scope="col" class="player-name-col">Username</th>
     <th scope="col">Games in {{ current_season }}</th>
     <th scope="col">Total Games</th>
 </tr>
@@ -33,7 +33,7 @@
     <td style="width:44px; padding-right: 0;">
         <div class="round-image" style="background-image: url({{ user.image_url }});"></div>
     </td>
-    <td><span class="username">{{ user.username }}</span></td>
+    <td class="player-name-col"><span class="username">{{ user.username }}</span></td>
     <td>{{ user.current_season_game_count }}</td>
     <td>{{ user.total_game_count }}</td>
 </tr>

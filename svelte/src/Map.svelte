@@ -11,12 +11,17 @@ const { location }: Props = $props();
 
 let mapEl: HTMLElement = $state();
 onMount(() => {
-	const map = L.map(mapEl).setView([location.latitude, location.longitude], 13);
+	const map = L.map(mapEl, { attributionControl: false }).setView(
+		[location.latitude, location.longitude],
+		13,
+	);
 	L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-		attribution:
-			'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
 		referrerPolicy: "strict-origin",
 	}).addTo(map);
+	L.control
+		.attribution({ prefix: false })
+		.addTo(map)
+		.addAttribution("&copy; OpenStreetMap contributors");
 	L.marker([location.latitude, location.longitude])
 		.addTo(map)
 		.bindPopup(`${location.latitude}, ${location.longitude}`);

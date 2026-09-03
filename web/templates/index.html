@@ -25,14 +25,14 @@
     <div class="stat-card-v2">
         <div class="stat-card-v2-head">
             <span class="stat-card-v2-label">Beers consumed</span>
-            <span class="stat-card-v2-icon"><i class="fas fa-beer"></i></span>
+            <span class="stat-card-v2-icon"><i class="fas fa-wine-bottle"></i></span>
         </div>
         <div class="stat-card-v2-value">{{ total_beers|floatformat:0|intcomma }}</div>
     </div>
     <div class="stat-card-v2">
         <div class="stat-card-v2-head">
             <span class="stat-card-v2-label">Current season</span>
-            <span class="stat-card-v2-icon"><i class="fas fa-calendar-alt"></i></span>
+            <span class="stat-card-v2-icon"><i class="fas fa-flag-checkered"></i></span>
         </div>
         <div class="stat-card-v2-value">{{ current_season.number }}</div>
     </div>
@@ -138,8 +138,8 @@
             plotOptions: {
                 bar: {
                     columnWidth: "45%",
-                    borderRadius: 6,
-                    endingShape: "rounded",
+                    borderRadius: 0,
+                    endingShape: "flat",
                 },
             },
             series: [{ name: "Games played", data: monthlyData.counts }],

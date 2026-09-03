@@ -59,24 +59,119 @@ if ($(".live").length) {
 	}, 1000);
 }
 
-window.gamesHeatmap = function gamesHeatmap(el, data) {
+$(".chooser-dropdown-searchable").on("shown.bs.dropdown", function () {
+	const $input = $(this).find(".chooser-search-input");
+	const input = $input.get(0);
+	$input.val("");
+	$(this).find(".chooser-option").show();
+	if (input) {
+		let attempts = 0;
+		const focusInput = () => {
+			input.focus({ preventScroll: true });
+			input.select();
+			attempts += 1;
+			if (document.activeElement !== input && attempts < 8) {
+				window.setTimeout(focusInput, 25);
+			}
+		};
+		window.setTimeout(focusInput, 20);
+	}
+});
+
+$(".chooser-dropdown-searchable > .dropdown-toggle").on("click", function () {
+	const $dropdown = $(this).closest(".chooser-dropdown-searchable");
+	window.setTimeout(() => {
+		const input = $dropdown.find(".chooser-search-input").get(0);
+		if (input) {
+			input.focus({ preventScroll: true });
+			input.select();
+		}
+	}, 60);
+});
+
+$(".chooser-dropdown-searchable .chooser-search-input").on(
+	"input",
+	function () {
+		const query = this.value.trim().toLowerCase();
+		const $dropdown = $(this).closest(".chooser-dropdown-searchable");
+		$dropdown.find(".chooser-option").each((_i, option) => {
+			const label = option.getAttribute("data-label") || "";
+			option.style.display = label.includes(query) ? "" : "none";
+		});
+	},
+);
+
+$(".chooser-dropdown-menu .chooser-search-wrap").on("click", (e) => {
+	e.stopPropagation();
+});
+
+window.gamesHeatmap = function gamesHeatmap(el, data, config) {
+	const theme = config || {};
+	const baseColor = theme.color || "#a5383b";
+	const foreColor = theme.foreColor || "#aaa39b";
 	const options = {
 		series: data.series,
+		chart: {
+			height: theme.height || 200,
+			type: "heatmap",
+			background: "transparent",
+			fontFamily: "inherit",
+			foreColor,
+			toolbar: { show: false },
+		},
+		theme: { mode: "dark" },
 		xaxis: {
 			categories: data.categories,
+			axisBorder: { show: false },
+			axisTicks: { show: false },
+			labels: {
+				style: {
+					colors: foreColor,
+					fontSize: "12px",
+				},
+			},
+		},
+		yaxis: {
+			labels: {
+				style: {
+					colors: foreColor,
+					fontSize: "12px",
+				},
+			},
 		},
 		grid: {
 			position: "front",
+			borderColor: "rgba(255, 255, 255, 0.05)",
 			xaxis: {
 				lines: {
-					show: true,
+					show: false,
 				},
 			},
 			yaxis: {
 				lines: {
-					show: true,
+					show: false,
 				},
 			},
+		},
+		plotOptions: {
+			heatmap: {
+				enableShades: true,
+				shadeIntensity: 0.45,
+				distributed: false,
+				colorScale: {
+					ranges: [
+						{ from: 0, to: 0, color: "rgba(255,255,255,0.045)" },
+						{ from: 1, to: 2, color: "#b44a4d" },
+						{ from: 3, to: 999999, color: baseColor },
+					],
+				},
+			},
+		},
+		legend: {
+			show: false,
+		},
+		stroke: {
+			width: 0,
 		},
 		tooltip: {
 			y: {
@@ -91,14 +186,10 @@ window.gamesHeatmap = function gamesHeatmap(el, data) {
 				},
 			},
 		},
-		chart: {
-			height: 200,
-			type: "heatmap",
-		},
 		dataLabels: {
 			enabled: false,
 		},
-		colors: ["#008FFB"],
+		colors: [baseColor],
 	};
 
 	const chart = new ApexCharts(el, options);

@@ -1,10 +1,16 @@
-<div class="dropdown" style="display: inline-block;">
-	<button class="btn btn-danger dropdown-toggle col-md-auto" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+<div class="dropdown chooser-dropdown{% if searchable %} chooser-dropdown-searchable{% endif %}" style="display: inline-block;">
+	<button class="btn btn-danger dropdown-toggle col-md-auto" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
 	{{ chooser.current_str }}
 	</button>
-	<div class="dropdown-menu" aria-labelledby="dropdownMenuButton" style="z-index: 1000000;">
+	<div class="dropdown-menu dropdown-menu-right chooser-dropdown-menu{% if scrollable %} chooser-menu-scroll{% endif %}" style="z-index: 1000000;">
+		{% if searchable %}
+		<div class="chooser-search-wrap">
+			<input type="text" class="form-control chooser-search-input" placeholder="{{ search_placeholder|default:'Search...' }}" autocomplete="off" autofocus>
+		</div>
+		<div class="chooser-search-separator"></div>
+		{% endif %}
 		{% for str, url in chooser.urls %}
-		<a class="dropdown-item" href="{{ url }}">{{ str }}</a>
+		<a class="dropdown-item chooser-option" href="{{ url }}" data-label="{{ str|lower }}">{{ str }}</a>
 		{% endfor %}
 	</div>
 </div>
