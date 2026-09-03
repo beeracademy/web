@@ -635,7 +635,11 @@ class Game(models.Model):
         if duration is None:
             duration = timezone.now() - self.start_datetime
 
-        return datetime.timedelta(seconds=round(duration.total_seconds()))
+        total_seconds = round(duration.total_seconds())
+        hours, remainder = divmod(total_seconds, 3600)
+        minutes, seconds = divmod(remainder, 60)
+
+        return f"{hours}:{minutes:02d}:{seconds:02d}"
 
     def end_str(self):
         if self.dnf:
@@ -645,6 +649,27 @@ class Game(models.Model):
             return "Live"
 
         return timezone.localtime(self.end_datetime).strftime("%B %d, %Y %H:%M")
+
+    def status_str(self):
+        if self.dnf:
+            return "DNF"
+
+        if not self.end_datetime:
+            return "Live"
+
+        return "Done"
+
+    def start_str(self):
+        if not self.start_datetime:
+            return "-"
+
+        return timezone.localtime(self.start_datetime).strftime("%Y-%m-%d %H:%M")
+
+    def ended_str(self):
+        if not self.end_datetime:
+            return "-"
+
+        return timezone.localtime(self.end_datetime).strftime("%Y-%m-%d %H:%M")
 
     def ordered_gameplayers(self):
         return self.gameplayer_set.order_by("position")

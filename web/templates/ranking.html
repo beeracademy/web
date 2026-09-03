@@ -22,30 +22,27 @@
 	</li>
 	{% endfor %}
 </ul>
-{% if user.is_authenticated %}
-<p class="page-subtitle mb-3">Your rank: {% spaceless %}
-	{% if user_rank %}
-	<a href="{{ user_rank_url }}">{{ user_rank }}</a>
-	{% else %}
-	-
-	{% endif %}
-{% endspaceless %}</p>
+{% if user.is_authenticated and user_rank %}
+<p class="page-subtitle mb-3">Your rank: <a href="{{ user_rank_url }}">{{ user_rank }}</a></p>
 {% endif %}
 
 {% endblock %}
 
-{% block thead %}
-<tr class="academy-table">
-	<th scope="col" class="ranking-rank-col">#</th>
-	<th scope="col" class="player-name-col ranking-name-col">Username</th>
-	<th scope="col">{{ ranking.current_str }}</th>
-</tr>
-{% endblock %}
+{% block thead %}{% endblock %}
 
 {% block tbody %}
 {% for user_ranking in object_list %}
 <tr class="academy-table slim{% if user_ranking.user == user %} table-primary{% endif %}" data-href="/players/{{ user_ranking.user.id }}/">
-	<td class="ranking-rank-col">{{ user_ranking.rank }}</td>
+	<td class="ranking-rank-col">
+		{% if user_ranking.rank <= 3 %}
+			<span class="ranking-top-badge ranking-top-{{ user_ranking.rank }}">
+				<i class="fas fa-trophy"></i>
+				<span>{{ user_ranking.rank }}</span>
+			</span>
+		{% else %}
+			<span class="ranking-top-badge ranking-top-neutral">{{ user_ranking.rank }}</span>
+		{% endif %}
+	</td>
 	<td class="player-name-col ranking-name-col">
 		<div class="player-cell">
 			<div class="round-image" style="background-image: url({{ user_ranking.user.image_url }});"></div>

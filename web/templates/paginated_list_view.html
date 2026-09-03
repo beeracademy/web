@@ -5,7 +5,8 @@
 {% block beforetable %}{% endblock %}
 
 <div class="table-card">
-<table class="table table-hover table-sm">
+<table class="table table-hover table-sm{% block table_class %}{% endblock %}">
+    {% block colgroup %}{% endblock %}
     <thead>
         {% block thead %}{% endblock %}
     </thead>

@@ -8,17 +8,35 @@
 {% block content %}
 <div class="container">
 	<div class="row">
-		<div class="mx-auto card col-md-6">
+		<div class="mx-auto card col-md-8">
 			<div class="card-body">
-				<h3 class="card-title">Upload failed game</h3>
+				<h3 class="card-title icon-heading"><i class="fas fa-upload"></i> Upload failed game</h3>
+				<p class="text-muted">
+					If a game crashed or otherwise failed to save automatically, you can recover it here.
+					Choose the game log file that was saved locally, <strong>or</strong> paste its JSON
+					contents directly into the box below.
+				</p>
 				<hr>
-				<form action="/upload_game/" method="post" class="form">
+				<form action="/upload_game/" method="post" class="form" id="upload-game-form" novalidate>
 					{% csrf_token %}
-					{% bootstrap_form form %}
-					{% buttons %}
+
+					<div class="form-group">
+						<label for="{{ form.game_log_file.id_for_label }}">Game log file</label>
+						<div class="custom-file">
+							{{ form.game_log_file }}
+							<label class="custom-file-label" for="{{ form.game_log_file.id_for_label }}" id="game-log-file-label">Choose file&hellip;</label>
+						</div>
+					</div>
+
+					<div class="upload-or-divider"><span>or</span></div>
+
+					{% bootstrap_field form.game_log %}
+					{% bootstrap_field form.notes %}
+
 					<br>
-					<button type="submit" class="btn btn-danger col-12 text-big" style="font-size: 18px;">Upload game</button>
-					{% endbuttons %}
+					<button type="submit" id="upload-game-submit" class="btn btn-danger col-12 text-big" style="font-size: 18px;" disabled>
+						<i class="fas fa-upload"></i> Upload game
+					</button>
 				</form>
 			</div>
 		</div>
@@ -29,17 +47,37 @@
 {% block scripts %}
 <script>
 $(function() {
+  var game_log_input = $("#id_game_log");
+  var file_input = $("#id_game_log_file");
+  var file_label = $("#game-log-file-label");
+  var submit_button = $("#upload-game-submit");
+
   function set_data(data) {
 	var indented = JSON.stringify(data, null, 2);
-	$("#id_game_log").text(indented);
+	game_log_input.val(indented);
+	update_submit_state();
   }
 
-  var file_input = $("#id_game_log_file");
+  function update_submit_state() {
+	var text = game_log_input.val().trim();
+	var valid = false;
+	if (text) {
+	  try {
+		JSON.parse(text);
+		valid = true;
+	  } catch(e) {
+		valid = false;
+	  }
+	}
+	submit_button.prop("disabled", !valid);
+  }
+
   file_input.change(function() {
-	$("#id_game_log").text("");
+	game_log_input.val("");
 	var files = file_input.get(0).files;
 	if (files.length > 0) {
 	  var file = files[0];
+	  file_label.text(file.name);
 	  var reader = new FileReader();
 	  reader.readAsText(file);
 	  reader.onload = function(evt) {
@@ -53,8 +91,20 @@ $(function() {
 		  }
 		}
 	  };
+	} else {
+	  file_label.text("Choose file\u2026");
 	}
+	update_submit_state();
   });
+
+  game_log_input.on("input", function() {
+	// Manually editing the log invalidates any previously chosen file.
+	file_input.val("");
+	file_label.text("Choose file\u2026");
+	update_submit_state();
+  });
+
+  update_submit_state();
 });
 </script>
 {% endblock scripts %}

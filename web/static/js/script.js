@@ -1,3 +1,5 @@
+$('[data-toggle="tooltip"]').tooltip();
+
 $("[data-href]").click(function (e) {
 	if (e.target.nodeName === "A") return;
 	const url = this.getAttribute("data-href");
@@ -118,6 +120,7 @@ window.gamesHeatmap = function gamesHeatmap(el, data, config) {
 			fontFamily: "inherit",
 			foreColor,
 			toolbar: { show: false },
+			animations: { enabled: false },
 		},
 		theme: { mode: "dark" },
 		xaxis: {

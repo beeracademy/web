@@ -11,7 +11,7 @@
         <p class="page-subtitle">{{ object_list.paginator.count|intcomma }} games recorded</p>
     </div>
     <div class="page-toolbar-actions">
-        <a class="btn btn-outline-danger btn-sm" href="/upload_game/">
+        <a class="btn btn-outline-secondary btn-sm" href="/upload_game/">
             <i class="fas fa-upload"></i> Upload failed game
         </a>
         {% include "season_chooser.html" %}
@@ -27,11 +27,27 @@
 </form>
 {% endblock %}
 
+{% block table_class %} games-table{% endblock %}
+
+{% block colgroup %}
+<colgroup>
+    <col class="col-players">
+    <col class="col-status">
+    <col class="col-season">
+    <col class="col-started">
+    <col class="col-ended">
+    <col class="col-duration">
+    <col class="col-action">
+</colgroup>
+{% endblock %}
+
 {% block thead %}
 <tr class="academy-table">
     <th scope="col">Players</th>
+    <th scope="col">Status</th>
     <th scope="col">Season</th>
-    {% include "sort_col.html" with name="End datetime" column=order.end_datetime %}
+    <th scope="col">Started</th>
+    {% include "sort_col.html" with name="Ended" column=order.end_datetime %}
     {% include "sort_col.html" with name="Duration" column=order.duration %}
     <th scope="col" class="table-action-col"></th>
 </tr>
@@ -46,26 +62,30 @@
             <img src="{{ gp.user.image_url }}" class="player-stack-avatar" title="{{ gp.user.username }}">
             {% endfor %}
         </div>
-        <span>
+        <span class="player-names" data-toggle="tooltip" data-placement="top" title="{{ game.players_str }}">
             {% for gp in game.ordered_gameplayers %}
-            <a href="/players/{{ gp.user.id }}/" class="{% if gp.dnf %}dnf{% endif %}"><span class="username">{{ gp.user.username }}</span></a>{% if not forloop.last %},{% endif %}{% endfor %}
+            <a href="/players/{{ gp.user.id }}/" class="{% if gp.dnf %}dnf{% endif %}"><span class="username">{{ gp.user.username }}</span></a>{% if not forloop.last %}, {% endif %}{% endfor %}
         </span>
     </td>
-    <td>{{ game.season_number_str }}</td>
     <td>
         {% if game.is_live %}
             <span class="status-live-text"><span class="status-dot"></span> Live</span>
         {% elif game.dnf %}
             <span class="status-pill status-dnf">DNF</span>
         {% else %}
-            {{ game.end_str }}
+            <span class="status-pill status-done">Done</span>
         {% endif %}
     </td>
+    <td>{{ game.season_number_str }}</td>
+    <td class="text-mono">{{ game.start_str }}</td>
+    <td class="text-mono">{{ game.ended_str }}</td>
     <td class="text-right">
-        <span class="duration">
-            {{ game.duration_str }}
+        <span class="duration-wrap">
+            <span class="duration">
+                {{ game.duration_str }}
+            </span>
+            <i class="far fa-clock" style="color: var(--color-text-muted);"></i>
         </span>
-        <i class="far fa-clock" style="color: var(--color-text-muted); margin-left: 4px;"></i>
     </td>
     <td class="table-action-col"><i class="fas fa-chevron-right row-action-icon"></i></td>
 </tr>

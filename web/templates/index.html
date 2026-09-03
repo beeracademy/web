@@ -7,13 +7,6 @@
 
 {% block content %}
 
-<div class="page-toolbar">
-    <div>
-        <h1 class="page-title">Overview</h1>
-        <p class="page-subtitle">Live stats from the Academy community</p>
-    </div>
-</div>
-
 <div class="stat-grid">
     <div class="stat-card-v2">
         <div class="stat-card-v2-head">
@@ -89,7 +82,7 @@
         <div class="col-6 col-sm-4 col-lg-3 mb-3" title="{{ reason }}">
             <a href="/players/{{ user.id }}/" class="player-tile-card">
                 <div class="player-tile-img-wrap">
-                    <img src="{{ user.image_url }}" alt="{{ user.username }}" class="player-tile-img {% cycle 'player-c0' 'player-c1' 'player-c2' 'player-c3' 'player-c4' 'player-c5' %}">
+                    <img src="{{ user.image_url }}" alt="{{ user.username }}" class="player-tile-img">
                 </div>
                 <div class="player-tile-name">{{ user.username }}</div>
             </a>
@@ -108,7 +101,7 @@
         <div class="col-6 col-sm-4 col-lg-3 mb-3" title="{{ reason }}">
             <a href="/players/{{ user.id }}/" class="player-tile-card">
                 <div class="player-tile-img-wrap">
-                    <img src="{{ user.image_url }}" alt="{{ user.username }}" class="player-tile-img {% cycle 'player-c0' 'player-c1' 'player-c2' 'player-c3' 'player-c4' 'player-c5' %}">
+                    <img src="{{ user.image_url }}" alt="{{ user.username }}" class="player-tile-img">
                 </div>
                 <div class="player-tile-name">{{ user.username }}</div>
             </a>

@@ -597,6 +597,68 @@ a.nolink {
 	box-shadow: 0 0 0 3px rgba(172, 24, 28, 0.1) !important;
 }
 
+.custom-file {
+	height: auto;
+}
+
+.custom-file-input {
+	height: calc(1.5em + 1.2rem + 2px);
+}
+
+.custom-file-label {
+	border-radius: var(--radius);
+	border: 1px solid var(--color-border-2);
+	padding: 0.6rem 0.9rem;
+	height: auto;
+	background-color: var(--color-surface-2);
+	color: var(--color-text);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.custom-file-label::after {
+	content: "Browse";
+	border-radius: 0 var(--radius) var(--radius) 0;
+	height: auto;
+	padding: 0.6rem 0.9rem;
+	background-color: var(--color-surface);
+	color: var(--color-text);
+	border-left: 1px solid var(--color-border-2);
+}
+
+.custom-file-input:focus ~ .custom-file-label {
+	border-color: rgba(172, 24, 28, 0.5);
+	box-shadow: 0 0 0 3px rgba(172, 24, 28, 0.1);
+}
+
+.custom-file-input:hover ~ .custom-file-label {
+	border-color: var(--color-border-2);
+	background-color: var(--color-surface);
+}
+
+.upload-or-divider {
+	display: flex;
+	align-items: center;
+	text-align: center;
+	color: var(--color-text-muted);
+	font-size: 0.8rem;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	margin: 1rem 0;
+}
+
+.upload-or-divider::before,
+.upload-or-divider::after {
+	content: "";
+	flex: 1;
+	border-bottom: 1px solid var(--color-border);
+}
+
+.upload-or-divider span {
+	padding: 0 0.75rem;
+}
+
 label {
 	font-weight: 600;
 	font-size: 0.875rem;
@@ -675,6 +737,46 @@ label {
 	padding-right: 0.7rem !important;
 }
 
+.ranking-top-badge {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.35rem;
+	width: 4rem;
+	padding: 0.25rem 0.6rem;
+	border-radius: var(--radius-pill);
+	font-weight: 700;
+	line-height: 1;
+}
+
+.ranking-top-badge i {
+	font-size: 0.8rem;
+}
+
+.ranking-top-1 {
+	background-color: rgba(217, 178, 90, 0.16);
+	color: #d9b25a;
+	border: 1px solid rgba(217, 178, 90, 0.32);
+}
+
+.ranking-top-2 {
+	background-color: rgba(190, 196, 207, 0.12);
+	color: #bec4cf;
+	border: 1px solid rgba(190, 196, 207, 0.28);
+}
+
+.ranking-top-3 {
+	background-color: rgba(201, 99, 84, 0.14);
+	color: #c96354;
+	border: 1px solid rgba(201, 99, 84, 0.28);
+}
+
+.ranking-top-neutral {
+	background-color: rgba(255, 255, 255, 0.04);
+	color: var(--color-text-muted);
+	border: 1px solid var(--color-border);
+}
+
 .academy-table th.ranking-name-col,
 .academy-table td.ranking-name-col {
 	padding-left: 0.35rem !important;
@@ -719,6 +821,11 @@ table.table-bordered td {
 
 .table-hover tbody tr:hover {
 	background-color: rgba(255, 255, 255, 0.04) !important;
+	color: var(--color-text) !important;
+}
+
+.table-hover tbody tr:hover td {
+	color: var(--color-text) !important;
 }
 
 tr[data-href] {
@@ -769,11 +876,61 @@ tr[data-href] {
 .text-mono {
 	font-family: var(--font-mono);
 	font-size: 0.82rem;
+	white-space: nowrap;
+}
+
+.duration-wrap {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	max-width: 100%;
+	overflow: hidden;
+}
+
+.duration-wrap .duration {
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
 .table-action-col {
 	width: 44px;
 	padding-right: 1rem !important;
+}
+
+/* ── Games table: fixed layout so long player lists truncate
+   instead of breaking row alignment ── */
+.games-table {
+	table-layout: fixed;
+}
+
+.games-table th,
+.games-table td {
+	overflow: hidden;
+}
+
+.games-table .col-players {
+	width: 30%;
+}
+
+.games-table .col-status {
+	width: 11%;
+}
+
+.games-table .col-season {
+	width: 6%;
+}
+
+.games-table .col-started,
+.games-table .col-ended {
+	width: 17%;
+}
+
+.games-table .col-duration {
+	width: 15%;
+}
+
+.games-table .col-action {
+	width: 44px;
 }
 
 .row-action-icon {
@@ -798,6 +955,20 @@ tr[data-href]:hover .row-action-icon {
 	line-height: 1.4;
 	padding-top: 0;
 	padding-bottom: 0;
+	min-width: 0;
+}
+
+.player-names {
+	min-width: 0;
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}
+
+.player-names a:hover,
+.table-hover tbody tr:hover td .player-names a:hover {
+	color: var(--color-primary) !important;
+	text-decoration: underline;
 }
 
 .player-stack {
@@ -835,6 +1006,11 @@ tr[data-href]:hover .row-action-icon {
 .status-dnf {
 	background-color: rgba(255, 255, 255, 0.06);
 	color: var(--color-text-muted);
+}
+
+.status-done {
+	background-color: rgba(74, 222, 128, 0.08);
+	color: #4ade80;
 }
 
 .status-live-text {
@@ -1373,6 +1549,14 @@ tr.live .status-dot {
 	stroke-width: 0 !important;
 }
 
+.empty-state {
+	color: var(--color-text-muted);
+	text-align: center;
+	padding: 2rem 1rem;
+	font-size: 0.875rem;
+	margin: 0;
+}
+
 .stats-note {
 	margin: 0 0 1rem;
 	color: var(--color-text-muted);
@@ -1624,7 +1808,6 @@ tr.live .status-dot {
 	height: 100%;
 	object-fit: cover;
 	border-radius: var(--radius);
-	border: 3px solid transparent;
 }
 
 .player-tile-name {
@@ -1638,26 +1821,6 @@ tr.live .status-dot {
 	text-overflow: ellipsis;
 }
 
-/* Player colour rings */
-.player-c0 {
-	border-color: var(--player-0);
-}
-.player-c1 {
-	border-color: var(--player-1);
-}
-.player-c2 {
-	border-color: var(--player-2);
-}
-.player-c3 {
-	border-color: var(--player-3);
-}
-.player-c4 {
-	border-color: var(--player-4);
-}
-.player-c5 {
-	border-color: var(--player-5);
-}
-
 @media (max-width: 768px) {
 	.stat-grid {
 		grid-template-columns: 1fr;
@@ -1669,7 +1832,7 @@ tr.live .status-dot {
    ========================================================================== */
 
 tr.live {
-	background-color: rgba(172, 24, 28, 0.06) !important;
+	background-color: rgba(172, 24, 28, 0.035) !important;
 	color: var(--color-text);
 }
 
@@ -1724,6 +1887,16 @@ a.dnf * {
 	border: 1px solid var(--color-border);
 }
 
+.profile-avatar {
+	height: 88px;
+	width: 88px;
+	border-radius: var(--radius-lg);
+	object-fit: cover;
+	background-color: var(--color-surface-2);
+	border: 1px solid var(--color-border);
+	flex: none;
+}
+
 .text-cetner {
 	text-align: center;
 }
@@ -1746,25 +1919,25 @@ a.dnf * {
 }
 
 .achievements img.bronze {
-	border-color: #cd7f32;
+	border-color: #c96354;
 	border-style: solid;
 	border-width: 5px;
 }
 
 .achievements img.silver {
-	border-color: #c0c0c0;
+	border-color: #bec4cf;
 	border-style: solid;
 	border-width: 5px;
 }
 
 .achievements img.gold {
-	border-color: #d4af37;
+	border-color: #d9b25a;
 	border-style: solid;
 	border-width: 5px;
 }
 
 tr.in-game {
-	background-color: rgba(52, 152, 219, 0.1) !important;
+	background-color: rgba(52, 152, 219, 0.05) !important;
 	color: var(--color-text);
 }
 
