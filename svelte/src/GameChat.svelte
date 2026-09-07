@@ -862,7 +862,7 @@ onDestroy(() => {
 		width: 40px;
 		height: 40px;
 		border-radius: 10px;
-		background: linear-gradient(135deg, rgba(165, 56, 59, 0.3) 0%, rgba(165, 56, 59, 0.1) 100%);
+		background: rgba(165, 56, 59, 0.18);
 		border: 1px solid rgba(165, 56, 59, 0.4);
 		display: flex;
 		align-items: center;
@@ -896,7 +896,6 @@ onDestroy(() => {
 
 	.status-indicator.online {
 		background: #10b981;
-		box-shadow: 0 0 6px #10b981;
 	}
 
 	.status-indicator.pending {
@@ -968,7 +967,6 @@ onDestroy(() => {
 		background: #242428;
 		border: 1px solid var(--color-border-2);
 		border-radius: 8px;
-		box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
 		z-index: 1070;
 		padding: 0.6rem;
 		pointer-events: auto;
@@ -1117,15 +1115,11 @@ onDestroy(() => {
 		padding: 0.65rem 0.9rem;
 		border-radius: 12px;
 		background: #242428;
-		border: 1px solid rgba(255, 255, 255, 0.07);
-		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
 		word-break: break-word;
 	}
 
 	.message-bubble.mine {
-		background: linear-gradient(135deg, rgba(165, 56, 59, 0.35) 0%, rgba(135, 45, 48, 0.2) 100%);
-		border-color: rgba(165, 56, 59, 0.45);
-		box-shadow: 0 2px 10px rgba(165, 56, 59, 0.15);
+		background: rgba(165, 56, 59, 0.28);
 	}
 
 	.message-header {
@@ -1178,7 +1172,6 @@ onDestroy(() => {
 	.emoji-picker-container {
 		background: #202024;
 		border-top: 1px solid rgba(255, 255, 255, 0.1);
-		box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.4);
 		height: 320px;
 		max-height: 320px;
 		display: flex;
