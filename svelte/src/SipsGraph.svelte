@@ -71,6 +71,15 @@ onMount(() => {
 		chart: {
 			type: "line",
 			height: 500,
+			background: "transparent",
+			fontFamily: "inherit",
+			foreColor: "#aaa39b",
+			toolbar: { show: false },
+			animations: { enabled: false },
+		},
+		theme: { mode: "dark" },
+		grid: {
+			borderColor: "rgba(255, 255, 255, 0.05)",
 		},
 		stroke: {
 			curve: "straight",
@@ -87,6 +96,9 @@ onMount(() => {
 		},
 		yaxis: yaxis,
 		colors: userColors,
+		tooltip: {
+			theme: "dark",
+		},
 		series: [],
 	};
 

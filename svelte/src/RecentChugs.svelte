@@ -10,16 +10,16 @@ import type { RecentChugData } from "./types";
     ) as RecentChugData[]);
 </script>
 
-<div class="container">
-	<div id="chugs_container" class="row justify-content-md-center">
-		{#each chugs as chug}
-			<Chug start_datetime={chug.game.start_datetime} chug={chug.chug} game_dnf={chug.game.dnf} game_id={chug.game.id} />
-		{/each}
-	</div>
+<div class="recent-chugs-grid">
+	{#each chugs as chug}
+		<Chug start_datetime={chug.game.start_datetime} chug={chug.chug} game_dnf={chug.game.dnf} game_id={chug.game.id} />
+	{/each}
 </div>
 
 <style>
-	.container {
-		margin-bottom: 2em;
+	.recent-chugs-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+		gap: 1rem;
 	}
 </style>

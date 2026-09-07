@@ -7,53 +7,58 @@
 
 {% block content %}
 
-<h5><i class="fas fa-chart-pie"></i> General Stats</h5>
-
-<hr>
-
-<div class="container">
-    <div class="row">
-        <div class="card col-md-3 m-auto">
-            <div class="card-body text-center">
-                <i class="fas fa-gamepad fa-3x"></i>
-                <p class="card-title">Games played</p>
-                <h4 class="card-text">{{ total_games|intcomma }}</h4>
-            </div>
+<div class="stat-grid">
+    <div class="stat-card-v2">
+        <div class="stat-card-v2-head">
+            <span class="stat-card-v2-label">Games played</span>
+            <span class="stat-card-v2-icon"><i class="fas fa-gamepad"></i></span>
         </div>
-        <div class="card col-md-3 m-auto">
-            <div class="card-body text-center">
-                <i class="fas fa-beer fa-3x"></i>
-                <p class="card-title">Beers consumed</p>
-                <h4 class="card-text">{{ total_beers|floatformat:0|intcomma }}</h4>
-            </div>
+        <div class="stat-card-v2-value">{{ total_games|intcomma }}</div>
+    </div>
+    <div class="stat-card-v2">
+        <div class="stat-card-v2-head">
+            <span class="stat-card-v2-label">Beers consumed</span>
+            <span class="stat-card-v2-icon"><i class="fas fa-wine-bottle"></i></span>
         </div>
-        <div class="card col-md-3 m-auto">
-            <div class="card-body text-center">
-                <i class="fas fa-calendar-alt fa-3x"></i>
-                <p class="card-title">Current season</p>
-                <h4 class="card-text">{{ current_season.number }}</h4>
-            </div>
+        <div class="stat-card-v2-value">{{ total_beers|floatformat:0|intcomma }}</div>
+    </div>
+    <div class="stat-card-v2">
+        <div class="stat-card-v2-head">
+            <span class="stat-card-v2-label">Current season</span>
+            <span class="stat-card-v2-icon"><i class="fas fa-flag-checkered"></i></span>
         </div>
+        <div class="stat-card-v2-value">{{ current_season.number }}</div>
     </div>
 </div>
 
+<div class="card chart-card">
+    <div class="chart-card-head">
+        <div>
+            <div class="chart-card-label">Games played</div>
+            <div class="chart-card-value">{{ games_last_12_months|intcomma }}</div>
+        </div>
+        <span class="chart-card-badge">Last 12 months</span>
+    </div>
+    <div id="games-chart"></div>
+</div>
+
 {% if live_games %}
+<div class="card section-card">
+    <div class="section-card-header">
+        <h2 class="icon-heading"><i class="fas fa-hand-spock"></i> Live Games</h2>
+        <span class="section-count-badge">{{ live_games|length }} live</span>
+    </div>
 
-<br>
-<h5><i class="fas fa-hand-spock"></i> Live Games</h5>
-
-<hr>
-
-{% for game in live_games %}
-<div class="card mt-1 mb-1 hover bg-danger text-light" data-href="/games/{{ game.id }}/">
-    <div class="container p-3">
-        <i class="far fa-user" style="margin-right: 5px;"></i>
+    <div class="live-games-list">
+    {% for game in live_games %}
+    <div class="live-game-card" data-href="/games/{{ game.id }}/">
+        <i class="far fa-user" style="margin-right: 10px;"></i>
 
         {% for player in game.ordered_players %}
-        <a href="/players/{{ player.id }}/" class="text-light">{{ player.username }}</a>{% if not forloop.last %},{% endif %}
+        <a href="/players/{{ player.id }}/" class="text-light">{{ player.username }}</a>{% if not forloop.last %},&nbsp;{% endif %}
         {% endfor %}
 
-        <div class="float-right col-md-auto p-0 live" data-start-time="{{ game.start_datetime.timestamp }}">
+        <div class="ml-auto live duration-badge" data-start-time="{{ game.start_datetime.timestamp }}">
             <i class="far fa-clock d-lg-none"></i>
             <div class="duration" style="display: inline;">
                 {{ game.duration_str }}
@@ -61,67 +66,122 @@
             <i class="far fa-clock d-none d-lg-inline" style="margin-left: 5px;"></i>
         </div>
     </div>
+
+    {% endfor %}
+    </div>
 </div>
-
-{% endfor %}
-
 {% endif %}
 
-<br>
-<h5><i class="fas fa-heart"></i> Recently Active Players</h5>
-
-<hr>
-
-<div class="row">
-    {% for user, reason in recent_players %}
-    <div class="col-6 col-lg-3 py-2" title="{{ reason }}">
-        <a href="/players/{{ user.id }}/"><img src="{{ user.image_url }}"
-                class="img-fluid mx-auto d-block bottom-shadow rounded"></a>
-        <div class="card-username">{{ user.username }}</div>
+{% if recent_picture_games %}
+<div class="card section-card">
+    <div class="section-card-header">
+        <h2 class="icon-heading"><i class="fas fa-camera"></i> Recent Game Pictures</h2>
     </div>
-    {% endfor %}
+
+    <div id="recent-pictures-masonry" class="gallery-masonry">
+        <template id="recent-pictures-item-template">
+            {% for game in recent_picture_games %}
+            <div class="gallery-item" data-game-id="{{ game.id }}" data-game-url="/games/{{ game.id }}/" data-image-url="{{ game.image.url }}">
+                <img src="{{ game.image.url }}" alt="{{ game.description|default:game.players_str }}" loading="lazy">
+            </div>
+            {% endfor %}
+        </template>
+    </div>
+</div>
+{% endif %}
+
+<div class="card section-card">
+    <div class="section-card-header">
+        <h2 class="icon-heading"><i class="fas fa-heart"></i> Recently Active Players</h2>
+    </div>
+
+    <div class="row">
+        {% for user, reason in recent_players %}
+        <div class="col-6 col-sm-4 col-lg-3 mb-3" title="{{ reason }}">
+            <a href="/players/{{ user.id }}/" class="player-tile-card">
+                <div class="player-tile-img-wrap">
+                    <img src="{{ user.image_url }}" alt="{{ user.username }}" class="player-tile-img">
+                </div>
+                <div class="player-tile-name">{{ user.username }}</div>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
 </div>
 
-<br>
+{{ monthly_games_data|json_script:"monthly_games_data" }}
 
-<h5><i class="fas fa-thumbs-down"></i> Wall Of Shame</h5>
+{% endblock %}
 
-<hr>
+{% block scripts %}
+<script src="{% static 'js/masonry.js' %}"></script>
+<script>
+    (function() {
+        var masonry = document.getElementById("recent-pictures-masonry");
+        if (masonry) {
+            var template = document.getElementById("recent-pictures-item-template");
+            var items = Array.prototype.slice.call(
+                template.content.querySelectorAll(".gallery-item")
+            );
 
-<div class="row">
-    {% for user, reason in wall_of_shame_players %}
-    <div class="col-6 col-lg-3 py-2" title="{{ reason }}">
-        <a href="/players/{{ user.id }}/"><img src="{{ user.image_url }}" class="img-fluid mx-auto d-block rounded"></a>
-        <div class="card-username">{{ user.username }}</div>
-    </div>
-    {% endfor %}
-</div>
+            initMasonry(masonry, items, function(index) {
+                window.location.href = items[index].dataset.gameUrl;
+            });
+        }
+    })();
+</script>
+<script>
+    (function() {
+        var monthlyData = JSON.parse(document.getElementById("monthly_games_data").textContent);
 
-<style>
-    .card-username {
-        text-align: center;
-        color: #fff;
-        font-weight: bold;
-        margin-top: -40px;
-        font-size: 24px;
-
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-
-        text-shadow:
-            -1px -1px 0 #000,
-            1px -1px 0 #000,
-            -1px 1px 0 #000,
-            1px 1px 0 #000;
-    }
-
-    .hover {
-    }
-
-    .hover:hover {
-        cursor: pointer;
-    }
-</style>
-
+        var chart = new ApexCharts(document.getElementById("games-chart"), {
+            chart: {
+                type: "bar",
+                height: 260,
+                toolbar: { show: false },
+                fontFamily: "inherit",
+                background: "transparent",
+                foreColor: "#7b82a0",
+                animations: { enabled: false },
+            },
+            plotOptions: {
+                bar: {
+                    columnWidth: "45%",
+                    borderRadius: 0,
+                    endingShape: "flat",
+                },
+            },
+            series: [{ name: "Games played", data: monthlyData.counts }],
+            xaxis: {
+                categories: monthlyData.labels,
+                axisBorder: { show: false },
+                axisTicks: { show: false },
+                labels: { style: { colors: "#7b82a0" } },
+            },
+            yaxis: {
+                labels: {
+                    formatter: function(v) { return Math.round(v); },
+                    style: { colors: "#7b82a0" },
+                },
+            },
+            grid: {
+                borderColor: "rgba(255, 255, 255, 0.05)",
+                strokeDashArray: 4,
+                yaxis: { lines: { show: true } },
+                xaxis: { lines: { show: false } },
+            },
+            fill: { opacity: 1 },
+            colors: ["#ac181c"],
+            dataLabels: { enabled: false },
+            tooltip: {
+                theme: "dark",
+                style: { fontSize: "13px" },
+                y: {
+                    formatter: function(v) { return v + (v === 1 ? " game" : " games"); },
+                },
+            },
+        });
+        chart.render();
+    })();
+</script>
 {% endblock %}

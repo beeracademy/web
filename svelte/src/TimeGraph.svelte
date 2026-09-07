@@ -41,7 +41,17 @@ onMount(() => {
 		chart: {
 			type: "line",
 			height: 500,
+			background: "transparent",
+			fontFamily: "inherit",
+			foreColor: "#aaa39b",
+			toolbar: { show: false },
+			animations: { enabled: false },
 		},
+		theme: { mode: "dark" },
+		grid: {
+			borderColor: "rgba(255, 255, 255, 0.05)",
+		},
+		colors: ["#a5383b"],
 		stroke: {
 			curve: "straight",
 		},
@@ -69,6 +79,7 @@ onMount(() => {
 			size: 1,
 		},
 		tooltip: {
+			theme: "dark",
 			x: {
 				formatter: (value: number) => {
 					const player_name =
@@ -111,7 +122,7 @@ $effect(() => {
 
 <div>
 	{#if game_data.cards.length > 0 && game_data.cards[0].start_delta_ms === null}
-		<p style="text-align: center;">
+		<p class="empty-state">
 			Time graph unavailable due to missing data
 		</p>
 	{:else}

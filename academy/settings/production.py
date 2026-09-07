@@ -50,6 +50,8 @@ FACEBOOK_PAGE_ID = "227174884109471"
 FACEBOOK_ACCESS_TOKEN = os.environ["FACEBOOK_ACCESS_TOKEN"]
 
 CELERY_BROKER_URL = "redis://redis:6379/0"
+REDIS_URL = "redis://redis:6379/1"
+
 
 LOGGING = {
     "version": 1,

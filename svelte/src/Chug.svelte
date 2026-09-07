@@ -53,43 +53,66 @@ import type { ChugData } from "./types";
 	});
 </script>
 
-<div class="col-md-auto">
-	<div class="card">
-		<div class="card-header">
-			<ColoredSuit {card} />
-		</div>
-		<ul class="list-group list-group-flush">
-			{#if user}
-				<li class="list-group-item">
-					<a href="/players/{user.id}/" class="username">
-						{user.username}
-					</a>
-				</li>
-			{/if}
-			<li class="list-group-item">
-				{durationStr}
-			</li>
-			{#if game_id}
-				<li class="list-group-item">
-					<a href="/games/{game_id}">{formatDateWithoutTime(chugStartDate)}</a>
-				</li>
-			{/if}
-			{#if card.chug_id}
-				<li class="list-group-item staff-only">
-					<a
-						class="btn btn-primary text-light"
-						href="/admin/games/chug/{card.chug_id}"
-						style="width: 100%;">Edit</a
-					>
-				</li>
-			{/if}
-		</ul>
+<div class={{"chug-card": true, "in-progress": inProgress}}>
+	<div class="chug-card-suit">
+		<ColoredSuit {card} />
 	</div>
+	{#if user}
+		<a href="/players/{user.id}/" class="username chug-card-user">
+			{user.username}
+		</a>
+	{/if}
+	<div class="chug-card-duration text-mono">
+		{durationStr}
+	</div>
+	{#if game_id}
+		<a href="/games/{game_id}" class="chug-card-date">{formatDateWithoutTime(chugStartDate)}</a>
+	{/if}
+	{#if card.chug_id}
+		<a
+			class="btn btn-outline-secondary btn-sm staff-only chug-card-edit"
+			href="/admin/games/chug/{card.chug_id}">Edit</a
+		>
+	{/if}
 </div>
 
 <style>
-	.card-header {
-		font-size: 4rem;
+	.chug-card {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
 		text-align: center;
+		gap: 0.35rem;
+		padding: 1rem 0.75rem;
+		background-color: var(--color-surface-2);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-lg);
+	}
+
+	.chug-card.in-progress {
+		border-color: rgba(172, 24, 28, 0.4);
+		box-shadow: 0 0 0 1px rgba(172, 24, 28, 0.3);
+	}
+
+	.chug-card-suit {
+		font-size: 2.5rem;
+		line-height: 1;
+	}
+
+	.chug-card-user {
+		font-weight: 700;
+	}
+
+	.chug-card-duration {
+		color: var(--color-text-muted);
+		font-size: 0.85rem;
+	}
+
+	.chug-card-date {
+		font-size: 0.78rem;
+	}
+
+	.chug-card-edit {
+		margin-top: 0.35rem;
 	}
 </style>

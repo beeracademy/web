@@ -2,108 +2,133 @@
 
 {% load humanize %}
 
-{% block pagetitle %}Overall game stats{% endblock %}
+{% block pagetitle %}All the stats!{% endblock %}
 
 {% block styles %}
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.min.css" integrity="sha512-ENrTWqddXrLJsQS2A86QmvA17PkJ0GVm1bqj5aTgpeMAfDKN2+SIOLpKG8R/6KkimnhTb+VW5qqUHB/r1zaRgg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.Default.min.css" integrity="sha512-fYyZwU1wU0QWB4Yutd/Pvhy5J1oWAwFXun1pt+Bps04WSe4Aq6tyHlT4+MHSJhD8JlLfgLuC4CbCnX5KHSjyCg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-<style>
-#map {
-	height: 500px;
-	margin-bottom: 2em;
-}
-</style>
 {% endblock %}
 
 {% block content %}
-
-<h2>
-	Overall game stats
-	<div style="float: right;">
+<div class="page-toolbar">
+	<div>
+		<h1 class="page-title">All the stats!</h1>
+		<p class="page-subtitle">Historical game insights and distributions</p>
+	</div>
+	<div class="page-toolbar-actions">
 		{% include "season_chooser.html" %}
 		{% include "chooser.html" with chooser=player_count_chooser %}
 	</div>
-</h2>
+</div>
 
-<hr>
+<div class="stat-grid stats-summary-grid">
+	<div class="stat-card-v2">
+		<div class="stat-card-v2-head">
+			<span class="stat-card-v2-label">Games played</span>
+		</div>
+		<div class="stat-card-v2-value">{{ game_stats.total_games|intcomma }}</div>
+		<div class="stats-card-subtext">{{ game_stats.total_dnf|intcomma }} DNF</div>
+		<i class="fas fa-gamepad stat-card-v2-icon"></i>
+	</div>
+	<div class="stat-card-v2">
+		<div class="stat-card-v2-head">
+			<span class="stat-card-v2-label">Total sips</span>
+		</div>
+		<div class="stat-card-v2-value">{{ game_stats.total_sips|intcomma }}</div>
+		<div class="stats-card-subtext">{{ game_stats.total_beers|floatformat:0|intcomma }} beers</div>
+		<i class="fas fa-wine-bottle stat-card-v2-icon"></i>
+	</div>
+	<div class="stat-card-v2">
+		<div class="stat-card-v2-head">
+			<span class="stat-card-v2-label">Total duration</span>
+		</div>
+		<div class="stat-card-v2-value">{{ game_stats.total_duration|intcomma }}</div>
+		<div class="stats-card-subtext">Only games after 2014-04-05</div>
+		<i class="fas fa-clock stat-card-v2-icon"></i>
+	</div>
+</div>
 
-<h3>Game stats</h3>
-
-<table class="table table-bordered table-striped table-sm">
-	<tbody>
-		<tr>
-			<th>Games played</th>
-			<td>{{ game_stats.total_games|intcomma }} ({{ game_stats.total_dnf|intcomma }} DNF)</td>
-		</tr>
-		<tr>
-			<th>Total sips</th>
-			<td>{{ game_stats.total_sips|intcomma }} ({{ game_stats.total_beers|floatformat:0|intcomma}} beers)</td>
-		</tr>
-		<tr>
-			<th>Total duration of games (only games after 2014-04-05)</th>
-			<td>{{ game_stats.total_duration|intcomma }}</td>
-		</tr>
-	</tbody>
-</table>
-
-<div id="heatmap"></div>
+<div class="card section-card stats-section">
+	<div class="section-card-header">
+		<h2 class="icon-heading"><i class="fas fa-th"></i> Games heatmap</h2>
+	</div>
+	<div id="heatmap" class="stats-heatmap"></div>
+</div>
 
 {% if location_data %}
-<div id="map"></div>
+<div class="card section-card stats-section">
+	<div class="section-card-header">
+		<h2 class="icon-heading"><i class="fas fa-map-marker-alt"></i> Game locations</h2>
+	</div>
+	<div id="map" class="stats-map"></div>
+</div>
 {% endif %}
 
-<h3>Sips distribution ({{ sips_data.total_ys|intcomma }} data points)</h3>
+<div class="card section-card stats-section">
+	<div class="section-card-header">
+		<h2 class="icon-heading"><i class="fas fa-chart-bar"></i> Sips distribution</h2>
+		<span class="section-count-badge">{{ sips_data.total_ys|intcomma }} points</span>
+	</div>
+	<p class="stats-distribution-label">Distribution</p>
+	<pre class="stats-distribution">{{ sips_data.dist_str }}</pre>
+	<div id="sips_chart"></div>
+</div>
 
-Distribution:
-<span style="white-space: pre;">{{ sips_data.dist_str }}</span>
+<div class="card section-card stats-section">
+	<div class="section-card-header">
+		<h2 class="icon-heading"><i class="fas fa-stopwatch"></i> Game duration distribution</h2>
+		<span class="section-count-badge">{{ duration_data.total_ys|intcomma }} points</span>
+	</div>
+	<p class="stats-note">Only shows finished games with duration less than {{ duration_data.max_duration }}.</p>
+	<div id="duration_chart"></div>
+</div>
 
-<div id="sips_chart"></div>
-
-<h3>Game duration distribution ({{ duration_data.total_ys|intcomma }} data points)</h3>
-
-Only shows finished games with duration less than {{ duration_data.max_duration }}.
-
-<div id="duration_chart"></div>
-
-<h3>Chugs distribution ({{ chugs_data.total_ys|intcomma }} data points)</h3>
-
-<table class="table table-bordered table-striped table-sm">
-	<thead>
-		{% for v in chug_table_header %}
-			<th>{{ v }}</th>
-		{% endfor %}
-	</thead>
-	<tbody>
-		{% for row in chug_table %}
-			<tr>
-				{% for v in row %}
-					{% if forloop.first %}
-						<th>{{ v }}</th>
-					{% else %}
-						<td>
-							{% if v %}
-								{{ v|floatformat:4 }}&nbsp;%
-							{% else %}
-								-
-							{% endif %}
-						</td>
-					{% endif %}
+<div class="card section-card stats-section">
+	<div class="section-card-header">
+		<h2 class="icon-heading"><i class="fas fa-wine-bottle"></i> Chugs distribution</h2>
+		<span class="section-count-badge">{{ chugs_data.total_ys|intcomma }} points</span>
+	</div>
+	<div class="table-card mb-3">
+		<table class="table table-sm stats-matrix-table">
+			<thead>
+				{% for v in chug_table_header %}
+					<th>{{ v }}</th>
 				{% endfor %}
-			</tr>
-		{% endfor %}
-	</tbody>
-</table>
+			</thead>
+			<tbody>
+				{% for row in chug_table %}
+					<tr>
+						{% for v in row %}
+							{% if forloop.first %}
+								<th>{{ v }}</th>
+							{% else %}
+								<td>
+									{% if v %}
+										{{ v|floatformat:4 }}&nbsp;%
+									{% else %}
+										-
+									{% endif %}
+								</td>
+							{% endif %}
+						{% endfor %}
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	</div>
+	<p class="stats-distribution-label">Distribution</p>
+	<pre class="stats-distribution">{{ chugs_data.dist_str }}</pre>
+	<div id="chugs_chart"></div>
+</div>
 
-Distribution:
-<span style="white-space: pre;">{{ chugs_data.dist_str }}</span>
-
-<div id="chugs_chart"></div>
-
-<h3>Chug duration distribution ({{ chug_duration_data.total_ys|intcomma }} data points)</h3>
-
-Only shows chugs with duration less than {{ chug_duration_data.max_duration }}.
-
-<div id="chug_duration_chart"></div>
+<div class="card section-card stats-section">
+	<div class="section-card-header">
+		<h2 class="icon-heading"><i class="fas fa-tachometer-alt"></i> Chug duration distribution</h2>
+		<span class="section-count-badge">{{ chug_duration_data.total_ys|intcomma }} points</span>
+	</div>
+	<p class="stats-note">Only shows chugs with duration less than {{ chug_duration_data.max_duration }}.</p>
+	<div id="chug_duration_chart"></div>
+</div>
 
 {% endblock %}
 
@@ -114,11 +139,11 @@ Only shows chugs with duration less than {{ chug_duration_data.max_duration }}.
 <script>
 	var locationData = JSON.parse(document.getElementById("location_data").textContent);
 	if (locationData.length > 0) {
-		var map = L.map('map');
+		var map = L.map('map', { attributionControl: false });
 		L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-		  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
 		  referrerPolicy: 'strict-origin',
 		}).addTo(map);
+		L.control.attribution({ prefix: false }).addTo(map).addAttribution('&copy; OpenStreetMap contributors');
 
 		var markers = L.markerClusterGroup();
 		for (var i = 0; i < locationData.length; i++) {
@@ -138,13 +163,22 @@ Only shows chugs with duration less than {{ chug_duration_data.max_duration }}.
 {{ chug_duration_data|json_script:"chug_duration_data" }}
 
 <script>
-	gamesHeatmap(document.getElementById("heatmap"), JSON.parse(document.getElementById("heatmap_data").textContent));
+	gamesHeatmap(
+		document.getElementById("heatmap"),
+		JSON.parse(document.getElementById("heatmap_data").textContent),
+		{ color: "#a5383b", foreColor: "#aaa39b", height: 280 }
+	);
 
 	function barchart_options() {
 		return {
 			chart: {
 				height: 500,
+				background: "transparent",
+				fontFamily: "inherit",
+				foreColor: "#aaa39b",
+				toolbar: { show: false },
 			},
+			theme: { mode: "dark" },
 			plotOptions: {
 				bar: {
 					columnWidth: "90%",
@@ -156,20 +190,68 @@ Only shows chugs with duration less than {{ chug_duration_data.max_duration }}.
 			stroke: {
 				show: true,
 				width: 2,
-				colors: ["transparent", "#00ff96"],
+				colors: ["transparent", "#d9b25a"],
 			},
 			series: [{
 				type: "bar",
 				name: "Occurences",
 			}],
+			colors: ["#a5383b"],
+			grid: {
+				borderColor: "rgba(255, 255, 255, 0.05)",
+				strokeDashArray: 4,
+				xaxis: { lines: { show: false } },
+				yaxis: { lines: { show: true } },
+			},
+			xaxis: {
+				axisBorder: { show: false },
+				axisTicks: { show: false },
+				tickAmount: 8,
+				labels: {
+					rotate: -45,
+					rotateAlways: true,
+					hideOverlappingLabels: true,
+					trim: true,
+					formatter: function(value, _timestamp, opts) {
+						if (!opts || !opts.w || !opts.w.globals || !opts.w.globals.labels) {
+							return value;
+						}
+
+						var index = opts.dataPointIndex;
+						var last = opts.w.globals.labels.length - 1;
+						if (index === last || index % 6 === 0) {
+							return value;
+						}
+						return "";
+					},
+					style: {
+						colors: "#aaa39b",
+						fontSize: "11px",
+					},
+				},
+				title: {
+					style: {
+						color: "#aaa39b",
+					},
+				},
+			},
 			yaxis: {
 				title: {
 					text: "Occurences",
+					style: {
+						color: "#aaa39b",
+					},
 				},
 				decimalsInFloat: 0,
+				labels: {
+					style: {
+						colors: "#aaa39b",
+					},
+				},
 			},
 			tooltip: {
 				enabledOnSeries: [0],
+				theme: "dark",
 			},
 		};
 	}
@@ -194,12 +276,8 @@ Only shows chugs with duration less than {{ chug_duration_data.max_duration }}.
 		}
 
 		var options = barchart_options();
-		options.xaxis = {
-			title: {
-				text: charts[i].name + " for one player in one game",
-			},
-			categories: data.xs,
-		};
+		options.xaxis.title.text = charts[i].name + " for one player in one game";
+		options.xaxis.categories = data.xs;
 		options.series[0].data = data.ys;
 
 		options.tooltip.y = {
@@ -213,11 +291,16 @@ Only shows chugs with duration less than {{ chug_duration_data.max_duration }}.
 		};
 
 		if (charts[i].data === "sips_data" && data.probs.length !== 0) {
-      options.xaxis.labels = {
-        formatter: function(val, index) {
-          return val === undefined? "": toBase14(val);
-        }
-      };
+			options.xaxis.labels = {
+				formatter: function(val, index) {
+					return val === undefined? "": toBase14(val);
+				},
+				style: {
+					colors: "#aaa39b",
+				},
+			};
+			options.colors = ["#a5383b", "#d9b25a"];
+			options.stroke.colors = ["transparent", "#d9b25a"];
 			var expected = [];
 			for (var j = 0; j < data.probs.length; j++) {
 				expected.push(data.probs[j] * data.total_ys);
@@ -227,6 +310,8 @@ Only shows chugs with duration less than {{ chug_duration_data.max_duration }}.
 				name: "Expected occurences",
 				data: expected,
 			});
+		} else {
+			options.colors = ["#a5383b"];
 		}
 
 		var chart = new ApexCharts(chart_el, options);
@@ -252,13 +337,10 @@ Only shows chugs with duration less than {{ chug_duration_data.max_duration }}.
 	    }
 
 		var options = barchart_options();
-		options.xaxis = {
-			title: {
-				text: duration_charts[i].name,
-			},
-			categories: data.xs,
-		};
+		options.xaxis.title.text = duration_charts[i].name;
+		options.xaxis.categories = data.xs;
 		options.series[0].data = data.ys;
+		options.colors = ["#a5383b"];
 		options.tooltip.x = {
 			formatter: (function(data) {
 				return function(i, d) {

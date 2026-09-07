@@ -8,222 +8,275 @@
 
 {% block content %}
 
-<h2>
-	{% if object.is_staff %}
-	<i class="fas fa-crown" style="color: #dc3545;"></i>
-	{% endif %}
-
-	{{ object.username }}
-
-	{% if object == user %}
-		<a class="btn btn-primary float-right text-light col-md-auto" href="/settings/">Profile settings</a>
-		<br><br class="d-lg-none">
-	{% endif %}
-	{% if user.is_staff and object != user %}
-		<a class="btn btn-primary float-right text-light col-md-auto" href="/admin/games/user/{{ object.id }}/change/">Edit</a>
-		<br><br class="d-lg-none">
-	{% endif %}
-</h2>
-
-<hr>
-
-<div class="row">
-	<div class="col-md-auto text-center">
-		<img src="{{ object.image_url }}" alt="Profile picture" class="rounded">
-	</div>
-	<div class="col-md-10 d-none d-lg-block">
-		<div style="display: flex; align-items: center; height: 100%;">
-			<div id="heatmap" style="width: 100%;"></div>
+<div class="page-toolbar" style="align-items: center;">
+	<div style="display: flex; align-items: center; gap: 1.25rem;">
+		<img src="{{ object.image_url }}" alt="Profile picture" class="profile-avatar">
+		<div>
+			<h1 class="page-title icon-heading">
+				{% if object.is_staff %}
+				<i class="fas fa-crown" style="color: var(--color-primary);"></i>
+				{% endif %}
+				{{ object.username }}
+			</h1>
+			<p class="page-subtitle">Player profile</p>
 		</div>
+	</div>
+	<div class="page-toolbar-actions">
+		{% if otp_data %}
+		<button id="otp-button" class="btn btn-outline-secondary btn-sm"><i class="fas fa-key"></i> Copy one-time password</button>
+		{% endif %}
+		{% if object == user %}
+		<a class="btn btn-primary btn-sm" href="/settings/"><i class="fas fa-cog"></i> Profile settings</a>
+		{% endif %}
+		{% if user.is_staff and object != user %}
+		<a class="btn btn-primary btn-sm" href="/admin/games/user/{{ object.id }}/change/"><i class="fas fa-user-edit"></i> Edit</a>
+		{% endif %}
 	</div>
 </div>
 
-<br>
+<div class="stat-grid stats-summary-grid">
+	<div class="stat-card-v2">
+		<div class="stat-card-v2-head">
+			<span class="stat-card-v2-label">Games played</span>
+		</div>
+		<div class="stat-card-v2-value">{{ stats.total_games_including_dnf|intcomma }}</div>
+		<div class="stats-card-subtext">{{ stats.total_games|intcomma }} finished</div>
+		<i class="fas fa-gamepad stat-card-v2-icon"></i>
+	</div>
+	<div class="stat-card-v2">
+		<div class="stat-card-v2-head">
+			<span class="stat-card-v2-label">Total sips</span>
+		</div>
+		<div class="stat-card-v2-value">{{ stats.total_sips|intcomma }}</div>
+		<div class="stats-card-subtext">{{ stats.total_beers|floatformat:0|intcomma }} beers</div>
+		<i class="fas fa-wine-bottle stat-card-v2-icon"></i>
+	</div>
+	<div class="stat-card-v2">
+		<div class="stat-card-v2-head">
+			<span class="stat-card-v2-label">Total chugs</span>
+		</div>
+		<div class="stat-card-v2-value">{{ stats.total_chugs|intcomma }}</div>
+		<div class="stats-card-subtext">Avg {% firstof stats.average_chug_time "-" %}</div>
+		<i class="fas fa-stopwatch stat-card-v2-icon"></i>
+	</div>
+</div>
 
-<h4><i class="fas fa-trophy"></i>  Achievements</h4>
+<div class="card section-card stats-section">
+	<div class="section-card-header">
+		<h2 class="icon-heading"><i class="fas fa-th"></i> Activity heatmap</h2>
+	</div>
+	<div id="heatmap" class="stats-heatmap"></div>
+</div>
 
-<hr>
-
-<div class="container">
-	<div class="row achievements">
+<div class="card section-card">
+	<div class="section-card-header">
+		<h2 class="icon-heading"><i class="fas fa-trophy"></i> Achievements</h2>
+	</div>
+	<div class="achievements">
 		{% for achievement in achievements %}
 			<img class="rounder {{ achievement.level }}" src="{{ achievement.icon_url }}" title="{{ achievement.name }}: {{ achievement.description }}">
+		{% empty %}
+			<p class="empty-state">No achievements yet.</p>
 		{% endfor %}
 	</div>
 </div>
 
-<br>
-
-<h4>
-	<i class="fas fa-receipt"></i> Rank
-
-	<div style="float: right; margin-top: -7px;">
+<div class="card section-card">
+	<div class="section-card-header">
+		<h2 class="icon-heading"><i class="fas fa-receipt"></i> Rank</h2>
 		{% include "season_chooser.html" %}
 	</div>
-</h4>
+	<div class="table-card mb-0">
+		<table class="table academy-table table-sm mb-0">
+			<tbody>
+				{% for ranking in rankings %}
+				<tr>
+					<td class="player-name-col">{{ ranking.name }}</td>
+					<td class="ranking-value-col">{% spaceless %}
+						{% if ranking.rank %}
+							<a href="{{ ranking.url }}">#{{ ranking.rank }}</a>
+						{% else %}
+							-
+						{% endif %}
+						{% endspaceless %}</td>
+				</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	</div>
+</div>
 
-<hr>
-
-<div class="container">
+<div class="card section-card">
+	<div class="section-card-header">
+		<h2 class="icon-heading"><i class="fas fa-chart-pie"></i> Stats</h2>
+	</div>
 	<div class="row">
-		{% for ranking in rankings %}
-		<div class="card col-md-2 ml-auto mr-auto">
-			<div class="card-body text-center">
-				<p class="card-title mb-2">{{ ranking.name }}</p>
-				<h4 class="card-text">{% spaceless %}
-					{% if ranking.rank %}
-						<a href="{{ ranking.url }}">#{{ ranking.rank }}</a>
-					{% else %}
-						-
-					{% endif %}
-					{% endspaceless %}</h4>
+		<div class="col-md-6">
+			<div class="table-card mb-3 mb-md-0">
+				<table class="table academy-table table-sm mb-0">
+					<tbody>
+						<tr>
+							<td>Games played (official)</td>
+							<td class="ranking-value-col">{{ stats.total_games_including_dnf|intcomma }}</td>
+						</tr>
+						<tr class="sub">
+							<td>Finished</td>
+							<td class="ranking-value-col">{{ stats.total_games|intcomma }}</td>
+						</tr>
+						<tr class="sub">
+							<td>Player DNF</td>
+							<td class="ranking-value-col">{{ stats.total_games_with_player_dnf|intcomma }}</td>
+						</tr>
+						<tr class="sub">
+							<td>Game DNF</td>
+							<td class="ranking-value-col">{{ stats.total_games_with_game_dnf|intcomma }}</td>
+						</tr>
+						<tr class="sub">
+							<td>Player &amp; game DNF</td>
+							<td class="ranking-value-col">{{ stats.total_games_with_player_and_game_dnf|intcomma }}</td>
+						</tr>
+						<tr>
+							<td>Estimated money spent (TÅGEKAMMERET)</td>
+							<td class="ranking-value-col">{{ stats.approx_money_spent_tk|intcomma }}</td>
+						</tr>
+						<tr>
+							<td>Estimated money spent (FøTeX)</td>
+							<td class="ranking-value-col">{{ stats.approx_money_spent_føtex|intcomma }}</td>
+						</tr>
+						<tr>
+							<td>Total time played</td>
+							<td class="ranking-value-col">{{ stats.total_time_played }} <span class="text-mono">(~ {{ stats.approx_ects|floatformat:1 }} ECTS)</span></td>
+						</tr>
+					</tbody>
+				</table>
 			</div>
 		</div>
-		{% endfor %}
+		<div class="col-md-6">
+			<div class="table-card mb-0">
+				<table class="table academy-table table-sm mb-0">
+					<tbody>
+						<tr>
+							<td>Total sips</td>
+							<td class="ranking-value-col">{{ stats.total_sips|intcomma }} ({{ stats.total_beers|floatformat:0|intcomma }} beers)</td>
+						</tr>
+						<tr>
+							<td>Best game</td>
+							<td class="ranking-value-col">
+								{% include "utils/link.html" with text=stats.best_game_sips|base14 prefix="/games" id=stats.best_game.id %}
+							</td>
+						</tr>
+						<tr>
+							<td>Worst game</td>
+							<td class="ranking-value-col">
+								{% include "utils/link.html" with text=stats.worst_game_sips|base14 prefix="/games" id=stats.worst_game.id %}
+							</td>
+						</tr>
+						<tr>
+							<td>Average game</td>
+							<td class="ranking-value-col">{% firstof stats.average_game_sips|base14:1 "-" %}</td>
+						</tr>
+						<tr>
+							<td>Total chugs</td>
+							<td class="ranking-value-col">{{ stats.total_chugs|intcomma }}</td>
+						</tr>
+						<tr>
+							<td>Fastest chug time</td>
+							<td class="ranking-value-col">{% include "utils/link.html" with text=stats.fastest_chug.duration prefix="/games" id=stats.fastest_chug.card.game.id %}</td>
+						</tr>
+						<tr>
+							<td>Average chug time</td>
+							<td class="ranking-value-col">{% firstof stats.average_chug_time "-" %}</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
 	</div>
 </div>
 
-<br>
-
-<h4><i class="fas fa-chart-pie"></i> Stats</h4>
-
-<hr>
-
-<div class="row">
-	<div class="col-md-6">
-		<table class="table table-bordered table-striped table-sm">
+<div class="card section-card">
+	<div class="section-card-header">
+		<h2 class="icon-heading"><i class="fas fa-gamepad"></i> Recent games</h2>
+	</div>
+	{% if recent_games %}
+	<div class="table-card mb-0">
+		<table class="table academy-table table-sm mb-0 recent-games-table">
+			<colgroup>
+				<col class="col-players">
+				<col class="col-season">
+				<col class="col-ended">
+				<col class="col-duration">
+				<col class="col-action">
+			</colgroup>
+			<thead>
+				<tr class="academy-table">
+					<th scope="col" class="player-name-col">Players</th>
+					<th scope="col">Season</th>
+					<th scope="col">End datetime</th>
+					<th scope="col">Duration</th>
+					<th scope="col" class="table-action-col"></th>
+				</tr>
+			</thead>
 			<tbody>
-				<tr>
-					<th>Games played (official)</th>
-					<td>{{ stats.total_games_including_dnf |intcomma }}</td>
+				{% for game in recent_games %}
+				<tr data-href="/games/{{ game.id }}/" class="academy-table slim {% if user in game.ordered_players %}in-game {% endif %}{% if game.is_live %}live {% endif %}{% if game.dnf %}dnf {% endif %}" data-start-time="{{ game.start_datetime.timestamp }}">
+					<td class="player-cell">
+						<div class="player-stack">
+							{% for gp in game.ordered_gameplayers %}
+							<img src="{{ gp.user.image_url }}" class="player-stack-avatar" title="{{ gp.user.username }}">
+							{% endfor %}
+						</div>
+						<span class="player-names" title="{{ game.players_str }}">
+							{% for gp in game.ordered_gameplayers %}
+							<a href="/players/{{ gp.user.id }}/" class="{% if gp.dnf %}dnf{% endif %}"><span class="username">{{ gp.user.username }}</span></a>{% if not forloop.last %}, {% endif %}{% endfor %}
+						</span>
+					</td>
+					<td>{{ game.season_number_str }}</td>
+					<td class="text-mono">{{ game.end_str }}</td>
+					<td class="text-right">
+						<span class="duration-wrap">
+							<span class="duration">
+								{{ game.duration_str }}
+							</span>
+							<i class="far fa-clock" style="color: var(--color-text-muted);"></i>
+						</span>
+					</td>
+					<td class="table-action-col"><i class="fas fa-chevron-right row-action-icon"></i></td>
 				</tr>
-				<tr class="sub">
-					<th>Finished</th>
-					<td>{{ stats.total_games |intcomma }}</td>
-				</tr>
-				<tr class="sub">
-					<th>Player DNF</th>
-					<td>{{ stats.total_games_with_player_dnf|intcomma }}</td>
-				</tr>
-				<tr class="sub">
-					<th>Game DNF</th>
-					<td>{{ stats.total_games_with_game_dnf|intcomma }}</td>
-				</tr>
-				<tr class="sub">
-					<th>Player & game DNF</th>
-					<td>{{ stats.total_games_with_player_and_game_dnf|intcomma }}</td>
-				</tr>
-				<tr>
-					<th>Estimated money spent (TÅGEKAMMERET)</th>
-					<td>{{ stats.approx_money_spent_tk|intcomma }}</td>
-				</tr>
-				<tr>
-					<th>Estimated money spent (FøTeX)</th>
-					<td>{{ stats.approx_money_spent_føtex|intcomma }}</td>
-				</tr>
-				<tr>
-					<th>Total time played</th>
-					<td>{{ stats.total_time_played }}
-						<br>
-						(~ {{ stats.approx_ects|floatformat:1 }} ECTS)</td>
-				</tr>
+			{% endfor %}
 			</tbody>
 		</table>
 	</div>
-	<div class="col-md-6">
-		<table class="table table-bordered table-striped table-sm">
-			<tbody>
-				<tr>
-					<th>Total sips</th>
-					<td>{{ stats.total_sips|intcomma }} ({{ stats.total_beers|floatformat:0|intcomma }} beers)</td>
-				</tr>
-				<tr>
-					<th>Best game</th>
-					<td>
-            {% include "utils/link.html" with text=stats.best_game_sips|base14 prefix="/games" id=stats.best_game.id %}
-					</td>
-				</tr>
-				<tr>
-					<th>Worst game</th>
-          <td>
-            {% include "utils/link.html" with text=stats.worst_game_sips|base14 prefix="/games" id=stats.worst_game.id %}
-					</td>
-				</tr>
-				<tr>
-					<th>Average game</th>
-					<td>{% firstof stats.average_game_sips|base14:1 "-" %}</a></td>
-				</tr>
-				<tr>
-					<th>Total chugs</th>
-					<td>{{ stats.total_chugs|intcomma }}</td>
-				</tr>
-				<tr>
-					<th>Fastest chug time</th>
-					<td>{% include "utils/link.html" with text=stats.fastest_chug.duration prefix="/games" id=stats.fastest_chug.card.game.id %}
-					</td>
-				</tr>
-				<tr>
-					<th>Average chug time</th>
-					<td>{% firstof stats.average_chug_time "-" %}</td>
-				</tr>
-			</tbody>
-		</table>
+	{% else %}
+	<p class="empty-state">No games played yet.</p>
+	{% endif %}
+</div>
+
+<div class="card section-card">
+	<div class="section-card-header">
+		<h2 class="icon-heading"><i class="fas fa-wine-bottle"></i> Recent chugs</h2>
 	</div>
+	{% if recent_chugs %}
+	{{ recent_chugs|json_script:"recent_chugs" }}
+	{{ card_constants|json_script:"card_constants" }}
+	{% svelte_include "RecentChugs" %}
+	<div id="svelte-recent_chugs">
+	</div>
+	{% else %}
+	<p class="empty-state">No recent chugs.</p>
+	{% endif %}
 </div>
 
-<h4><i class="fas fa-gamepad"></i> Recent games</h4>
-
-<hr>
-
-<table class="table table-bordered table-striped table-hover table-sm">
-	<thead>
-		<tr class="academy-table">
-			<th scope="col">Players</th>
-			<th scope="col">Season</th>
-			<th scope="col">End datetime</th>
-			<th scope="col">Duration</th>
-		</tr>
-	</thead>
-	<tbody>
-		{% for game in recent_games %}
-		<tr data-href="/games/{{ game.id }}/" class="academy-table slim {% if user in game.ordered_players %}in-game {% endif %}{% if game.is_live %}live {% endif %}{% if game.dnf %}dnf {% endif %}" data-start-time="{{ game.start_datetime.timestamp }}">
-			<td>
-				{% for gp in game.ordered_gameplayers %}
-				<a href="/players/{{ gp.user.id }}/" class="{% if gp.dnf %}dnf{% endif %}"><span class="username">{{ gp.user.username }}</span></a>{% if not forloop.last %},{% endif %}{% endfor %}
-			</td>
-			<td>{{ game.season_number_str }}</td>
-			<td>{{ game.end_str }}</td>
-			<td class="text-right">
-				<span class="duration">
-					{{ game.duration_str }}
-				</span>
-				<i class="far fa-clock"></i>
-			</td>
-		</tr>
-	{% endfor %}
-	</tbody>
-</table>
-
-
-<h4><i class="fas fa-beer"></i> Recent chugs</h4>
-<hr>
-
-{{ recent_chugs|json_script:"recent_chugs" }}
-{{ card_constants|json_script:"card_constants" }}
-{% svelte_include "RecentChugs" %}
-<div id="svelte-recent_chugs">
+<div class="card section-card stats-section">
+	<div class="section-card-header">
+		<h2 class="icon-heading"><i class="fas fa-users"></i> Top 30 co-players</h2>
+	</div>
+	{% if played_with_data %}
+	<div id="played_with_charts"></div>
+	{% else %}
+	<p class="empty-state">No co-players yet.</p>
+	{% endif %}
 </div>
-
-<h4><i class="fas fa-users"></i> Top 30 co-players</h4>
-<hr>
-
-<div id="played_with_charts"></div>
-
-{% if otp_data %}
-<hr>
-
-<button id="otp-button" class="btn btn-primary">Copy one-time password</button>
-{% endif %}
 
 {% endblock %}
 
@@ -243,37 +296,68 @@
 		});
 	}
 
-	gamesHeatmap(document.getElementById("heatmap"), JSON.parse(document.getElementById("heatmap_data").textContent));
+	gamesHeatmap(
+		document.getElementById("heatmap"),
+		JSON.parse(document.getElementById("heatmap_data").textContent),
+		{ color: "#a5383b", foreColor: "#aaa39b", height: 280 }
+	);
 
-	var played_with_data = JSON.parse(document.getElementById("played_with_data").textContent);
+	var played_with_el = document.getElementById('played_with_charts');
+	if (played_with_el) {
+		var played_with_data = JSON.parse(document.getElementById("played_with_data").textContent);
 
-	var options = {
+		var options = {
 		chart: {
 			type: 'bar',
+			background: "transparent",
+			fontFamily: "inherit",
+			foreColor: "#aaa39b",
+			toolbar: { show: false },
 		},
+		theme: { mode: "dark" },
 		plotOptions: {
 			bar: {
 				columnWidth: "90%",
 				horizontal: true,
 			},
 		},
+		dataLabels: {
+			enabled: false,
+		},
 		series: [{
 			data: played_with_data,
 		}],
+		colors: ["#a5383b"],
+		grid: {
+			borderColor: "rgba(255, 255, 255, 0.05)",
+			strokeDashArray: 4,
+			xaxis: { lines: { show: false } },
+			yaxis: { lines: { show: true } },
+		},
 		xaxis: {
 			title: {
 				text: "Games",
+				style: { color: "#aaa39b" },
 			},
+			axisBorder: { show: false },
+			axisTicks: { show: false },
+			labels: { style: { colors: "#aaa39b" } },
 		},
 		yaxis: {
 			title: {
 				text: "Co-player",
+				style: { color: "#aaa39b" },
 			},
 			decimalsInFloat: 0,
+			labels: { style: { colors: "#aaa39b" } },
 		},
-	};
+		tooltip: {
+			theme: "dark",
+		},
+		};
 
-	var chart = new ApexCharts(document.getElementById('played_with_charts'), options);
-	chart.render();
+		var chart = new ApexCharts(played_with_el, options);
+		chart.render();
+	}
 </script>
 {% endblock %}

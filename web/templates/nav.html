@@ -2,53 +2,79 @@
 {% load bootstrap4 %}
 {% load webpush_notifications %}
 
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
-    <div class="container">
-        <a class="navbar-brand" href="/">
-            <img src="{% static "logo.png" %}" width="32px" class="d-inline-align-top">
-            Academy
-        </a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
-            <div class="navbar-nav">
-                {% if user.is_staff %}
-                    <a class="nav-item nav-link" href="{{ admin_url }}">Admin<i class="fas fa-tools float-right d-lg-none"></i></a>
-                {% endif %}
-                <a class="nav-item nav-link" href="/games/">Games<i class="fas fa-gamepad float-right d-lg-none"></i></a>
-                <a class="nav-item nav-link" href="/players/">Players<i class="fas fa-users float-right d-lg-none"></i></a>
-                <a class="nav-item nav-link" href="/ranking/">Ranking<i class="fas fa-trophy float-right d-lg-none"></i></a>
-                <a class="nav-item nav-link" href="/stats/">Stats<i class="fas fa-info-circle float-right d-lg-none"></i></a>
-                <a class="nav-item nav-link" href="/about/">About<i class="fas fa-info-circle float-right d-lg-none"></i></a>
-                {% if user.is_authenticated %}
-                    <a class="nav-item nav-link" href="/players/{{ user.id }}/">My Profile<i class="fas fa-user float-right d-lg-none"></i></a>
-                    <form action="/logout/" method="POST" style="align-self: center;">
-                        {% csrf_token %}
-                        <button class="nav-item nav-link" type="submit" style="display: contents;">
-                            Logout ({{ user.get_username }})
-                            <i class="fas fa-sign-out-alt float-right d-lg-none"></i>
-                        </button>
-                    </form>
-                {% else %}
-                    <a class="nav-item nav-link" href="/login/">Login<i class="fas fa-sign-in-alt float-right d-lg-none"></i></a>
-                {% endif %}
-                <a class="nav-item nav-link d-lg-none" href="{{ PLAY_URL }}">Play!<i class="fas fa-play float-right"></i></a>
+<header class="site-header">
+    <div class="site-header-inner">
+        <nav class="navbar navbar-expand-lg navbar-dark site-navbar w-100">
+            <a class="navbar-brand" href="/">
+                <span class="navbar-brand-badge">
+                    <img src="{% static "logo.png" %}" alt="">
+                </span>
+                <span>Academy</span>
+            </a>
+
+            <button class="navbar-toggler ml-auto" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+                <div class="navbar-nav">
+                    <a class="nav-item nav-link{% if "/games" in request.path %} active{% endif %}" href="/games/">Games<i class="fas fa-gamepad float-right d-lg-none"></i></a>
+                    <a class="nav-item nav-link{% if "/ranking" in request.path %} active{% endif %}" href="/ranking/">Ranking<i class="fas fa-trophy float-right d-lg-none"></i></a>
+                    <a class="nav-item nav-link{% if "/players" in request.path %} active{% endif %}" href="/players/">Players<i class="fas fa-users float-right d-lg-none"></i></a>
+                    <a class="nav-item nav-link{% if "/gallery" in request.path %} active{% endif %}" href="/gallery/">Gallery<i class="fas fa-images float-right d-lg-none"></i></a>
+                    <a class="nav-item nav-link{% if "/stats" in request.path %} active{% endif %}" href="/stats/">Stats<i class="fas fa-info-circle float-right d-lg-none"></i></a>
+                    <a class="nav-item nav-link{% if "/about" in request.path %} active{% endif %}" href="/about/">About<i class="fas fa-info-circle float-right d-lg-none"></i></a>
+                    {% if user.is_staff %}
+                        <a class="nav-item nav-link" href="{{ admin_url }}">Admin<i class="fas fa-tools float-right d-lg-none"></i></a>
+                    {% endif %}
+
+                    {% if user.is_authenticated %}
+                        <a class="nav-item nav-link d-lg-none" href="/players/{{ user.id }}/">My Profile<i class="fas fa-user float-right"></i></a>
+                        <form action="/logout/" method="POST" class="nav-item-form d-lg-none">
+                            {% csrf_token %}
+                            <button class="nav-item nav-link" type="submit">
+                                Logout ({{ user.get_username }})
+                                <i class="fas fa-sign-out-alt float-right"></i>
+                            </button>
+                        </form>
+                    {% else %}
+                        <a class="nav-item nav-link d-lg-none" href="/login/">Login<i class="fas fa-sign-in-alt float-right"></i></a>
+                    {% endif %}
+                    <a class="nav-item nav-link d-lg-none" href="{{ PLAY_URL }}">Play!<i class="fas fa-play float-right"></i></a>
+                </div>
+
+                <div class="navbar-actions d-none d-lg-flex">
+                    {% if user.is_authenticated %}
+                        <div class="dropdown">
+                            <button class="navbar-user-btn" type="button" id="navbarUserMenu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <img src="{{ user.image_url }}" alt="" class="navbar-user-avatar">
+                                <span class="username">{{ user.get_username }}</span>
+                                <i class="fas fa-chevron-down"></i>
+                            </button>
+                            <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarUserMenu">
+                                <a class="dropdown-item" href="/players/{{ user.id }}/"><i class="fas fa-user"></i> My profile</a>
+                                <form action="/logout/" method="POST">
+                                    {% csrf_token %}
+                                    <button class="dropdown-item" type="submit"><i class="fas fa-sign-out-alt"></i> Logout</button>
+                                </form>
+                            </div>
+                        </div>
+                    {% else %}
+                        <a class="nav-link" href="/login/">Login</a>
+                    {% endif %}
+                    <a href="{{ PLAY_URL }}" class="btn btn-danger" role="button">Play!</a>
+                </div>
             </div>
-        </div>
-        <span id="notification-button" class="text-light text-bg btn btn-lg" style="margin-right: -15px;">
-          <i class="fas fa-bell" title="Notify me when games start"></i>
-          <i class="fas fa-bell-slash" title="Unsubscribe from notifications"></i>
-        </span>
-        <a class="btn btn-lg" href="/games/rss/"><i class="fas fa-rss" style="color: #ee802f;"></i></a>
-        <a href="{{ PLAY_URL }}" class="btn btn-danger btn-lg active d-none d-lg-block" role="button" aria-pressed="true">Play!</a>
+        </nav>
     </div>
-</nav>
+</header>
 
 {% if config.BANNER_ENABLED %}
-<div id="banner">
-    <a href="{{ config.BANNER_URL }}">
-        {{ config.BANNER_TEXT }}
-    </a>
+<div class="container">
+    <div id="banner" class="rounded">
+        <a href="{{ config.BANNER_URL }}">
+            {{ config.BANNER_TEXT }}
+        </a>
+    </div>
 </div>
 {% endif %}

@@ -13,7 +13,7 @@ SECRET_KEY = "finish him!"
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 SERVER_URL = "http://localhost:8000/"
-PLAY_URL = "http://localhost:4200/"
+PLAY_URL = "http://localhost:5173/"
 
 AUTOLOGIN_USERNAME = os.environ.get("AUTOLOGIN_USERNAME")
 
@@ -53,3 +53,14 @@ connection_created.connect(on_connection_created)
 if not TESTING:
     MIDDLEWARE += ["academy.autologin.AutologinMiddleware"]
     # CORS_ALLOW_ALL_ORIGINS = True
+
+# Use the Redis container (docker compose up redis) for channel layer and chat history.
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("localhost", 6379)],
+        },
+    },
+}
+REDIS_URL = "redis://localhost:6379/1"

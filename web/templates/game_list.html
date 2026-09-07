@@ -1,50 +1,93 @@
 {% extends "paginated_list_view.html" %}
 
+{% load humanize %}
+
 {% block pagetitle %}Games{% endblock %}
 
 {% block beforetable %}
-<h2>
-	<i class="fas fa-gamepad"></i> Games
-	<div style="float: right;">
-		<a class="btn btn-outline-danger col-md-auto" type="button" href="/upload_game/">
-			Upload failed game
-		</a>
-		{% include "season_chooser.html" %}
-	</div>
-</h2>
+<div class="page-toolbar">
+    <div>
+        <h1 class="page-title icon-heading"><i class="fas fa-gamepad"></i> Games</h1>
+        <p class="page-subtitle">{{ object_list.paginator.count|intcomma }} games recorded</p>
+    </div>
+    <div class="page-toolbar-actions">
+        <a class="btn btn-outline-secondary btn-sm" href="/upload_game/">
+            <i class="fas fa-upload"></i> Upload failed game
+        </a>
+        {% include "season_chooser.html" %}
+    </div>
+</div>
 
 <form method="get">
-	<div class="form-group">
-		<input type="hidden" name="season" value="{{ season.number }}">
-		<input type="text" name="query" class="form-control" placeholder="Search" value="{{ query }}" autofocus>
-	</div>
+    <div class="form-group search-input-wrap mb-3">
+        <i class="fas fa-search search-icon"></i>
+        <input type="hidden" name="season" value="{{ season.number }}">
+        <input type="text" name="query" class="form-control" placeholder="Search by player or #hashtag" value="{{ query }}" autofocus>
+    </div>
 </form>
+{% endblock %}
+
+{% block table_class %} games-table{% endblock %}
+
+{% block colgroup %}
+<colgroup>
+    <col class="col-players">
+    <col class="col-status">
+    <col class="col-season">
+    <col class="col-started">
+    <col class="col-ended">
+    <col class="col-duration">
+    <col class="col-action">
+</colgroup>
 {% endblock %}
 
 {% block thead %}
 <tr class="academy-table">
-	<th scope="col">Players</th>
-	<th scope="col">Season</th>
-	{% include "sort_col.html" with name="End datetime" column=order.end_datetime %}
-	{% include "sort_col.html" with name="Duration" column=order.duration %}
+    <th scope="col">Players</th>
+    <th scope="col">Status</th>
+    <th scope="col">Season</th>
+    <th scope="col">Started</th>
+    {% include "sort_col.html" with name="Ended" column=order.end_datetime %}
+    {% include "sort_col.html" with name="Duration" column=order.duration %}
+    <th scope="col" class="table-action-col"></th>
 </tr>
 {% endblock %}
 
 {% block tbody %}
 {% for game in object_list %}
 <tr data-href="/games/{{ game.id }}/" class="academy-table slim {% if user in game.ordered_players %}in-game {% endif %}{% if game.is_live %}live {% endif %}{% if game.dnf %}dnf {% endif %}" data-start-time="{{ game.start_datetime.timestamp }}">
-	<td>
-		{% for gp in game.ordered_gameplayers %}
-		<a href="/players/{{ gp.user.id }}/" class="{% if gp.dnf %}dnf{% endif %}"><span class="username">{{ gp.user.username }}</span></a>{% if not forloop.last %},{% endif %}{% endfor %}
-	</td>
-	<td>{{ game.season_number_str }}</td>
-	<td>{{ game.end_str }}</td>
-	<td class="text-right">
-		<span class="duration">
-			{{ game.duration_str }}
-		</span>
-		<i class="far fa-clock"></i>
-	</td>
+    <td class="player-cell">
+        <div class="player-stack">
+            {% for gp in game.ordered_gameplayers %}
+            <img src="{{ gp.user.image_url }}" class="player-stack-avatar" title="{{ gp.user.username }}">
+            {% endfor %}
+        </div>
+        <span class="player-names" data-toggle="tooltip" data-placement="top" title="{{ game.players_str }}">
+            {% for gp in game.ordered_gameplayers %}
+            <a href="/players/{{ gp.user.id }}/" class="{% if gp.dnf %}dnf{% endif %}"><span class="username">{{ gp.user.username }}</span></a>{% if not forloop.last %}, {% endif %}{% endfor %}
+        </span>
+    </td>
+    <td>
+        {% if game.is_live %}
+            <span class="status-live-text"><span class="status-dot"></span> Live</span>
+        {% elif game.dnf %}
+            <span class="status-pill status-dnf">DNF</span>
+        {% else %}
+            <span class="status-pill status-done">Done</span>
+        {% endif %}
+    </td>
+    <td>{{ game.season_number_str }}</td>
+    <td class="text-mono">{{ game.start_str }}</td>
+    <td class="text-mono">{{ game.ended_str }}</td>
+    <td class="text-right">
+        <span class="duration-wrap">
+            <span class="duration">
+                {{ game.duration_str }}
+            </span>
+            <i class="far fa-clock" style="color: var(--color-text-muted);"></i>
+        </span>
+    </td>
+    <td class="table-action-col"><i class="fas fa-chevron-right row-action-icon"></i></td>
 </tr>
 {% endfor %}
 {% endblock %}

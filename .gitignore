@@ -10,6 +10,7 @@
 /svelte/node_modules/
 /svelte/static/svelte/
 /svelte/dist/
+/svelte/build/
 /svelte/templates/svelte_include_generated.html
 *.pyc
 __pycache__/
