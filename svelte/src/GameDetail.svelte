@@ -11,6 +11,8 @@ import type { ChugData, GameData, GamePlayerData } from "./types";
 	import Chug from "./Chug.svelte";
 	import SipsGraph from "./SipsGraph.svelte";
 	import TimeGraph from "./TimeGraph.svelte";
+	import GameChat from "./GameChat.svelte";
+	import { onMount } from "svelte";
 
 	let game_data = $state(JSON.parse(
 		document.getElementById("game_data")!.textContent!
@@ -19,6 +21,20 @@ import type { ChugData, GameData, GamePlayerData } from "./types";
 		document.getElementById("ordered_gameplayers")!.textContent!
 	) as GamePlayerData[];
 	let done = $derived(game_data.end_datetime !== null || game_data.dnf);
+	let chatOpen = $state((() => {
+		try {
+			return localStorage.getItem("game_chat_expanded") === "true";
+		} catch {
+			return false;
+		}
+	})());
+	let unreadCount = $state(0);
+
+	$effect(() => {
+		try {
+			localStorage.setItem("game_chat_expanded", chatOpen ? "true" : "false");
+		} catch {}
+	});
 
 	async function updateData() {
 		if (done) return;
@@ -188,6 +204,18 @@ import type { ChugData, GameData, GamePlayerData } from "./types";
 	<div class="page-toolbar-actions">
 		{#if statusLabel === "Live"}
 			<span class="game-live-badge"><span class="status-dot"></span> Live</span>
+			<button
+				type="button"
+				class="btn btn-outline-danger btn-sm chat-toolbar-btn"
+				class:active={chatOpen}
+				onclick={() => (chatOpen = !chatOpen)}
+				aria-label="Open game chat"
+			>
+				<i class="fas fa-comments"></i> Chat
+				{#if unreadCount > 0 && !chatOpen}
+					<span class="chat-btn-badge">{unreadCount > 99 ? "99+" : unreadCount}</span>
+				{/if}
+			</button>
 		{:else if statusLabel === "DNF"}
 			<span class="game-status-badge game-status-dnf">DNF</span>
 		{/if}
@@ -373,6 +401,15 @@ import type { ChugData, GameData, GamePlayerData } from "./types";
 	</div>
 {/if}
 
+{#if !done}
+	<GameChat
+		game_id={game_data.id}
+		{ordered_gameplayers}
+		bind:isOpen={chatOpen}
+		bind:unreadCount={unreadCount}
+	/>
+{/if}
+
 <style>
 	.description {
 		color: var(--color-text-muted);
@@ -473,5 +510,32 @@ import type { ChugData, GameData, GamePlayerData } from "./types";
 		.game-stat-grid {
 			grid-template-columns: 1fr;
 		}
+	}
+
+	.chat-toolbar-btn {
+		color: #e55356;
+		border-color: rgba(229, 83, 86, 0.4);
+		display: inline-flex;
+		align-items: center;
+		gap: 0.4rem;
+		transition: all 0.15s ease;
+	}
+
+	.chat-toolbar-btn:hover,
+	.chat-toolbar-btn.active {
+		background: #c93b3e;
+		border-color: #c93b3e;
+		color: #ffffff;
+	}
+
+	.chat-btn-badge {
+		background: #ffffff;
+		color: #c93b3e;
+		font-size: 0.68rem;
+		font-weight: 800;
+		padding: 1px 5px;
+		border-radius: 8px;
+		line-height: 1.1;
+		margin-left: 0.15rem;
 	}
 </style>

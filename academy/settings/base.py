@@ -24,6 +24,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__fil
 # Application definition
 
 INSTALLED_APPS = [
+    "daphne",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -194,6 +195,12 @@ CONSTANCE_CONFIG = {
 load_dotenv()
 
 GIT_COMMIT_HASH = os.getenv("GIT_COMMIT_HASH")
+
+# Chat history retention in seconds. Default: 24 hours.
+CHAT_HISTORY_TTL_SECONDS = int(os.getenv("CHAT_HISTORY_TTL_SECONDS", "86400"))
+
+# Redis URL used for chat history storage (separate from Celery's broker DB).
+REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/1")
 
 WEBPUSH_SETTINGS = {
     "VAPID_ADMIN_EMAIL": "asgerdrewsen@gmail.com",

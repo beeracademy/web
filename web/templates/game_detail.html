@@ -12,6 +12,12 @@
 </style>
 <script>
     window.is_staff = {{ user.is_staff|lower }};
+    window.is_authenticated = {{ user.is_authenticated|lower }};
+    window.current_user = {
+        is_authenticated: {{ user.is_authenticated|lower }},
+        username: "{{ user.get_username|escapejs }}",
+        id: {% if user.is_authenticated %}{{ user.id }}{% else %}null{% endif %}
+    };
 </script>
 
 {% svelte_include "GameDetail" %}
